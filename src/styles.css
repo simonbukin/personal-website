@@ -1,0 +1,16 @@
+* {
+	position: relative;
+	box-sizing: border-box;
+}
+
+html,
+body {
+	margin: 0;
+	height: 100%;
+}
+
+body {
+	display: flex;
+	flex-direction: column;
+	font-family: 'Karla', sans-serif;
+}
