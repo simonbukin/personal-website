@@ -1,12 +1,17 @@
 <script>
+	import HoverLink from '$lib/components/HoverLink.svelte';
+	import { socialLinks } from '$lib/socialLinks';
 	import '../styles.css';
 </script>
 
 <main class="container">
 	<nav>
-		<p>simon bukin</p>
+		<div class="left-nav">
+			<a href="/"><p class="header-text">simon bukin</p></a>
+			<img src="/me.svg" alt="personal logo" />
+		</div>
 		<ul class="right-nav">
-			<li><a href="/about">about</a></li>
+			<HoverLink href="/about">about</HoverLink>
 		</ul>
 	</nav>
 
@@ -15,10 +20,9 @@
 	<footer>
 		<p>© 2023 simon bukin</p>
 		<ul class="right-nav">
-			<li><a href="/">last.fm</a></li>
-			<li><a href="/">spotify</a></li>
-			<li><a href="/">hardcover</a></li>
-			<li><a href="/">linkedin</a></li>
+			{#each socialLinks as socialLink}
+				<HoverLink href={socialLink.url}>{socialLink.name}</HoverLink>
+			{/each}
 		</ul>
 	</footer>
 </main>
@@ -31,19 +35,42 @@
 		align-items: center;
 	}
 
-	li {
-		list-style: none;
+	nav,
+	footer {
+		font-size: 1.5rem;
+		height: 4rem;
 	}
 
-	a {
-		text-decoration: none;
-		color: black;
+	.left-nav {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 1rem;
+		font-size: 1.5rem;
 	}
 
 	.right-nav {
 		display: flex;
 		align-items: center;
-		gap: 1rem;
+		gap: 2rem;
+	}
+
+	img {
+		width: 3.5rem;
+		aspect-ratio: 1 / 1;
+	}
+
+	img:hover {
+		transform: rotate(360deg);
+		transition: transform 1s ease-in-out;
+	}
+
+	.header-text {
+		cursor: pointer;
+	}
+	a {
+		text-decoration: none;
+		color: var(--text-color);
 	}
 
 	footer {
@@ -56,7 +83,6 @@
 
 	.container {
 		max-width: 80rem;
-		min-width: 50rem;
 		min-height: 100vh;
 		margin-left: auto;
 		margin-right: auto;
