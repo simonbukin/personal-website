@@ -9,7 +9,6 @@ body {
 	--text-spacing: 0.3px;
 	--main-color: #eee4db;
 	--light-color: #f8e9da;
-	margin: 0;
 	height: 100%;
 }
 
@@ -17,7 +16,12 @@ body {
 	display: flex;
 	flex-direction: column;
 	font-family: 'Karla', sans-serif;
+	margin: 0;
 	color: var(--text-color);
 	letter-spacing: var(--text-spacing);
 	background-color: var(--main-color);
+}
+
+h1 {
+	font-weight: 500;
 }
