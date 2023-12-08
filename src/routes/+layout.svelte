@@ -4,9 +4,9 @@
 
 <main class="container">
 	<nav>
-		<p>Simon Bukin</p>
+		<p>simon bukin</p>
 		<ul class="right-nav">
-			<li><a href="/about">About</a></li>
+			<li><a href="/about">about</a></li>
 		</ul>
 	</nav>
 

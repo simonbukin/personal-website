@@ -5,6 +5,10 @@
 
 html,
 body {
+	--text-color: #5e5e5e;
+	--text-spacing: 0.3px;
+	--main-color: #eee4db;
+	--light-color: #f8e9da;
 	margin: 0;
 	height: 100%;
 }
@@ -13,4 +17,7 @@ body {
 	display: flex;
 	flex-direction: column;
 	font-family: 'Karla', sans-serif;
+	color: var(--text-color);
+	letter-spacing: var(--text-spacing);
+	background-color: var(--main-color);
 }
