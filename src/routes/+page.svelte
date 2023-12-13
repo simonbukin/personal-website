@@ -4,32 +4,10 @@
 	import projects from '$lib/projects';
 </script>
 
-<div class="content">
-	<HeroText />
-	<h1 class="projects-header">projects.</h1>
-	<div class="projects">
-		{#each projects as project}
-			<Project {...project} />
-		{/each}
-	</div>
+<HeroText />
+<h1 class="font-bold text-3xl my-4">projects.</h1>
+<div class=" grid grid-cols-2 gap-4">
+	{#each projects as project}
+		<Project {...project} />
+	{/each}
 </div>
-
-<style>
-	.projects {
-		display: flex;
-		flex-direction: row;
-		gap: 1rem;
-		flex-grow: 2;
-	}
-
-	h1 {
-		font-size: 2rem;
-		font-weight: bold;
-	}
-
-	.content {
-		display: flex;
-		flex-direction: column;
-		margin-top: 5rem;
-	}
-</style>
