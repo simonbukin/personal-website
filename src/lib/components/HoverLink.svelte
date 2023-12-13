@@ -1,17 +1,18 @@
 <script lang="ts">
 	export let href: string;
 	export let speed: number = 0.1;
+
+	let randomBorderColor = Math.random() > 0.5 ? 'purple' : 'green';
+	$: borderColor = `border-${randomBorderColor}-500`;
 </script>
 
-<a {href} style="transition: box-shadow {speed}s ease-in-out;"> <slot /> </a>
+<a
+	{href}
+	class="hover:border-b-4 {borderColor}"
+	style="transition: border-width {speed}s ease-in-out"
+>
+	<slot />
+</a>
 
 <style>
-	a {
-		text-decoration: none;
-		color: var(--text-color);
-	}
-
-	a:hover {
-		box-shadow: 0 3px 0 0 var(--text-color);
-	}
 </style>
