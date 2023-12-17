@@ -8,4 +8,5 @@ export type Project = {
 export type SocialLink = {
 	name: string;
 	url: string;
+	iconName: string;
 };

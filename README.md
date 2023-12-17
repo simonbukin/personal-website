@@ -14,9 +14,9 @@ It's built with SvelteKit. You should definitely try building with it, it's very
   - /portfolio/[slug].html
 - Add playground for small, fun projects
   - /fun/[slug]
-- Finish homepage
-  - HeroText.svelte
-  - Projects.svelte
+- ✅ Finish homepage
+  - ✅ HeroText.svelte
+  - ✅ Projects.svelte
 
 ## Building
 

@@ -6,3 +6,15 @@
 	</h1>
 	<h1>i strive to make experiences centered on people.</h1>
 </div>
+
+<style>
+	@media (max-width: 640px) {
+		div {
+			font-size: 1.75rem;
+			margin-block: 6rem;
+		}
+		h1:first-of-type {
+			margin-bottom: 2rem;
+		}
+	}
+</style>
