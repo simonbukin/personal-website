@@ -3,6 +3,7 @@
 	import { fly } from 'svelte/transition';
 	import { socialLinks } from '$lib/socialLinks';
 	import '../styles.css';
+	import Icon from '@iconify/svelte';
 
 	let innerWidth: number;
 </script>
@@ -34,8 +35,12 @@
 			<p>© 2023 simon bukin</p>
 			<ul class="center-with-flex gap-6">
 				{#each innerWidth < 640 ? socialLinks.slice(0, 4) : socialLinks as socialLink (socialLink.name)}
-					<li transition:fly>
-						<HoverLink href={socialLink.url} speed={0.1}>{socialLink.name}</HoverLink>
+					<li>
+						{#if innerWidth < 640}
+							<Icon class="text-3xl" icon={socialLink.iconName} />
+						{:else}
+							<HoverLink href={socialLink.url} speed={0.1}>{socialLink.name}</HoverLink>
+						{/if}
 					</li>
 				{/each}
 			</ul>
@@ -46,7 +51,12 @@
 <style>
 	svg {
 		width: 57px;
-		height: 38px;
+		aspect-ratio: 1.5;
+		transition: rotate 0.5s ease-in-out;
+	}
+
+	svg:hover {
+		rotate: 360deg;
 	}
 
 	@media (max-width: 640px) {
@@ -56,6 +66,13 @@
 		}
 		.header {
 			justify-content: space-between;
+			width: 100%;
+		}
+		svg {
+			width: 45px;
+		}
+
+		footer > ul {
 			width: 100%;
 		}
 	}
