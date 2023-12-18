@@ -1,6 +1,6 @@
 <script lang="ts">
 	import HoverLink from '$lib/components/HoverLink.svelte';
-	import { blur } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
 	import { cubicInOut, sineOut } from 'svelte/easing';
 	import { socialLinks } from '$lib/socialLinks';
 	import '../styles.css';
@@ -13,7 +13,10 @@
 <svelte:window bind:innerWidth />
 <body class="dark:bg-gray-800 dark:text-gray-200 font-sans">
 	{#key data.pathname}
-		<div transition:blur={{ duration: 300, easing: cubicInOut }}>
+		<div
+			in:fly={{ x: 10, delay: 400, duration: 300, easing: cubicInOut }}
+			out:fly={{ x: -10, duration: 300, easing: cubicInOut }}
+		>
 			<main class="flex flex-col min-h-screen mx-auto py-2 px-4">
 				<nav class="center-with-flex h-fit">
 					<div class="header center-with-flex gap-4">
