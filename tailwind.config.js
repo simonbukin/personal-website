@@ -4,7 +4,8 @@ export default {
 	theme: {
 		extend: {},
 		fontFamily: {
-			sans: ['Karla', 'sans-serif']
+			sans: ['Karla', 'sans-serif'],
+			serif: ['Merriweather', 'serif']
 		}
 	},
 	plugins: []

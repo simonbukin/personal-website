@@ -8,6 +8,7 @@
 
 <a
 	{href}
+	target="_blank"
 	class="hover:border-b-4 {borderColor}"
 	style="transition: border-width {speed}s ease-in-out"
 >
