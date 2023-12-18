@@ -33,9 +33,8 @@ const config = {
 		adapter: adapter(),
 		prerender: {
 			crawl: true,
-			enabled: true,
-			onError: 'fail',
 			entries: [
+				'*',
 				'/blog/beep-boop',
 				'/blog/logging-spotify',
 				'/blog/python-tips',
