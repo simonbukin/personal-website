@@ -1,8 +1,10 @@
 import adapter from '@sveltejs/adapter-auto';
 import { vitePreprocess } from '@sveltejs/kit/vite';
-
+import { join } from 'path';
 import { mdsvex, escapeSvelte } from 'mdsvex';
 import shiki from 'shiki';
+
+const catpuccino = await shiki.loadTheme(join(process.cwd(), './custom-themes/mocha.json'));
 
 /** @type {import('mdsvex').MdsvexOptions} */
 const mdsvexOptions = {
@@ -12,7 +14,7 @@ const mdsvexOptions = {
 	},
 	highlight: {
 		highlighter: async (code, lang = 'text') => {
-			const highlighter = await shiki.getHighlighter({ theme: 'nord' });
+			const highlighter = await shiki.getHighlighter({ theme: catpuccino });
 			const html = escapeSvelte(highlighter.codeToHtml(code, { lang }));
 			return `{@html \`${html}\` }`;
 		}

@@ -8,14 +8,22 @@
 
 	let innerWidth: number;
 	export let data;
+	let inTransition = false;
 </script>
 
 <svelte:window bind:innerWidth />
-<body class="dark:bg-gray-800 dark:text-gray-200 font-sans">
+
+<body class:no-scrollbar={inTransition} class="dark:bg-gray-800 dark:text-gray-200 font-sans">
 	{#key data.pathname}
 		<div
 			in:fly={{ x: 10, delay: 400, duration: 300, easing: cubicInOut }}
 			out:fly={{ x: -10, duration: 300, easing: cubicInOut }}
+			on:introstart={() => {
+				inTransition = true;
+			}}
+			on:introend={() => {
+				inTransition = false;
+			}}
 		>
 			<main class="flex flex-col min-h-screen mx-auto py-2 px-4">
 				<nav class="center-with-flex h-fit">
@@ -67,6 +75,12 @@
 	main {
 		max-width: 75ch;
 	}
+	.no-scrollbar {
+		overflow: hidden;
+		-ms-overflow-style: hidden;
+		scrollbar-width: none;
+	}
+
 	.header-text {
 		background: -webkit-linear-gradient(45deg, #dbdbdb, #b950ff);
 		background-clip: text;
