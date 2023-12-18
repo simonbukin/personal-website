@@ -2,9 +2,10 @@
 	export let imageSrc: string;
 	export let companyName: string;
 	export let year: number;
+	export let slug: string;
 </script>
 
-<a href="/portfolio/">
+<a href={`/portfolio/${slug}`}>
 	<div class="p-4 relative dark: bg-gray-700 light:bg-amber-50">
 		<img class="w-full object-contain aspect-square" src={imageSrc} alt="name" />
 		<h2 class="company text-2xl absolute">{companyName}</h2>

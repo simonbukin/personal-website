@@ -8,12 +8,14 @@ It's built with SvelteKit. You should definitely try building with it, it's very
 
 ## TODO
 
-- Add blog with static HTML for posts
-  - /blog/[slug].html
-- Add static portfolio pages
-  - /portfolio/[slug].html
+- ✅ Add blog with static HTML for posts
+  - ✅ /blog/[slug].html
+- ✅ Add static portfolio pages
+  - ✅ /portfolio/[slug]
+  - ✅ Add styling
 - Add playground for small, fun projects
   - /fun/[slug]
+- ✅ Add about page
 - ✅ Finish homepage
   - ✅ HeroText.svelte
   - ✅ Projects.svelte
@@ -29,3 +31,7 @@ npm run build
 You can preview the production build with `npm run preview`.
 
 > To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+
+## Credits
+
+- For setting up `mdsvex` and a LOT of other features: https://joyofcode.xyz/sveltekit-markdown-blog

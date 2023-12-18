@@ -4,13 +4,13 @@ const projects: Project[] = [
 	{
 		year: 2022,
 		companyName: 'google.',
-		projectName: 'gcs-security',
+		slug: 'gcs-security',
 		imageSrc: '/google.svg'
 	},
 	{
 		year: 2021,
 		companyName: 'amazon.',
-		projectName: 'sagemaker-onboarding',
+		slug: 'sagemaker-onboarding',
 		imageSrc: '/amazon.svg'
 	}
 ];

@@ -1,6 +1,6 @@
 export type Project = {
 	imageSrc: string;
-	projectName: string;
+	slug: string;
 	companyName: string;
 	year: number;
 };
