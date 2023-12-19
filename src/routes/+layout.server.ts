@@ -1,15 +1,16 @@
 import { error } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
 import type { Post } from '$lib/types';
-import { getMarkdownPosts } from '$lib/utils';
 
 export const prerender = true;
 
-export const load: LayoutServerLoad = async ({ url }) => {
+export const load: LayoutServerLoad = async ({ url, fetch }) => {
 	const { pathname } = url;
 
 	try {
-		const posts: Post[] = await getMarkdownPosts();
+		const res = await fetch('/api/posts');
+		const posts: Post[] = await res.json();
+
 		return { posts, pathname };
 	} catch (e) {
 		console.error(e);
