@@ -6,7 +6,7 @@
 </script>
 
 <a href={`/portfolio/${slug}`}>
-	<div class="p-4 relative dark: bg-gray-700 light:bg-amber-50">
+	<div class="rounded-md p-4 relative dark: bg-slate-700 light:bg-amber-50">
 		<img class="w-full object-contain aspect-square" src={imageSrc} alt="name" />
 		<h2 class="company text-2xl absolute">{companyName}</h2>
 		<h2 class="year text-2xl absolute">{year}</h2>

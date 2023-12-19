@@ -1,4 +1,4 @@
-<div class="text-4xl my-32 leading-snug">
+<div class="text-3xl leading-snug">
 	<h1>
 		hey! i'm a <span class="border-solid border-b-4 border-purple-500">frontend engineer</span>
 		and
