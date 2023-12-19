@@ -13,7 +13,7 @@
 
 <svelte:window bind:innerWidth />
 
-<body class:no-scrollbar={inTransition} class="dark:bg-gray-800 dark:text-gray-200 font-sans">
+<body class:no-scrollbar={inTransition} class="bg-gray-800 text-gray-200 font-sans">
 	{#key data.pathname}
 		<div
 			in:fly={{ x: 10, delay: 400, duration: 300, easing: cubicInOut }}
