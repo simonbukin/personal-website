@@ -26,7 +26,7 @@ const config = {
 	extensions: ['.svelte', '.md'],
 	// Consult https://kit.svelte.dev/docs/integrations#preprocessors
 	// for more information about preprocessors
-	preprocess: [vitePreprocess(), mdsvex(mdsvexOptions)],
+	preprocess: [vitePreprocess({ postcss: true }), mdsvex(mdsvexOptions)],
 
 	kit: {
 		// adapter-auto only supports some environments, see https://kit.svelte.dev/docs/adapter-auto for a list.
@@ -37,13 +37,9 @@ const config = {
 			crawl: true,
 			entries: [
 				'*',
-				'/src/posts/beep-boop.md',
 				'/blog/beep-boop',
-				'/src/posts/logging-spotify.md',
 				'/blog/logging-spotify',
-				'/src/posts/python-tips.md',
 				'/blog/python-tips',
-				'/src/posts/python-virtual-environments.md',
 				'/blog/python-virtual-environments',
 				'/portfolio/gcs-security',
 				'/portfolio/sagemaker-onboarding'

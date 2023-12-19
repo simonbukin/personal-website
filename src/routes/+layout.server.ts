@@ -8,7 +8,13 @@ export const load: LayoutServerLoad = async ({ url }) => {
 	const { pathname } = url;
 
 	try {
-		const paths = import.meta.glob('/src/posts/*.md', { eager: true });
+		let paths;
+		if (import.meta.env.PROD) {
+			paths = import.meta.glob('../../../../../../posts/*.md', { eager: true });
+		} else {
+			paths = import.meta.glob('../posts/*.md', { eager: true });
+		}
+
 		const posts: Post[] = [];
 		for (const path in paths) {
 			const post = await import(path);

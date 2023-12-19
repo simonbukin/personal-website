@@ -6,6 +6,7 @@
 		"dev": "vite dev",
 		"dev:network": "vite dev --host",
 		"build": "vite build",
+		"build:prod": "vite build --mode production",
 		"preview": "vite preview",
 		"test": "npm run test:integration && npm run test:unit",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
