@@ -1,3 +1,22 @@
+import type { Post } from './types';
+
+export async function getMarkdownPosts(): Promise<Post[]> {
+	const paths = import.meta.glob('/src/posts/*.md', { eager: true });
+	const iterablePostFiles = Object.entries(paths);
+
+	const allPosts = await Promise.all(
+		iterablePostFiles.map(async ([, resolver]) => {
+			const metadata = await resolver.metadata;
+			return { ...metadata } as Post;
+		})
+	);
+
+	const sortedPosts = allPosts.sort(
+		(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+	);
+
+	return sortedPosts;
+}
 export interface FormatDateStringOptions {
 	monthFormat?: 'long' | 'short';
 	dayFormat?: 'number' | 'suffix';
