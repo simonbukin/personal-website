@@ -2,6 +2,7 @@
 date: 2019-10-25
 title: 'Python Virtual Environments'
 slug: 'python-virtual-environments'
+tags: ['python']
 ---
 
 The basics of virtual environments are essential knowledge for anyone using Python. Unless you want to spend the rest of your life fixing version issues because you ran `pip install <package>` globally, read on!

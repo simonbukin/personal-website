@@ -2,9 +2,10 @@
 date: 2019-10-02
 title: 'Logging Spotify'
 slug: 'logging-spotify'
+tags: ['python', 'spotify']
 ---
 
-I listen to a lot of music. Basically anything I can get my ears on I’ll play at least once, so, for these purposes, Spotify works pretty well. Unfortunately, as much as I like it, Spotify doesn’t give me many statistics about what I listen to. Sure, I get auto-generated playlists every day from random genres or artists, but if I want to look up how many times I’ve listened to [Veridis Quo](https://open.spotify.com/track/2LD2gT7gwAurzdQDQtILds?si=82e65cc8aff34352), touch luck.
+I listen to a lot of music. Basically anything I can get my ears on I’ll play at least once, so, for these purposes, Spotify works pretty well. Unfortunately, as much as I like it, Spotify doesn’t give me many statistics about what I listen to. Sure, I get auto-generated playlists every day from random genres or artists, but if I want to look up how many times I’ve listened to [Veridis Quo](https://open.spotify.com/track/2LD2gT7gwAurzdQDQtILds?si=82e65cc8aff34352), tough luck.
 
 Fortunately, Spotify provides [a public API](https://developer.spotify.com/documentation/web-api) that gives you access to a user’s Spotify account, where you can view their liked songs, playlists, and what they’re currently listening to, among other things. The last point is the one I wanted to focus on most, as seeing exactly what I’m listening to and storing that information would eventually build up a large database of my listening statistics.
 

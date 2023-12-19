@@ -2,6 +2,7 @@
 date: 2019-11-03
 title: 'Python Tips'
 slug: 'python-tips'
+tags: ['python']
 ---
 
 This post is a compilation of small Python tips I’ve gotten used to using over the years. They’re in no particular order, but feel free to try any that you don’t know about.

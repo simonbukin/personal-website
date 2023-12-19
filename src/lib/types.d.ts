@@ -10,3 +10,10 @@ export type SocialLink = {
 	url: string;
 	iconName: string;
 };
+
+export type Post = {
+	title: string;
+	slug: string;
+	date: string;
+	tags: string[];
+};

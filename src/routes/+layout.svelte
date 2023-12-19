@@ -46,7 +46,7 @@
 					</ul>
 				</nav>
 
-				<div class="grow">
+				<div class="grow my-8">
 					<slot />
 				</div>
 

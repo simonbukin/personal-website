@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+* {
+	box-sizing: border-box;
+}
+
 @layer components {
 	.center-with-flex {
 		@apply flex justify-between items-center;
@@ -59,7 +63,7 @@ hgroup :is(h2) {
 }
 
 .prose :is(img) {
-	border-radius: 5px;
+	@apply rounded-md;
 	transition: transform 0.5s ease-in-out;
 }
 
@@ -68,15 +72,15 @@ hgroup :is(h2) {
 }
 
 .prose :is(pre) {
+	@apply rounded-md;
 	width: 100%;
-	border-radius: 5px;
 	padding: 1.5rem;
 	margin-block: 2rem;
 }
 
 .prose > p :is(code) {
+	@apply rounded-md;
 	font-size: 1.2rem;
-	border-radius: 5px;
 	padding-inline: 0.25rem;
 	@apply bg-gray-600;
 }
