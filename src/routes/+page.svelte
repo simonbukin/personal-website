@@ -2,9 +2,16 @@
 	import HeroText from './HeroText.svelte';
 	import Projects from '$lib/components/Projects.svelte';
 	import Blog from '$lib/components/Blog.svelte';
+	import { title } from '$lib/config';
 
 	export let data;
 </script>
+
+<svelte:head>
+	<title>{ title }</title>
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content={ title } />
+</svelte:head>
 
 <div class="my-16">
 	<HeroText />

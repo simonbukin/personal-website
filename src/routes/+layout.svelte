@@ -6,14 +6,16 @@
 	import '../styles.css';
 	import Icon from '@iconify/svelte';
 
-	let innerWidth: number;
 	export let data;
+	let innerWidth: number;
 	let inTransition = false;
 </script>
 
 <svelte:window bind:innerWidth />
 
 <body class:no-scrollbar={inTransition} class="bg-gray-800 text-gray-200 font-sans">
+	<!-- This hidden div is necessary for Tailwind to analyze and find these classes, which allows them to be string interpolated in other places in the code (eg. HoverLink.svelte) -->
+	<div class='border-rose-500 border-fuchsia-500 border-teal-500 border-amber-500 border-indigo-500'></div>
 	{#key data.pathname}
 		<div
 			in:fly={{ x: 10, delay: 400, duration: 300, easing: cubicInOut }}
@@ -29,7 +31,7 @@
 				<nav class="center-with-flex h-fit">
 					<div class="header center-with-flex gap-4">
 						<a class="cursor-pointer no-underline" href="/"
-							><h1 class="header-text text-3xl">simon bukin</h1></a
+							><h1 class="text-3xl">simon bukin</h1></a
 						>
 						<a href="/about"
 							><svg class="fill-none w-14" viewBox="0 0 57 38">
@@ -76,17 +78,15 @@
 		max-width: 75ch;
 	}
 	.no-scrollbar {
-		overflow: hidden;
-		-ms-overflow-style: hidden;
+		-ms-overflow-style: none;
 		scrollbar-width: none;
+		overflow-y: scroll; 
+		overflow-x: scroll;
+		&::-webkit-scrollbar {
+			display: none;
+		}
 	}
 
-	.header-text {
-		background: -webkit-linear-gradient(45deg, #dbdbdb, #b950ff);
-		background-clip: text;
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-	}
 	svg {
 		width: 57px;
 		aspect-ratio: 1.5;

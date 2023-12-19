@@ -1,5 +1,7 @@
 import type { Post } from './types';
 
+export const pickRandom = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+
 export async function getMarkdownPosts(): Promise<Post[]> {
 	const paths = import.meta.glob('/src/posts/*.md', { eager: true });
 	const iterablePostFiles = Object.entries(paths);
@@ -7,7 +9,8 @@ export async function getMarkdownPosts(): Promise<Post[]> {
 	const allPosts = await Promise.all(
 		iterablePostFiles.map(async ([, resolver]) => {
 			const metadata = await resolver.metadata;
-			return { ...metadata } as Post;
+			const content = await resolver.default;
+			return { ...metadata, content };
 		})
 	);
 
@@ -35,7 +38,7 @@ export function formatDateString(dateString: string, options?: FormatDateStringO
 	const year =
 		yearFormat === 'full' ? date.getFullYear().toString() : date.getFullYear().toString().slice(-2);
 
-	return `${month} ${day}, '${year}`;
+	return `${month} ${day}, ${yearFormat === 'full' ? '' : "'"}${year}`;
 }
 
 function getDaySuffix(day: number): string {

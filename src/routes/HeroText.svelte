@@ -1,13 +1,21 @@
 <div class="text-3xl leading-snug">
 	<h1>
-		hey! i'm a <span class="border-solid border-b-4 border-purple-500">frontend engineer</span>
+		hey! i'm a <span class="fe">frontend engineer</span>
 		and
-		<span class="border-solid border-b-4 border-green-500">ux designer.</span>
+		<span class="ux">ux designer.</span>
 	</h1>
 	<h1>i strive to make experiences centered on people.</h1>
 </div>
 
 <style>
+	.fe {
+		text-shadow: 2px 2px 0px rgb(190, 51, 255);
+	}
+
+	.ux {
+		text-shadow: 2px 2px 0px rgb(255, 146, 51);
+	}
+
 	@media (max-width: 640px) {
 		div {
 			font-size: 1.75rem;

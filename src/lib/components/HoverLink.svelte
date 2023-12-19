@@ -1,11 +1,13 @@
 <script lang="ts">
+	import { themeColors } from '$lib/config';
+	import { pickRandom } from '$lib/utils';
 	export let href: string;
 	export let speed: number = 0.1;
 	export let newTab: boolean = true;
 
-	let randomBorderColor = Math.random() > 0.5 ? 'purple' : 'green';
-	$: borderColor = `border-${randomBorderColor}-500`;
-	$: redirect = newTab ? '_blank' : '';
+	let randomBorderColor = pickRandom(themeColors);
+	let borderColor = `border-${randomBorderColor}`;
+	let redirect = newTab ? '_blank' : '';
 </script>
 
 <a
