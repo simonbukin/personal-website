@@ -11,12 +11,11 @@
 
 <div on:click={scrollToTop} on:keydown={scrollToTop} role="button" tabindex="0">
 	<h1>back to top</h1>
-	<Icon icon="mdi:arrow-up-bold-outline" width="24" height="24" />
+	<Icon icon="akar-icons:arrow-up" width="24" height="24" />
 </div>
 
 <style>
 	div {
-		@apply font-serif;
 		position: relative;
 		left: 0;
 		display: flex;

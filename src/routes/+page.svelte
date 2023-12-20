@@ -1,8 +1,8 @@
 <script lang="ts">
 	import HeroText from './HeroText.svelte';
-	import Projects from '$lib/components/Projects.svelte';
-	import Blog from '$lib/components/Blog.svelte';
+	import { Projects, Blog } from '$lib/components';
 	import { title } from '$lib/config';
+	import Icon from '@iconify/svelte';
 
 	export let data;
 </script>
@@ -16,9 +16,25 @@
 <div class="my-16">
 	<HeroText />
 </div>
-<h1 class="font-bold text-3xl my-4">projects.</h1>
+
+<div class="mt-8 mb-4 flex flex-row justify-between items-center">
+	<h1 class="font-bold text-3xl">projects.</h1>
+	<a href="/portfolio/">
+		<p class="text-2xl">see all
+			<Icon icon="akar-icons:arrow-right" class="inline-block w-6 h-6" />
+		</p>
+	</a>
+</div>
 <Projects />
-<h1 class="font-bold text-3xl mt-8 mb-4">blog.</h1>
+<div class="mt-8 mb-4 flex flex-row justify-between items-center">
+	<h1 class="font-bold text-3xl">blog.</h1>
+	<a href="/blog/">
+		<p class="text-2xl">see all
+			<Icon icon="akar-icons:arrow-right" class="inline-block w-6 h-6" />
+		</p>
+	</a>
+</div>
+
 <Blog limit={3} posts={data.posts} />
 
 <style>
