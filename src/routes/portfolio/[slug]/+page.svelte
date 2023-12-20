@@ -1,5 +1,5 @@
 <script>
-	import { BackToTop, ScrollableWrapper } from '$lib/components/index.js';
+	import { BackToTop, ScrollableWrapper } from '$lib/components';
 	import { formatDateString } from '$lib/utils';
 
 	export let data;

@@ -1,5 +1,6 @@
 <script>
 	import ScrollableWrapper from '$lib/components/ScrollableWrapper.svelte';
+	import { BackToTop } from '$lib/components';
 import { formatDateString } from '$lib/utils';
 
 	export let data;
