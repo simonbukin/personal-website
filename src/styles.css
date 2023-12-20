@@ -78,7 +78,8 @@ hgroup :is(h2) {
 	margin-block: 2rem;
 }
 
-.prose > p :is(code) {
+.prose > p :is(code),
+.prose > ul > * :is(code) {
 	@apply rounded-md;
 	@apply bg-gray-600;
 	@apply font-mono;
