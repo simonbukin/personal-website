@@ -1,6 +1,9 @@
 <script>
-	import BackToTop from '$lib/components/BackToTop.svelte';
+	import { BackToTop, ScrollableWrapper } from '$lib/components';
 </script>
 
 <slot />
-<BackToTop />
+
+<ScrollableWrapper>
+	<BackToTop />
+</ScrollableWrapper>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import HoverLink from '$lib/components/HoverLink.svelte';
+	import { HoverLink } from '$lib/components';
 	import { fly } from 'svelte/transition';
 	import { cubicInOut, sineOut } from 'svelte/easing';
 	import { socialLinks } from '$lib/socialLinks';

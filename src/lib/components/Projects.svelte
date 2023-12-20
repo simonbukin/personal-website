@@ -1,5 +1,5 @@
 <script>
-	import Project from '$lib/components/Project.svelte';
+	import { Project } from '$lib/components';
 	import projects from '$lib/projects';
 </script>
 

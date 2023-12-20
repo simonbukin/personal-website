@@ -1,5 +1,11 @@
 import type { Post } from './types';
 
+export async function isPageScrollable(offset: number): Promise<boolean> {
+	const pageHeight = document.body.scrollHeight;
+	const windowHeight = window.innerHeight;
+	return pageHeight > windowHeight + offset;
+}
+
 export const pickRandom = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 
 export async function getMarkdownPosts(): Promise<Post[]> {
