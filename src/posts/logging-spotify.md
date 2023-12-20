@@ -2,6 +2,7 @@
 date: 2019-10-02
 title: 'Logging Spotify'
 slug: 'logging-spotify'
+published: true
 tags: ['python', 'spotify']
 ---
 

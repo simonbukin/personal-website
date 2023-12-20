@@ -80,9 +80,21 @@ hgroup :is(h2) {
 
 .prose > p :is(code) {
 	@apply rounded-md;
+	@apply bg-gray-600;
+	@apply font-mono;
 	font-size: 1.2rem;
 	padding-inline: 0.25rem;
-	@apply bg-gray-600;
+}
+
+.prose :is(blockquote) {
+	@apply border-l-4 border-slate-600;
+	padding-inline: 1rem;
+	margin-block: 2rem;
+}
+
+.prose > blockquote :is(p) {
+	@apply font-serif;
+	font-size: 1rem;
 }
 
 .prose :is(a) {

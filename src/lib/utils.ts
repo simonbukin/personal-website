@@ -8,11 +8,17 @@ export async function isPageScrollable(offset: number): Promise<boolean> {
 
 export const pickRandom = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 
-export async function getMarkdownPosts(): Promise<Post[]> {
+interface GetMarkdownPostsOptions {
+	limit?: number;
+	sort?: boolean;
+	filter?: (post: Post) => boolean;
+}
+
+export async function getMarkdownPosts(options?: GetMarkdownPostsOptions): Promise<Post[]> {
 	const paths = import.meta.glob('/src/posts/*.md', { eager: true });
 	const iterablePostFiles = Object.entries(paths);
 
-	const allPosts = await Promise.all(
+	let allPosts = await Promise.all(
 		iterablePostFiles.map(async ([, resolver]) => {
 			const metadata = await resolver.metadata;
 			const content = await resolver.default;
@@ -20,11 +26,15 @@ export async function getMarkdownPosts(): Promise<Post[]> {
 		})
 	);
 
-	const sortedPosts = allPosts.sort(
-		(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-	);
+	if (options?.sort) {
+		allPosts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+	}
 
-	return sortedPosts;
+	if (options?.filter) {
+		allPosts = allPosts.filter(options.filter);
+	}
+
+	return options?.limit ? allPosts.slice(0, options?.limit) : allPosts;
 }
 export interface FormatDateStringOptions {
 	monthFormat?: 'long' | 'short';
