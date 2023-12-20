@@ -18,5 +18,3 @@
 	{/each}
 </div>
 
-<style>
-</style>

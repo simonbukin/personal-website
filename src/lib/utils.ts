@@ -1,8 +1,10 @@
 import type { Post } from './types';
 
-export async function isPageScrollable(offset: number): Promise<boolean> {
-	const pageHeight = document.body.scrollHeight;
-	const windowHeight = window.innerHeight;
+export function isPageScrollable(
+	pageHeight: number,
+	windowHeight: number,
+	offset: number
+): boolean {
 	return pageHeight > windowHeight + offset;
 }
 

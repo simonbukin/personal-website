@@ -2,9 +2,11 @@
 date: 2023-12-19
 title: 'Scrollable Pages with Svelte'
 slug: 'svelte-scrollable'
-published: true
+published: false
 tags: ['svelte', 'sveltekit', 'front-end', 'javascript']
 ---
+
+// this article is super broken and wrong, and this is way more complex than I thought it was... I'll be back.
 
 I ran into a fun (and incredible satisfying) problem when making this blog that I thought would be worth sharing. I wanted to have a "scroll to top" button at the bottom of most "content" style pages (eg. a blog post or portfolio page), but not on pages that didn't actually have any scrollable content.
 

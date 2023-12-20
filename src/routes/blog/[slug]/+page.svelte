@@ -22,10 +22,6 @@ import { formatDateString } from '$lib/utils';
 	</div>
 </article>
 
-<ScrollableWrapper>
-	<BackToTop />
-</ScrollableWrapper>
-
 <style>
 	article {
 		margin-top: 4rem;
