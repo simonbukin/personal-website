@@ -1,5 +1,7 @@
 <script>
-	import { formatDateString } from '$lib/utils';
+	import ScrollableWrapper from '$lib/components/ScrollableWrapper.svelte';
+	import { BackToTop } from '$lib/components';
+import { formatDateString } from '$lib/utils';
 
 	export let data;
 </script>
@@ -19,6 +21,10 @@
 		<svelte:component this={data.content} />
 	</div>
 </article>
+
+<ScrollableWrapper>
+	<BackToTop />
+</ScrollableWrapper>
 
 <style>
 	article {

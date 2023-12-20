@@ -2,6 +2,7 @@
 date: 2019-11-03
 title: 'Python Tips'
 slug: 'python-tips'
+published: true
 tags: ['python']
 ---
 

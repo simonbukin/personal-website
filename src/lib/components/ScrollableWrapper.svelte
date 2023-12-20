@@ -9,8 +9,6 @@
 			scrollable = await isPageScrollable(100);
 		});
 	});
-
-	
 </script>
 
 {#if scrollable}

@@ -2,6 +2,7 @@
 date: 2019-10-25
 title: 'Python Virtual Environments'
 slug: 'python-virtual-environments'
+published: true
 tags: ['python']
 ---
 
