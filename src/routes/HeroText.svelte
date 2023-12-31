@@ -1,5 +1,5 @@
-<div class="text-3xl leading-snug">
-	<h1>
+<div class="my-2 text-3xl leading-snug">
+	<h1 class="mb-4">
 		hey! i'm a <span class="fe">frontend engineer</span>
 		and
 		<span class="ux">ux designer.</span>
@@ -14,15 +14,5 @@
 
 	.ux {
 		text-shadow: 2px 2px 0px rgb(255, 146, 51);
-	}
-
-	@media (max-width: 640px) {
-		div {
-			font-size: 1.75rem;
-			margin-block: 6rem;
-		}
-		h1:first-of-type {
-			margin-bottom: 2rem;
-		}
 	}
 </style>

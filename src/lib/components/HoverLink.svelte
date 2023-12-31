@@ -15,9 +15,7 @@
 	target={redirect}
 	class="hover:border-b-4 {borderColor}"
 	style="transition: border-width {speed}s ease-in-out"
+	aria-label="Link to {href}"
 >
 	<slot />
 </a>
-
-<style>
-</style>
