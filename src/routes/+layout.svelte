@@ -15,7 +15,7 @@
 		<main class="flex flex-col min-h-screen mx-auto py-2 px-4">
 			<nav class="center-with-flex h-fit">
 				<div class="header center-with-flex gap-4">
-					<a class="cursor-pointer no-underline" href="/"
+					<a class="cursor-pointer no-underline" href="/" aria-label="A link back to the home page"
 						><h1 class="text-3xl">simon bukin</h1></a
 					>
 					<a href="/about"
@@ -29,7 +29,9 @@
 					>
 				</div>
 				<ul class="right-nav center-with-flex gap-4">
-					<HoverLink href="/about" newTab={false}><h2 class="text-2xl">about</h2></HoverLink>
+					<li>
+						<HoverLink href="/about" newTab={false}><h2 class="text-2xl">about</h2></HoverLink>
+					</li>
 				</ul>
 			</nav>
 
@@ -43,7 +45,7 @@
 					{#each innerWidth < 640 ? socialLinks.slice(0, 4) : socialLinks as socialLink (socialLink.name)}
 						<li>
 							{#if innerWidth < 640}
-								<a target="_blank" href={socialLink.url}
+								<a target="_blank" href={socialLink.url} aria-label={socialLink.ariaLabel}
 									><Icon class="text-3xl" icon={socialLink.iconName} /></a
 								>
 							{:else}

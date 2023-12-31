@@ -11,6 +11,7 @@
 	<title>{ title }</title>
 	<meta property="og:type" content="website" />
 	<meta property="og:title" content={ title } />
+	<meta property="og:description" content="Simon Bukin's personal website." />
 </svelte:head>
 
 <div class="my-16">

@@ -8,6 +8,7 @@ export type Project = {
 export type SocialLink = {
 	name: string;
 	url: string;
+	ariaLabel: string;
 	iconName: string;
 };
 
