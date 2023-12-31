@@ -2,6 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+	@supports (font-variation-settings: normal) {
+		@font-face {
+			font-family: 'Karla';
+			font-style: normal;
+			src: local('Karla'), url('/fonts/Karla/Karla-VariableFont_wght.ttf');
+			font-weight: 100 900;
+			font-display: swap;
+		}
+		@font-face {
+			font-family: 'Fira Code';
+			font-style: normal;
+			src: local('Fira Code'), url('/fonts/Fira_Code/FiraCode-VariableFont_wght.ttf');
+			font-weight: 100 900;
+			font-display: swap;
+		}
+		@font-face {
+			font-family: 'Hedvig Letters Serif';
+			font-style: normal;
+			src: local('Hedvig Letters Serif'),
+				url('/fonts/Hedvig_Letters_Serif/HedvigLettersSerif-Regular-VariableFont_opsz.ttf');
+			font-weight: 100 900;
+			font-display: swap;
+		}
+	}
+}
+
 * {
 	box-sizing: border-box;
 }
@@ -76,6 +103,7 @@ hgroup :is(h2) {
 	width: 100%;
 	padding: 1.5rem;
 	margin-block: 2rem;
+	overflow-x: scroll;
 }
 
 .prose > p :is(code),

@@ -5,8 +5,8 @@ export default {
 		extend: {},
 		fontFamily: {
 			sans: ['Karla', 'sans-serif'],
-			serif: ['Merriweather', 'serif'],
-			mono: ['Inconsolata', 'mono']
+			serif: ['Hedvig Letters Serif', 'serif'],
+			mono: ['Fira Code', 'mono']
 		}
 	},
 	plugins: []
