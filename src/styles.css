@@ -35,7 +35,7 @@
 
 @layer components {
 	.center-with-flex {
-		@apply flex justify-between items-center;
+		@apply flex items-center justify-between;
 	}
 }
 
@@ -57,24 +57,24 @@ hgroup :is(h2) {
 	background-color: red;
 	font-weight: 700;
 	font-size: 2rem;
-	margin-top: 0.6rem;
-	margin-bottom: 1.6rem;
+	margin-top: 1.6rem;
+	margin-bottom: 0.6rem;
 }
 
 .prose :is(h2) {
 	@apply font-serif;
 	font-weight: 700;
 	font-size: 1.8rem;
-	margin-top: 1.6rem;
-	margin-bottom: 0.6rem;
+	margin-top: 1.4rem;
+	margin-bottom: 0.4rem;
 }
 
 .prose :is(h3) {
 	@apply font-serif;
 	font-weight: 700;
 	font-size: 1.6rem;
-	margin-top: 0.2rem;
-	margin-bottom: 1.2rem;
+	margin-top: 1.2rem;
+	margin-bottom: 0.2rem;
 }
 
 .prose :is(p),

@@ -1,5 +1,5 @@
 <script>
-import { formatDateString } from '$lib/utils';
+	import { formatDateString } from '$lib/utils';
 
 	export let data;
 </script>
@@ -13,7 +13,13 @@ import { formatDateString } from '$lib/utils';
 <article>
 	<hgroup>
 		<h1>{data.meta.title}</h1>
-		<h2>{formatDateString(data.meta.date, { monthFormat: 'long', dayFormat: 'suffix', yearFormat: 'full'})}</h2>
+		<h2>
+			{formatDateString(data.meta.date, {
+				monthFormat: 'long',
+				dayFormat: 'suffix',
+				yearFormat: 'full'
+			})}
+		</h2>
 	</hgroup>
 	<div class="prose">
 		<svelte:component this={data.content} />

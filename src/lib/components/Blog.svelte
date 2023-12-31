@@ -10,10 +10,10 @@
 	{#each posts.slice(0, limit || posts.length) as post}
 		<a href={`/blog/${post.slug}`}>
 			<div
-				class="px-4 py-2 bg-slate-700 flex flex-row items-center justify-between rounded-md w-full h-fit"
+				class="flex h-fit w-full flex-row items-center justify-between rounded-md bg-slate-700 px-4 py-2"
 			>
 				<h1 class="font-mono">{post.title}</h1>
-				<p class="w-fit align-right text-slate-300">{formatDateString(post.date)}</p>
+				<p class="align-right w-fit text-slate-300">{formatDateString(post.date)}</p>
 			</div></a
 		>
 	{/each}
