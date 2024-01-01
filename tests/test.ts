@@ -1,6 +1,9 @@
 import { expect, test } from '@playwright/test';
 
-test('index page has expected h1', async ({ page }) => {
+test('HomePage has expected attributes', async ({ page }) => {
 	await page.goto('/');
-	await expect(page.getByRole('heading', { name: 'Welcome to SvelteKit' })).toBeVisible();
+	await expect(page.getByRole('heading', { name: 'simon bukin' })).toBeVisible();
+	await expect(page.title()).resolves.toMatch('Simon Bukin');
+	await expect(page.getByRole('heading', { name: 'projects.' })).toBeVisible();
+	await expect(page.getByRole('heading', { name: 'blog.' })).toBeVisible();
 });
