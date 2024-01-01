@@ -2,6 +2,7 @@
 date: 2023-12-19
 title: 'Scrollable Pages with Svelte'
 slug: 'svelte-scrollable'
+description: 'A blog post covering how to conditionally render a "back to top" button on a page based on its height'
 published: false
 tags: ['svelte', 'sveltekit', 'front-end', 'javascript']
 ---

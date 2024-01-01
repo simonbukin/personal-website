@@ -8,11 +8,12 @@
 	<title>{data.meta.title}</title>
 	<meta property="og:type" content="article" />
 	<meta property="og:title" content={data.meta.title} />
+	<meta name="description" content={data.meta.description} />
 </svelte:head>
 
-<article>
+<article class="mt-8">
 	<hgroup>
-		<h1>{data.meta.title}</h1>
+		<h1 class="text-shadow">{data.meta.title}</h1>
 		<h2>
 			{formatDateString(data.meta.date, {
 				monthFormat: 'long',
@@ -27,7 +28,7 @@
 </article>
 
 <style>
-	article {
-		margin-top: 4rem;
+	.text-shadow {
+		text-shadow: 2px 2px 0px rgb(255, 146, 51);
 	}
 </style>
