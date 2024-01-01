@@ -13,7 +13,7 @@
 				class="flex h-fit w-full flex-row items-center justify-between rounded-md bg-slate-700 px-4 py-2"
 			>
 				<h1 class="font-mono">{post.title}</h1>
-				<p class="align-right w-fit text-slate-300">{formatDateString(post.date)}</p>
+				<p class="w-fit text-slate-300">{formatDateString(post.date)}</p>
 			</div></a
 		>
 	{/each}
