@@ -4,7 +4,7 @@
 
 <div class="flex flex-col items-center justify-center">
 	<Icon
-		class="relative mx-auto text-[20rem] hue-rotate-[45deg] filter hover:animate-spin"
+		class="relative mx-auto text-[15rem] hue-rotate-[45deg] filter hover:animate-spin sm:text-[20rem]"
 		icon="twemoji:teapot"
 	/>
 	<a
