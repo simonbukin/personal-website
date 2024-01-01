@@ -1,20 +1,26 @@
 <script lang="ts">
-	import { isPageScrollable } from '$lib/utils';
-	import { onMount, tick } from 'svelte';
+	import { debounce, isPageScrollable } from '$lib/utils';
+	import { onMount } from 'svelte';
 
-	// let scrollable: boolean = false;
-	// let pageHeight: number = 0;
-	// let windowHeight: number = 0;
-	// let test: number = 0;
+	let pageHeight: number;
+	let innerHeight: number;
+	let scrollable: boolean;
 
-	// onMount(async () => {
-	// 	pageHeight = document.body.scrollHeight;
-	// 	windowHeight = window.innerHeight;
-	// });
+	onMount(() => {
+		pageHeight = document.body.scrollHeight;
+	});
 
-	// $: console.log('test: ', test)
-	// $: scrollable = isPageScrollable(pageHeight, windowHeight, 100);
-	// $: console.log(pageHeight, windowHeight, scrollable);
+	const onResize = () => {
+		pageHeight = document.body.scrollHeight;
+	};
+
+	const debouncedOnResize = debounce(onResize, 100);
+
+	$: scrollable = isPageScrollable(pageHeight, innerHeight, 100);
 </script>
 
-<slot />
+<svelte:window bind:innerHeight on:resize={debouncedOnResize} />
+
+{#if scrollable}
+	<slot />
+{/if}
