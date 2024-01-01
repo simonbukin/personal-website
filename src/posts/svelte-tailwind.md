@@ -1,6 +1,6 @@
 ---
 date: 2023-12-31
-title: 'Svelte + TailwindCSS + Class Sorting'
+title: 'Tailwind Class Sorting in Svelte'
 slug: 'svelte-tailwind'
 description: 'A blog post covering how to set up automatic class sorting with Tailwind, Prettier, and Svelte'
 published: true
