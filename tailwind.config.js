@@ -5,7 +5,6 @@ export default {
 		extend: {},
 		fontFamily: {
 			sans: ['Karla', 'sans-serif'],
-			serif: ['Hedvig Letters Serif', 'serif'],
 			mono: ['Fira Code', 'mono']
 		}
 	},

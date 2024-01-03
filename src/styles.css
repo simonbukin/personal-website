@@ -18,14 +18,6 @@
 			font-weight: 100 900;
 			font-display: swap;
 		}
-		@font-face {
-			font-family: 'Hedvig Letters Serif';
-			font-style: normal;
-			src: local('Hedvig Letters Serif'),
-				url('/fonts/Hedvig_Letters_Serif/HedvigLettersSerif-Regular-VariableFont_opsz.ttf');
-			font-weight: 100 900;
-			font-display: swap;
-		}
 	}
 }
 
@@ -40,7 +32,7 @@
 }
 
 hgroup :is(h1) {
-	@apply font-serif;
+	@apply font-sans;
 	font-weight: 700;
 	font-size: 2rem;
 	margin-bottom: 1rem;
@@ -113,7 +105,7 @@ hgroup :is(h2) {
 }
 
 .prose > blockquote :is(p) {
-	@apply font-serif;
+	@apply font-sans;
 	font-size: 1rem;
 }
 

@@ -31,6 +31,8 @@
 
 <style>
 	.text-shadow {
-		text-shadow: 2px 2px 0px rgb(255, 146, 51);
+		text-shadow:
+			2px 2px 0px rgb(255, 146, 51),
+			-2px -2px 0px rgb(200, 91, 3);
 	}
 </style>
