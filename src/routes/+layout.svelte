@@ -20,7 +20,7 @@
 				<a class="cursor-pointer no-underline" href="/" aria-label="simon bukin"
 					><h1 class="text-3xl">simon bukin</h1></a
 				>
-				<a href="/about"
+				<a href="/about" aria-label="A link to the about page" class="cursor-pointer"
 					><svg class="w-14 fill-none" viewBox="0 0 57 38">
 						<path
 							class="stroke-white stroke-2"
