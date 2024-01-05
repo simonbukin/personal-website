@@ -71,10 +71,10 @@ My first thought was the optimize the images myself. After a round of ChatGPT an
 
 I wanted some more manual controls when it came to compression/optimization, so I looked around and found [Squoosh](https://squoosh.app/). I used their defaults, and ended up with about a ~70% reduction in size, but I still wanted more. I fiddled with different file formats, specifically JpegXL (which `next/image` doesn't support 😭) and AVIF, as well as the "quality" setting, but still encountered the same image loading issues as before.
 
-At this point, my wonderful fiancé requested a different set of images for the carousel, so I had to reoptimize the new set manually. At this point, I realized a couple things:
+At this point, my wonderful fiancée requested a different set of images for the carousel, so I had to reoptimize the new set manually. At this point, I realized a couple things:
 
-a) futzing with image optimization manually with my current level of understanding was an exercise in frustration and guesswork all at the same time.
-b) I felt that my time could be better spent, you know, developing the rest of the app.
+- futzing with image optimization manually with my current level of understanding was an exercise in frustration and guesswork all at the same time.
+- I felt that my time could be better spent, you know, developing the rest of the app.
 
 Fortunately, there did exist a solution. It was CDN time.
 

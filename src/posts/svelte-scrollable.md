@@ -120,7 +120,7 @@ Now **this** does work the way we are expecting.
 Attaching an event listener to the `window` to track the `scroll` event works, but a more Svelte-y (?) way of doing this is using the `<svelte:window>` element. We can also track the `window` `innerHeight` this way, since binding directly to `innerHeight` is an option in a `<svelte:window>`. Here's how that might look:
 
 ```svelte
-<script lang="ts">
+<script>
 	import { isPageScrollable } from '$lib/utils';
 	import { onMount } from 'svelte';
 
