@@ -16,6 +16,7 @@ export type Post = {
 	title: string;
 	slug: string;
 	date: string;
+	description: string;
 	published: boolean;
 	tags?: string[];
 };
