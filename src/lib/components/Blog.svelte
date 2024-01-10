@@ -6,15 +6,15 @@
 	export let posts: Post[];
 </script>
 
-<div class="flex flex-col gap-4">
+<ul class="flex flex-col gap-4">
 	{#each posts.slice(0, limit || posts.length) as post}
 		<a href={`/blog/${post.slug}`}>
-			<div
+			<li
 				class="flex h-fit w-full flex-row items-center justify-between rounded-md bg-slate-700 px-4 py-2"
 			>
 				<h1 class="font-mono">{post.title}</h1>
 				<p class="w-fit text-slate-300">{formatDateString(post.date)}</p>
-			</div></a
-		>
+			</li>
+		</a>
 	{/each}
-</div>
+</ul>
