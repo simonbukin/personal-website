@@ -8,5 +8,5 @@ export default {
 			mono: ['Fira Code', 'mono']
 		}
 	},
-	plugins: []
+	plugins: [require('@tailwindcss/typography')]
 };

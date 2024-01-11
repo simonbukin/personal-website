@@ -15,7 +15,7 @@
 		<h1 class="text-shadow">{data.meta.title}</h1>
 		<h2>{formatDateString(data.meta.date)}</h2>
 	</hgroup>
-	<div class="prose">
+	<div class="prose-invert prose-slate prose prose-lg">
 		<svelte:component this={data.content} />
 	</div>
 </article>

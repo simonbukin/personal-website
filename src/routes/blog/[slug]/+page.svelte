@@ -24,9 +24,9 @@
 				yearFormat: 'full'
 			})}
 		</h2>
-		<Readotron class="border-b-2 border-b-orange-300 text-xl" selector=".prose" />
+		<Readotron class="border-b-2 border-b-orange-300 text-xl" selector=".blog-post" />
 	</hgroup>
-	<div class="prose">
+	<div class="blog-post">
 		<svelte:component this={data.content} class="content" />
 	</div>
 </article>

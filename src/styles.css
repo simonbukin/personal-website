@@ -44,7 +44,7 @@ hgroup :is(h2) {
 	margin-bottom: 1rem;
 }
 
-.prose :is(h2) {
+.blog-post :is(h2) {
 	@apply font-sans;
 	font-weight: 700;
 	font-size: 1.8rem;
@@ -52,7 +52,7 @@ hgroup :is(h2) {
 	margin-bottom: 0.4rem;
 }
 
-.prose :is(h3) {
+.blog-post :is(h3) {
 	@apply font-sans;
 	font-weight: 700;
 	font-size: 1.6rem;
@@ -60,28 +60,28 @@ hgroup :is(h2) {
 	margin-bottom: 0.2rem;
 }
 
-.prose :is(p),
-.prose :is(li) {
+.blog-post :is(p),
+.blog-post :is(li) {
 	@apply font-sans;
 	font-size: 1.2rem;
 	margin-block: 1.75rem;
 	list-style: outside;
 }
 
-.prose :is(ul) {
+.blog-post :is(ul) {
 	margin-left: 1.5rem;
 }
 
-.prose :is(img) {
+.blog-post :is(img) {
 	@apply rounded-md;
 	transition: transform 0.5s ease-in-out;
 }
 
-.prose :is(img):hover {
+.blog-post :is(img):hover {
 	transform: scale(1.1);
 }
 
-.prose :is(pre) {
+.blog-post :is(pre) {
 	@apply rounded-md;
 	width: 100%;
 	padding: 1.5rem;
@@ -89,8 +89,8 @@ hgroup :is(h2) {
 	overflow-x: scroll;
 }
 
-.prose > p :is(code),
-.prose > ul > * :is(code) {
+.blog-post > p :is(code),
+.blog-post > ul > * :is(code) {
 	@apply rounded-md;
 	@apply bg-slate-600;
 	@apply font-mono;
@@ -98,17 +98,17 @@ hgroup :is(h2) {
 	padding-inline: 0.25rem;
 }
 
-.prose :is(blockquote) {
+.blog-post :is(blockquote) {
 	@apply border-l-4 border-slate-600;
 	padding-inline: 1rem;
 	margin-block: 2rem;
 }
 
-.prose > blockquote :is(p) {
+.blog-post > blockquote :is(p) {
 	@apply font-sans;
 	font-size: 1rem;
 }
 
-.prose :is(a) {
+.blog-post :is(a) {
 	@apply text-fuchsia-300;
 }
