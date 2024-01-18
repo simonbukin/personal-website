@@ -1,4 +1,4 @@
-import type { Post } from './types';
+import type { Content } from './types';
 
 export function debounce(func: (...args: unknown[]) => void, delay: number) {
 	let timeout: NodeJS.Timeout;
@@ -18,33 +18,50 @@ export function isPageScrollable(
 
 export const pickRandom = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 
-interface GetMarkdownPostsOptions {
+interface GetMarkdownContentOptions {
+	type: 'bits' | 'posts';
 	limit?: number;
 	sort?: boolean;
-	filter?: (post: Post) => boolean;
+	filter?: (content: Content) => boolean;
 }
 
-export async function getMarkdownPosts(options?: GetMarkdownPostsOptions): Promise<Post[]> {
-	const paths = import.meta.glob('/src/posts/*.md', { eager: true });
-	const iterablePostFiles = Object.entries(paths);
+// TODO combine these functions in a nice way
+export async function getBits(): Promise<Content[]> {
+	const paths = import.meta.glob<Record<string, any>>('/src/content/bits/*.md', { eager: true });
+	const iterableContentFiles = Object.entries(paths);
+	const allContent = await Promise.all(
+		iterableContentFiles.map(([, resolver]) => {
+			const metadata = resolver.metadata;
+			const content = resolver.default.render();
+			return { ...metadata, content };
+		})
+	);
 
-	let allPosts = await Promise.all(
-		iterablePostFiles.map(async ([, resolver]) => {
-			const metadata = await resolver.metadata;
-			const content = await resolver.default;
+	return allContent;
+}
+
+export async function getPosts(options?: GetMarkdownContentOptions): Promise<Content[]> {
+	const paths = import.meta.glob<Record<string, any>>('/src/content/posts/*.md', {
+		eager: true
+	});
+	const iterableContentFiles = Object.entries(paths);
+	let allContent = await Promise.all(
+		iterableContentFiles.map(([, resolver]) => {
+			const metadata = resolver.metadata;
+			const content = resolver.default.render();
 			return { ...metadata, content };
 		})
 	);
 
 	if (options?.sort) {
-		allPosts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+		allContent.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 	}
 
 	if (options?.filter) {
-		allPosts = allPosts.filter(options.filter);
+		allContent = allContent.filter(options.filter);
 	}
 
-	return options?.limit ? allPosts.slice(0, options?.limit) : allPosts;
+	return options?.limit ? allContent.slice(0, options?.limit) : allContent;
 }
 export interface FormatDateStringOptions {
 	monthFormat?: 'long' | 'short';

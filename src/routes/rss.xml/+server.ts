@@ -1,4 +1,4 @@
-import type { Post } from '$lib/types';
+import type { Content } from '$lib/types';
 
 export async function GET({ fetch }) {
 	const headers = {
@@ -7,7 +7,7 @@ export async function GET({ fetch }) {
 	};
 
 	const res = await fetch('/api/posts');
-	const posts: Post[] = await res.json();
+	const posts: Content[] = await res.json();
 
 	const body = `<rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
       <channel>

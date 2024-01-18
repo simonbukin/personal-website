@@ -2,7 +2,8 @@
 	import HeroText from './HeroText.svelte';
 	import { Projects, Blog } from '$lib/components';
 	import { title } from '$lib/config';
-	import Icon from '@iconify/svelte';
+	import Bits from '$lib/components/Bits.svelte';
+	import HeaderBar from '$lib/components/HeaderBar.svelte';
 
 	export let data;
 </script>
@@ -16,32 +17,9 @@
 	<HeroText />
 </div>
 
-<div class="mb-4 mt-8 flex flex-row items-center justify-between">
-	<h1 class="text-3xl font-bold">projects.</h1>
-	<a href="/portfolio/">
-		<p class="text-2xl">
-			see all
-			<Icon icon="akar-icons:arrow-right" class="inline-block h-6 w-6" />
-		</p>
-	</a>
-</div>
+<HeaderBar href="/portfolio/" headerText="projects." />
 <Projects />
-<div class="mb-4 mt-8 flex flex-row items-center justify-between">
-	<h1 class="text-3xl font-bold">blog.</h1>
-	<a href="/blog/">
-		<p class="text-2xl">
-			see all
-			<Icon icon="akar-icons:arrow-right" class="inline-block h-6 w-6" />
-		</p>
-	</a>
-</div>
 
 <Blog limit={3} posts={data.posts} />
 
-<style>
-	@media (max-width: 640px) {
-		h1 {
-			font-size: 1.5rem;
-		}
-	}
-</style>
+<Bits bits={data.bits} />

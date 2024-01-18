@@ -12,7 +12,7 @@ export type SocialLink = {
 	iconName: string;
 };
 
-export type Post = {
+export type Content = {
 	title: string;
 	slug: string;
 	date: string;
