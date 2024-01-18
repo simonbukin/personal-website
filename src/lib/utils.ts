@@ -26,10 +26,10 @@ interface GetMarkdownContentOptions {
 }
 
 // TODO combine these functions in a nice way
-export async function getBits(): Promise<Content[]> {
+export async function getBits(options?: GetMarkdownContentOptions): Promise<Content[]> {
 	const paths = import.meta.glob<Record<string, any>>('/src/content/bits/*.md', { eager: true });
 	const iterableContentFiles = Object.entries(paths);
-	const allContent = await Promise.all(
+	let allContent = await Promise.all(
 		iterableContentFiles.map(([, resolver]) => {
 			const metadata = resolver.metadata;
 			const content = resolver.default.render();
@@ -37,7 +37,15 @@ export async function getBits(): Promise<Content[]> {
 		})
 	);
 
-	return allContent;
+	if (options?.sort) {
+		allContent.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+	}
+
+	if (options?.filter) {
+		allContent = allContent.filter(options.filter);
+	}
+
+	return options?.limit ? allContent.slice(0, options?.limit) : allContent;
 }
 
 export async function getPosts(options?: GetMarkdownContentOptions): Promise<Content[]> {
@@ -74,7 +82,6 @@ export function formatDateString(dateString: string, options?: FormatDateStringO
 	const monthFormat = options?.monthFormat || 'short';
 	const dayFormat = options?.dayFormat || 'suffix';
 	const yearFormat = options?.yearFormat || 'short';
-
 	const month = date.toLocaleString('en-US', { month: monthFormat });
 	const day =
 		dayFormat === 'number' ? date.getDate() : date.getDate() + getDaySuffix(date.getDate());

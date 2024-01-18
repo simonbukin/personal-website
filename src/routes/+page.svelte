@@ -22,4 +22,4 @@
 
 <Blog limit={3} posts={data.posts} />
 
-<Bits bits={data.bits} />
+<Bits limit={3} bits={data.bits} />

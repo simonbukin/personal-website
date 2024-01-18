@@ -5,11 +5,12 @@
 	import HeaderBar from './HeaderBar.svelte';
 
 	export let bits: Content[];
+	export let limit: number;
 </script>
 
 <HeaderBar href="/bits/" headerText="bits." />
 <ul class="flex flex-col gap-4">
-	{#each bits as bit (bit.slug)}
+	{#each bits.slice(0, limit || bits.length) as bit (bit.slug)}
 		<a href={`/bits/${bit.slug}`}>
 			<li
 				class="flex h-fit w-full flex-row items-center justify-between rounded-md bg-slate-700 px-4 py-2"
