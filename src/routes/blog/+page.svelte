@@ -4,7 +4,8 @@
 	export let data;
 </script>
 
-<ul class="my-8 flex flex-col gap-4">
+<h1 class="text-3xl font-bold">blog posts.</h1>
+<ul class="mb-8 mt-4 flex flex-col gap-4">
 	{#each data.posts as post}
 		<a href={`/blog/${post.slug}`}>
 			<li
