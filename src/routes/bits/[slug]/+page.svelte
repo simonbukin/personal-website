@@ -2,7 +2,7 @@
 	import { formatDateString } from '$lib/utils';
 	export let data;
 
-	const { title, description, date } = data.meta;
+	const { title, description, date, excalidraw_url } = data.meta;
 </script>
 
 <svelte:head>
@@ -26,6 +26,15 @@
 	<div class="blog-post">
 		<svelte:component this={data.content} class="content" />
 	</div>
+	{#if excalidraw_url}
+		<section class="mb-2 flex flex-row gap-2 text-xl text-fuchsia-300">
+			<div>
+				If you prefer a visual, here's a <a target="_blank" href={excalidraw_url}
+					>link to a diagram</a
+				>
+			</div>
+		</section>
+	{/if}
 </article>
 
 <style>

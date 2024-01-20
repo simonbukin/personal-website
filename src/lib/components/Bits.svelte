@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { Content } from '$lib/types';
 	import { formatDateString } from '$lib/utils';
-	import Icon from '@iconify/svelte';
 	import HeaderBar from './HeaderBar.svelte';
 
 	export let bits: Content[];
