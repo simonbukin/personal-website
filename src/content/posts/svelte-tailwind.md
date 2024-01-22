@@ -12,8 +12,9 @@ I've been using Svelte (and SvelteKit) quite a bit to develop this site. As much
 Tailwind is extremely pleasant to use (once you get used to it), but ordering Tailwind class names by hand is not. You can get away with not ordering them for a while, but once you start adding responsive tags and other directives, your markup starts to look like alphabet soup:
 
 ```html
-<h2 class="text-2xl sm:top-auto absolute sm:bottom-2 left-auto right-4 top-2 sm:left-4"></h2>
+<h2 class="absolute left-auto right-4 top-2 text-2xl sm:bottom-2 sm:left-4 sm:top-auto"></h2>
 ```
+
 (this is an example from this very site)
 
 Debugging CSS issues becomes a slog without some sort of consistency. Enter the Prettier plugin for Tailwind.
@@ -35,7 +36,7 @@ Now, how can you set this up in your own SvelteKit project? Let's take a look.
 Let's get started with installing our dependencies with `npm` (or maybe [`bun`](https://www.bun.sh), if you want)
 
 ```shell
-npm i --save-dev prettier prettier-plugin-svelte prettier-plugin-tailwindcss
+$ npm i --save-dev prettier prettier-plugin-svelte prettier-plugin-tailwindcss
 ```
 
 `prettier-plugin-svelte` handles Prettier formatting our `.svelte` files, and works with Svelte syntax flawlessly.

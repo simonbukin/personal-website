@@ -12,13 +12,13 @@ On both iOS and Android devices, you can press the "request desktop site" button
 
 In reality, all that happens is the User Agent string that is sent to the server changes. Let me illustrate with a little diagram. Let's look at what happens when I request a website from my Macbook:
 
-![Sending a request from my Macbook](/blog/request-desktop-site/request-desktop-site-1.svg)
+![Sending a request from my Macbook](/blog/request-desktop-site/request-desktop-site-2.svg)
 
 You can see me (professionally drawn) sending a request to the server. My User Agent string identifies me to the server, and I get a desktop site back.
 
 Now, something very similar happens when I navigate to the same site using a mobile device, such as an iPhone:
 
-![Sending a request from my iPhone](/blog/request-desktop-site/request-desktop-site-2.svg)
+![Sending a request from my iPhone](/blog/request-desktop-site/request-desktop-site-1.svg)
 
 All that has changed between these examples is the UA string sent from my device to the server. In the Macbook example, it may look like this:
 
