@@ -1,4 +1,11 @@
-<article class="prose prose-lg prose-invert prose-slate">
+<svelte:head>
+	<title>About Simon Bukin</title>
+	<meta property="og:type" content="article" />
+	<meta property="og:title" content={'About Simon Bukin'} />
+	<meta name="description" content={'A little summary of Simon Bukin'} />
+</svelte:head>
+
+<article class="prose prose-lg prose-slate prose-invert">
 	<p>
 		Hello! I'm Simon Bukin, a frontend engineer and UX designer based out of Santa Cruz, CA (🐌). I
 		live here with my fiancée and two cats, <a

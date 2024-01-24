@@ -4,6 +4,13 @@
 	export let data;
 </script>
 
+<svelte:head>
+	<title>All Posts</title>
+	<meta property="og:type" content="article" />
+	<meta property="og:title" content={'All Posts'} />
+	<meta name="description" content={'All Posts on this site'} />
+</svelte:head>
+
 <h1 class="text-3xl font-bold">blog posts.</h1>
 <ul class="mb-8 mt-4 flex flex-col gap-4">
 	{#each data.posts as post}
@@ -14,7 +21,7 @@
 				<div class="flex flex-row items-center justify-center gap-3">
 					<h1 class="font-mono">{`./${post.slug}.mdx`}</h1>
 				</div>
-				<p class="text-slate-400">{formatDateString(post.date)}</p>
+				<p class="text-slate-300">{formatDateString(post.date)}</p>
 			</li>
 		</a>
 	{/each}

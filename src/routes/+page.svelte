@@ -17,7 +17,7 @@
 	<HeroText />
 </div>
 
-<HeaderBar href="/portfolio/" headerText="projects." />
+<HeaderBar href="/portfolio/" headerText="projects." moreText="more projects" />
 <Projects />
 
 <Blog limit={3} posts={data.posts} />
