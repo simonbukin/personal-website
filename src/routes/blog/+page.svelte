@@ -14,16 +14,17 @@
 <h1 class="text-3xl font-bold">blog posts.</h1>
 <ul class="mb-8 mt-4 flex flex-col gap-4">
 	{#each data.posts as post}
-		<a href={`/blog/${post.slug}`}>
-			<li
+		<li>
+			<a
 				class="flex h-fit w-full flex-row items-center justify-between rounded-md bg-slate-700 px-4 py-2"
+				href={`/blog/${post.slug}`}
 			>
 				<div class="flex flex-row items-center justify-center gap-3">
 					<h1 class="font-mono">{`./${post.slug}.mdx`}</h1>
 				</div>
 				<p class="text-slate-300">{formatDateString(post.date)}</p>
-			</li>
-		</a>
+			</a>
+		</li>
 	{/each}
 	<a href="/rss.xml">
 		<li class="text-shadow relative left-0 mt-4 flex flex-row items-center justify-start gap-2">

@@ -27,7 +27,7 @@
 		<svelte:component this={data.content} class="content" />
 	</div>
 	{#if excalidraw_url}
-		<section class="mb-2 flex flex-row gap-2 text-xl text-fuchsia-300">
+		<section class="mb-2 flex flex-row gap-2 text-xl text-fuchsia-400">
 			<div>
 				If you prefer a visual, here's a <a target="_blank" href={excalidraw_url}
 					>link to a diagram</a

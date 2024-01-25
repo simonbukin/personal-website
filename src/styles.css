@@ -111,5 +111,5 @@ hgroup :is(h2) {
 }
 
 .blog-post :is(a) {
-	@apply text-fuchsia-300;
+	@apply text-fuchsia-400;
 }

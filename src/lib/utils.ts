@@ -79,6 +79,7 @@ export interface FormatDateStringOptions {
 
 export function formatDateString(dateString: string, options?: FormatDateStringOptions): string {
 	const date = new Date(dateString);
+	date.setDate(date.getDate() + 1); // Fix off by one error
 	const monthFormat = options?.monthFormat || 'short';
 	const dayFormat = options?.dayFormat || 'suffix';
 	const yearFormat = options?.yearFormat || 'short';
