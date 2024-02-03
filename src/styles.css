@@ -26,6 +26,10 @@
 	min-width: 0;
 }
 
+html {
+	color-scheme: dark;
+}
+
 @layer components {
 	.center-with-flex {
 		@apply flex items-center justify-between;
@@ -88,6 +92,7 @@ hgroup :is(h2) {
 	padding: 1.5rem;
 	margin-block: 2rem;
 	overflow-x: scroll;
+	scrollbar-width: none;
 }
 
 .blog-post > p :is(code),
