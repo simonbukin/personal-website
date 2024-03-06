@@ -6,15 +6,11 @@ slug: sagemaker-onboarding
 tags:
   - engineering
   - amazon
+company: Amazon Web Services
+role: Frontend Software Engineer
+timeline: 6 months
+launch: 2022
 ---
-
-Company: Amazon Web Services
-
-Role: Frontend Software Engineer
-
-Timeline: 6 months
-
-Launched 2022
 
 ## NDA
 

@@ -40,13 +40,11 @@ hgroup :is(h1) {
 	@apply font-sans;
 	font-weight: 700;
 	font-size: 2rem;
-	margin-bottom: 1rem;
 }
 
 hgroup :is(h2) {
 	font-weight: 600;
 	font-size: 1.6rem;
-	margin-bottom: 1rem;
 }
 
 .blog-post :is(h2) {

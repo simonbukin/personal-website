@@ -6,15 +6,11 @@ slug: gcs-security
 tags:
   - ux
   - google
+company: Google
+role: UX Designer
+timeline: 3 months
+launch: '2023'
 ---
-
-Company: Google
-
-Role: UX Designer
-
-Timeline: 3 months
-
-Launching 2023
 
 ## NDA
 
@@ -26,7 +22,7 @@ Google Cloud Storage (GCS) is a product offered as part of the Google Cloud suit
 
 ## The Problem
 
-Google's Support line was receiving reports of GCS users reaching out to restore data that had been deleted from their account, either accidentally or by unauthorized access. Though Support is able to restore their data, this resulted in lost time and frustration since there was no documentation surrounding this feature and users had to reach out to Support.‍This was a space that could reasonably be filled by a solution directly in the GCS UI, as Support could already restore objects for users, meaning the functionality existed on the backend.Our research team surfaced 2 specific cases where users may have lost their data:
+Google's Support line was receiving reports of GCS users reaching out to restore data that had been deleted from their account, either accidentally or by unauthorized access. Though Support is able to restore their data, this resulted in lost time and frustration since there was no documentation surrounding this feature and users had to reach out to Support.‍This was a space that could reasonably be filled by a solution directly in the GCS UI, as Support could already restore objects for users, meaning the functionality existed on the backend. Our research team surfaced 2 specific cases where users may have lost their data:
 
 ### Accidental Deletion
 
@@ -64,7 +60,7 @@ For quick testing of ideas, I spent time on low fidelity mockups on paper. When 
 
 Ideally, user testing at this stage would have identified potential usability issues and shown us if we were heading down the wrong path, but time constraints on the research team did not allow for this during this project.‍
 
-Since GCS was using the Google Material Design system, the look and feel was mostly handled, with the majority of the project focusing on the prototyping and engineering handoff phases.
+Since GCS was using the Google Material Design system, the specific look and feel was handled, with the majority of the project focusing on the prototyping and engineering handoff phases.
 
 ### Low Fidelity Mockups
 
@@ -74,7 +70,7 @@ Since GCS was using the Google Material Design system, the look and feel was mos
 
 ## Restoration Functionality
 
-Throughout the design process, our team narrowed down the object restoration functionality to be the main touchpoint in the user's journey, but the user could access this touchpoint in a variety of ways. An analogy for this would be something like deleting a file on your computer. Deleting is the same, but can be activated from a variety of places, like your Desktop, in the File Manager, or even on the Command Line.In short, the key difficulty in this project was developing a clean interface for where the user would be using the object restoration feature.
+Throughout the design process, our team narrowed down the object restoration functionality to be the main touchpoint in the user's journey, but the user could access this touchpoint in a variety of ways. An analogy for this would be something like deleting a file on your computer. The deletion is the same wherever you access it, but can be activated from a variety of places, like your Desktop, in the File Manager, or even on the Command Line. In short, the key difficulty in this project was developing a clean interface for where the user would be using the object restoration feature.
 
 ## Polishing & Delivery
 
@@ -102,7 +98,7 @@ As with any project, most of the learning was done by taking stock of the mistak
 
 ### Involving user research in during the sprint process
 
-Given the size and privacy considerations of a company at the scale of Google, it was difficult to get clearance to get user feedback on prototypes since the approval process was lengthy. With the project being relatively short term, this led to making assumptions about user needs and empathizing in place of getting concrete user feedback in some places. In the future, baking in user research and usability testing into the timeline would have helped, if changing the timeline was at all possible.
+Given the size and privacy considerations of a company at the scale of Google, it was difficult to get clearance to get user feedback on prototypes since the approval process was lengthy. With the project being relatively short term, this led to making assumptions about user needs and empathizing in place of getting concrete user feedback in some places. Though I made sure to speak to as many internal users as I could, I was aware that this was not fully representative of our entire potential user base. In the future, baking in user research and usability testing into the timeline would have helped, if changing the timeline was at all possible.
 
 ### Scope creep
 
