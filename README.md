@@ -1,24 +1,8 @@
 # personal-website
 
-# 🚧 WIP 🚧
-
-Hello! This is my revamped personal website. It's heavily in progress at the moment, but will soon contain a portfolio, blog, and about page.
+Hello! This is my revamped personal website.
 
 It's built with SvelteKit. You should definitely try building with it, it's very neat.
-
-## TODO
-
-- ✅ Add blog with static HTML for posts
-  - ✅ /blog/[slug].html
-- ✅ Add static portfolio pages
-  - ✅ /portfolio/[slug]
-  - ✅ Add styling
-- Add playground for small, fun projects
-  - /fun/[slug]
-- ✅ Add about page
-- ✅ Finish homepage
-  - ✅ HeroText.svelte
-  - ✅ Projects.svelte
 
 ## Building
 

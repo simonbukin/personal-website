@@ -7,8 +7,8 @@
 
 <article class="prose prose-lg prose-slate prose-invert">
 	<p>
-		Hello! I'm Simon Bukin, a frontend engineer and UX designer based out of Santa Cruz, CA (🐌). I
-		live here with my fiancée and two cats, <a
+		Hello! I'm Simon Bukin, a frontend engineer and UX designer based out of San Francisco, CA. I
+		live here with my wife and two cats, <a
 			target="_blank"
 			href="https://yugipedia.com/wiki/Blue-Eyes_White_Dragon">Blue</a
 		>
@@ -30,12 +30,13 @@
 		<li>Software Engineer @ Google, YouTube Premium</li>
 		<li>User Experience Engineer @ <a href="/portfolio/gcs-security">Google Cloud Storage</a></li>
 		<li>Founding Frontend Engineer @ Archipelago AI</li>
+		<li>User Experience Engineer @ <a href="https://withintrinsic.com/">Intrinsic</a></li>
 	</ul>
 
 	<p>Outside of work, I enjoy a smorgasbord of things, including but not limited to:</p>
 	<ul>
-		<li>Fiddling with my espresso machine.</li>
-		<li>Polishing my Russian (🇷🇺) and working on my German (🇩🇪).</li>
+		<li>Fiddling with different ways of making coffee (French press is nice).</li>
+		<li>Learning Japanese (🇯🇵), polishing my Russian (🇷🇺) and working on my German (🇩🇪).</li>
 		<li>Climbing ~V2s (but I did climb a V3 once!).</li>
 		<li>
 			Photography and birds. <a

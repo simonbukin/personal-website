@@ -11,8 +11,7 @@
 <ul>
   <li>Arc</li>
   <li>Alacritty (though I've used Warp and iTerm2 before)</li>
-  <li>VSCode (with a side of Zed)</li>
-  <li>Obsidian</li>
+  <li>Cursor (though I've wanted to swap to Neovim for ages)</li>
 </ul>
 <h2 class="text-xl">Theming</h2>
 <ul>
@@ -21,9 +20,7 @@
 </ul>
 <h2 class="text-xl">AI Tooling</h2>
 <ul>
-  <li>ChatGPT with custom instructions</li>
-  <li>Anthropic Claude</li>
-  <li>Continue with Mistral 7b and DeepSeekCoder 1b</li>
+  <li>Cursor w/ Sonnet 3.5</li>
 </ul>
 
 <style>
