@@ -19,20 +19,20 @@ const sorted = writing.sort((a, b) => b.data.date.valueOf() - a.data.date.valueO
             <div class="flex items-baseline gap-2">
               <span class="font-semibold group-hover:text-white transition-colors">{item.data.title}</span>
               {item.data.type === 'bit' && (
-                <span class="text-xs text-neutral-600">bit</span>
+                <span class="text-xs text-neutral-400">bit</span>
               )}
             </div>
             <p class="text-neutral-400 mt-1 text-sm">{item.data.description}</p>
-            <div class="flex items-center gap-3 mt-2 text-sm text-neutral-500">
+            <div class="flex items-center gap-3 mt-2 text-sm text-neutral-400">
               <time>
                 {item.data.date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
               </time>
               {item.data.type === 'post' && item.data.tags && (
                 <>
-                  <span class="text-neutral-700">·</span>
+                  <span class="text-neutral-500">·</span>
                   <div class="flex gap-2">
                     {item.data.tags.map((tag: string) => (
-                      <span class="text-xs text-neutral-500">{tag}</span>
+                      <span class="text-xs text-neutral-400">{tag}</span>
                     ))}
                   </div>
                 </>

@@ -1,6 +1,7 @@
 ---
 import { ClientRouter } from 'astro:transitions';
 import '../styles/global.css';
+import StrangeAttractor from '../components/islands/StrangeAttractor';
 
 interface Props {
   title?: string;
@@ -41,6 +42,9 @@ const socialLinks = [
     <ClientRouter fallback="animate" />
   </head>
   <body class="min-h-screen flex flex-col">
+    <div transition:persist="attractor" class="hidden lg:block">
+      <StrangeAttractor client:load />
+    </div>
     {!isHome && (
       <header>
         <nav class="max-w-2xl px-6 py-6">
@@ -84,13 +88,13 @@ const socialLinks = [
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                class="text-neutral-500 hover:text-white transition-colors text-sm"
+                class="text-neutral-400 hover:text-white transition-colors text-sm"
               >
                 {link.name}
               </a>
             ))}
           </div>
-          <span class="text-neutral-700 text-sm">
+          <span class="text-neutral-500 text-sm">
             &copy; {new Date().getFullYear()}
           </span>
         </div>
@@ -231,6 +235,13 @@ const socialLinks = [
         document.querySelectorAll('.prose a').forEach(link => {
           const color = pastels[Math.floor(Math.random() * pastels.length)];
           link.style.setProperty('--link-color', color);
+
+          link.addEventListener('mouseenter', () => {
+            window.dispatchEvent(new CustomEvent('attractor-color', { detail: color }));
+          });
+          link.addEventListener('mouseleave', () => {
+            window.dispatchEvent(new CustomEvent('attractor-color-reset'));
+          });
         });
       }
 

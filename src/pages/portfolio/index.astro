@@ -9,7 +9,7 @@ const sortedPortfolio = portfolio.sort((a, b) => b.data.date.valueOf() - a.data.
 <BaseLayout title="Work - Simon Bukin" description="Case studies and portfolio">
   <div class="max-w-2xl px-6 py-12 md:py-16">
     <h1 class="text-3xl font-bold mb-2">Work</h1>
-    <p class="text-neutral-500 mb-8">Selected case studies and projects.</p>
+    <p class="text-neutral-400 mb-8">Selected case studies and projects.</p>
 
     <ul class="space-y-6">
       {sortedPortfolio.map((project) => (
@@ -17,11 +17,11 @@ const sortedPortfolio = portfolio.sort((a, b) => b.data.date.valueOf() - a.data.
           <a href={`/portfolio/${project.slug}`} class="group block">
             <h2 class="font-semibold group-hover:text-white transition-colors">{project.data.title}</h2>
             <p class="text-neutral-400 mt-1 text-sm">{project.data.description}</p>
-            <div class="flex flex-wrap items-center gap-2 mt-2 text-sm text-neutral-500">
+            <div class="flex flex-wrap items-center gap-2 mt-2 text-sm text-neutral-400">
               <span>{project.data.company}</span>
-              <span class="text-neutral-700">·</span>
+              <span class="text-neutral-500">·</span>
               <span>{project.data.role}</span>
-              <span class="text-neutral-700">·</span>
+              <span class="text-neutral-500">·</span>
               <span>{project.data.launch}</span>
             </div>
           </a>

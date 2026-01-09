@@ -40,10 +40,11 @@
   html {
     color-scheme: dark;
     scroll-behavior: smooth;
+    font-size: 17px;
   }
 
   body {
-    @apply bg-neutral-950 text-neutral-200 font-sans antialiased;
+    @apply bg-neutral-950 text-neutral-300 font-sans antialiased;
   }
 
   ::selection {
@@ -53,7 +54,7 @@
 
 @layer components {
   .nav-link {
-    @apply relative text-neutral-400 hover:text-white transition-colors duration-150;
+    @apply relative text-neutral-300 hover:text-white transition-colors duration-150;
   }
 
   .nav-link::after {
@@ -90,12 +91,12 @@
 
 /* Prose styling for markdown content */
 .prose {
-  --tw-prose-body: var(--color-neutral-200);
+  --tw-prose-body: var(--color-neutral-300);
   --tw-prose-headings: var(--color-neutral-50);
   --tw-prose-links: var(--color-neutral-50);
   --tw-prose-code: var(--color-neutral-50);
   --tw-prose-pre-bg: var(--color-neutral-900);
-  @apply text-neutral-200 leading-relaxed;
+  @apply text-neutral-300 leading-relaxed;
 }
 
 .prose h1 {
@@ -170,7 +171,7 @@
 }
 
 .prose blockquote {
-  @apply border-l-2 border-neutral-700 pl-4 my-6 italic text-neutral-400;
+  @apply border-l-2 border-neutral-600 pl-4 my-6 italic text-neutral-300;
 }
 
 .prose hr {

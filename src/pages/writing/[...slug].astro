@@ -19,17 +19,17 @@ const { Content } = await item.render();
 <BaseLayout title={`${item.data.title} - Simon Bukin`} description={item.data.description}>
   <article class="max-w-2xl px-6 py-12 md:py-16">
     <header class="mb-10">
-      <a href="/writing" class="text-neutral-500 hover:text-white transition-colors text-sm inline-flex items-center gap-1 group">
+      <a href="/writing" class="text-neutral-400 hover:text-white transition-colors text-sm inline-flex items-center gap-1 group">
         <span class="group-hover:-translate-x-0.5 transition-transform">&larr;</span> Back to writing
       </a>
       <h1 class="text-3xl md:text-4xl font-bold mt-6 leading-tight">{item.data.title}</h1>
-      <div class="flex flex-wrap items-center gap-3 mt-4 text-sm text-neutral-500">
+      <div class="flex flex-wrap items-center gap-3 mt-4 text-sm text-neutral-400">
         <time>
           {item.data.date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
         </time>
         {item.data.type === 'post' && item.data.tags && (
           <>
-            <span class="text-neutral-700">·</span>
+            <span class="text-neutral-500">·</span>
             <div class="flex flex-wrap gap-2">
               {item.data.tags.map((tag: string) => (
                 <span class="text-xs px-2 py-0.5 bg-neutral-800/50 text-neutral-400 rounded">{tag}</span>
