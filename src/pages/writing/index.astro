@@ -1,0 +1,46 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const writing = await getCollection('writing', ({ data }) =>
+  (data.type === 'post' || data.type === 'bit') && data.published
+);
+const sorted = writing.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+
+<BaseLayout title="Writing - Simon Bukin" description="Thoughts, tutorials, and quick tips">
+  <div class="max-w-2xl px-6 py-12 md:py-16">
+    <h1 class="text-3xl font-bold mb-8">Writing</h1>
+
+    <ul class="space-y-6">
+      {sorted.map((item) => (
+        <li>
+          <a href={`/writing/${item.slug}`} class="group block">
+            <div class="flex items-baseline gap-2">
+              <span class="font-semibold group-hover:text-white transition-colors">{item.data.title}</span>
+              {item.data.type === 'bit' && (
+                <span class="text-xs text-neutral-600">bit</span>
+              )}
+            </div>
+            <p class="text-neutral-400 mt-1 text-sm">{item.data.description}</p>
+            <div class="flex items-center gap-3 mt-2 text-sm text-neutral-500">
+              <time>
+                {item.data.date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+              </time>
+              {item.data.type === 'post' && item.data.tags && (
+                <>
+                  <span class="text-neutral-700">·</span>
+                  <div class="flex gap-2">
+                    {item.data.tags.map((tag: string) => (
+                      <span class="text-xs text-neutral-500">{tag}</span>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</BaseLayout>

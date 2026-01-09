@@ -1,0 +1,103 @@
+---
+import { ViewTransitions } from 'astro:transitions';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  isHome?: boolean;
+}
+
+const {
+  title = 'Simon Bukin',
+  description = 'Design engineer building quality user experiences.',
+  isHome = false
+} = Astro.props;
+
+const socialLinks = [
+  { name: 'GitHub', url: 'https://github.com/simonbukin', icon: 'github' },
+  { name: 'LinkedIn', url: 'https://linkedin.com/in/simonbukin', icon: 'linkedin' },
+  { name: 'Last.fm', url: 'https://last.fm/user/sbukin_', icon: 'music' },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <title>{title}</title>
+    <ViewTransitions />
+  </head>
+  <body class="min-h-screen flex flex-col">
+    {!isHome && (
+      <header>
+        <nav class="max-w-2xl px-6 py-6">
+          <a
+            href="/"
+            class="text-lg font-semibold hover:text-white transition-colors"
+            transition:name="site-title"
+          >
+            Simon Bukin
+          </a>
+          <div class="flex items-center gap-6 mt-4">
+            <a href="/writing" class="nav-link">Writing</a>
+            <a href="/portfolio" class="nav-link">Work</a>
+            <a href="/about" class="nav-link">About</a>
+          </div>
+        </nav>
+      </header>
+    )}
+
+    <main class="flex-1">
+      <slot />
+    </main>
+
+    <footer class="mt-auto">
+      <div class="max-w-2xl px-6 py-8">
+        <div class="flex items-center gap-4">
+          {socialLinks.map((link) => (
+            <a
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-neutral-500 hover:text-white transition-colors text-sm"
+            >
+              {link.name}
+            </a>
+          ))}
+          <span class="text-neutral-700 text-sm">
+            &copy; {new Date().getFullYear()}
+          </span>
+        </div>
+      </div>
+    </footer>
+    <script>
+      const pastels = [
+        '#fca5a5', // red
+        '#fdba74', // orange
+        '#fcd34d', // amber
+        '#bef264', // lime
+        '#86efac', // green
+        '#5eead4', // teal
+        '#7dd3fc', // sky
+        '#a5b4fc', // indigo
+        '#c4b5fd', // violet
+        '#f0abfc', // fuchsia
+        '#fda4af', // rose
+      ];
+
+      function assignColors() {
+        document.querySelectorAll('.prose a').forEach(link => {
+          const color = pastels[Math.floor(Math.random() * pastels.length)];
+          (link as HTMLElement).style.setProperty('--link-color', color);
+        });
+      }
+
+      assignColors();
+      document.addEventListener('astro:after-swap', assignColors);
+    </script>
+  </body>
+</html>
