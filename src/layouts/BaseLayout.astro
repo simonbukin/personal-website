@@ -71,7 +71,7 @@ const socialLinks = [
       </header>
     )}
 
-    <main class="flex-1" transition:name="main-content" transition:animate="none">
+    <main class="flex-1">
       <slot />
     </main>
 
@@ -96,25 +96,141 @@ const socialLinks = [
         </div>
       </div>
     </footer>
-    <script>
+    <script is:inline>
+      (function() {
+        if (window.__goofyInit) return;
+        window.__goofyInit = true;
+
+        const isGoofy = () => localStorage.getItem('goofy') === 'true';
+        const rand = (a,b) => Math.random()*(b-a)+a;
+        const pick = a => a[Math.floor(Math.random()*a.length)];
+        const shuffle = a => { for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+
+        const COLORS = ['#fafafa','#fca5a5','#fdba74','#fcd34d','#bef264','#86efac','#5eead4','#7dd3fc','#a5b4fc','#c4b5fd','#f0abfc','#fda4af','#ff6b6b','#4ecdc4','#ffe66d'];
+        const ANIM_IN = ['goofy-left','goofy-right','goofy-glitch','goofy-slam','goofy-bounce'];
+        const ANIM_OUT = ['goofy-out-explode','goofy-out-dissolve','goofy-out-glitch'];
+
+        function getLines(el) {
+          const lines=[], range=document.createRange(), walker=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);
+          let node,lineTop=null,line=null;
+          while((node=walker.nextNode())){
+            if(!node.textContent?.trim())continue;
+            range.selectNodeContents(node);
+            for(const r of range.getClientRects()){
+              if(r.width<1||r.height<1)continue;
+              if(lineTop===null||Math.abs(r.top-lineTop)>3){
+                if(line)lines.push(line);
+                lineTop=r.top;
+                line={top:r.top,left:r.left,width:r.width,height:r.height};
+              }else if(line){
+                line.width=Math.max(line.left+line.width,r.left+r.width)-Math.min(line.left,r.left);
+                line.left=Math.min(line.left,r.left);
+                line.height=Math.max(line.height,r.height);
+              }
+            }
+          }
+          if(line)lines.push(line);
+          return lines;
+        }
+
+        function collectLines() {
+          const main=document.querySelector('main');
+          if(!main)return[];
+          let all=[];
+          main.querySelectorAll('h1,h2,h3,h4,h5,h6,p,li,span,a,blockquote,td,th,label,dt,dd').forEach(el=>{
+            if(el.closest('pre')||el.closest('code')||el.closest('astro-island'))return;
+            if(!el.textContent?.trim())return;
+            all.push(...getLines(el));
+          });
+          main.querySelectorAll('pre,img').forEach(el=>{
+            const r=el.getBoundingClientRect();
+            if(r.width>1&&r.height>1)all.push({top:r.top,left:r.left,width:r.width,height:r.height});
+          });
+          all=all.filter((l,i,arr)=>{for(let j=0;j<i;j++)if(Math.abs(arr[j].top-l.top)<3&&Math.abs(arr[j].left-l.left)<5)return false;return true;});
+          return shuffle(all).slice(0,80);
+        }
+
+        function getContainer() {
+          let c=document.getElementById('goofy-container');
+          if(!c||!document.body.contains(c)){c=document.createElement('div');c.id='goofy-container';document.body.appendChild(c);}
+          return c;
+        }
+
+        function clear() {
+          const c=document.getElementById('goofy-container');if(c)c.innerHTML='';
+          const s=document.getElementById('goofy-scanlines');if(s)s.classList.remove('active');
+          document.body.classList.remove('goofy-shake');
+        }
+
+        function createOverlays(lines,isOut) {
+          const c=getContainer();c.innerHTML='';
+          const sy=window.scrollY,sx=window.scrollX;
+          return lines.map((l,i)=>{
+            const div=document.createElement('div');
+            div.className='goofy-overlay';
+            const color=pick(COLORS),anim=pick(isOut?ANIM_OUT:ANIM_IN),dur=rand(60,150),delay=rand(0,lines.length*6),rot=rand(-3,3),thick=rand(.8,1.5),extra=rand(0,20);
+            div.style.cssText=`top:${l.top+sy}px;left:${l.left+sx-extra/2}px;width:${l.width+extra}px;height:${l.height*thick}px;background:${color};--r:${rot}deg;animation:${anim} ${dur}ms cubic-bezier(.34,1.56,.64,1) ${delay}ms forwards;${isOut?'transform:scaleX(1);':'transform:scaleX(0);'}`;
+            if(Math.random()>.7)div.style.boxShadow=`0 0 ${rand(5,15)}px ${color}`;
+            c.appendChild(div);
+            return {delay,dur};
+          });
+        }
+
+        function goofyEffects() {
+          document.body.classList.add('goofy-shake');
+          setTimeout(()=>document.body.classList.remove('goofy-shake'),150);
+          let s=document.getElementById('goofy-scanlines');
+          if(!s){s=document.createElement('div');s.id='goofy-scanlines';document.body.appendChild(s);}
+          s.classList.add('active');
+        }
+
+        document.addEventListener('astro:before-preparation',(e)=>{
+          if(!isGoofy()||window.matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+          const orig=e.loader;
+          e.loader=async()=>{
+            clear();
+            const lines=collectLines();
+            if(lines.length){
+              goofyEffects();
+              const overlays=createOverlays(lines,false);
+              const max=Math.max(...overlays.map(o=>o.delay+o.dur))+50;
+              await new Promise(r=>setTimeout(r,max));
+            }
+            await orig();
+          };
+        });
+
+        document.addEventListener('astro:after-swap',()=>{
+          if(!isGoofy()||window.matchMedia('(prefers-reduced-motion:reduce)').matches){clear();return;}
+          requestAnimationFrame(()=>requestAnimationFrame(()=>{
+            const lines=collectLines();
+            if(!lines.length){clear();return;}
+            goofyEffects();
+            const overlays=createOverlays(lines,true);
+            const max=Math.max(...overlays.map(o=>o.delay+o.dur))+100;
+            setTimeout(clear,max);
+          }));
+        });
+
+        document.addEventListener('keydown',(e)=>{
+          if(e.shiftKey&&e.key==='G'){
+            const on=localStorage.getItem('goofy')!=='true';
+            localStorage.setItem('goofy',on);
+            console.log('goofy mode:'+(on?'ON':'OFF'));
+          }
+        });
+      })();
+
+      // Pastel link colors
       const pastels = [
-        '#fca5a5', // red
-        '#fdba74', // orange
-        '#fcd34d', // amber
-        '#bef264', // lime
-        '#86efac', // green
-        '#5eead4', // teal
-        '#7dd3fc', // sky
-        '#a5b4fc', // indigo
-        '#c4b5fd', // violet
-        '#f0abfc', // fuchsia
-        '#fda4af', // rose
+        '#fca5a5', '#fdba74', '#fcd34d', '#bef264', '#86efac',
+        '#5eead4', '#7dd3fc', '#a5b4fc', '#c4b5fd', '#f0abfc', '#fda4af'
       ];
 
       function assignColors() {
         document.querySelectorAll('.prose a').forEach(link => {
           const color = pastels[Math.floor(Math.random() * pastels.length)];
-          (link as HTMLElement).style.setProperty('--link-color', color);
+          link.style.setProperty('--link-color', color);
         });
       }
 

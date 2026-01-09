@@ -1,0 +1,15 @@
+#goofy-container{position:fixed;inset:0;pointer-events:none;z-index:99999;overflow:hidden}
+.goofy-overlay{position:absolute;pointer-events:none;will-change:transform}
+@keyframes goofy-left{0%{transform:scaleX(0) rotate(var(--r,0deg));transform-origin:left}70%{transform:scaleX(1.1) rotate(var(--r,0deg))}100%{transform:scaleX(1) rotate(var(--r,0deg))}}
+@keyframes goofy-right{0%{transform:scaleX(0) rotate(var(--r,0deg));transform-origin:right}70%{transform:scaleX(1.1) rotate(var(--r,0deg))}100%{transform:scaleX(1) rotate(var(--r,0deg))}}
+@keyframes goofy-glitch{0%{transform:scaleX(0) skewX(0);opacity:1}20%{transform:scaleX(.4) skewX(-20deg);opacity:.5}40%{transform:scaleX(.3) skewX(15deg);opacity:1}60%{transform:scaleX(.8) skewX(-10deg);opacity:.7}80%{transform:scaleX(1.1) skewX(5deg);opacity:1}100%{transform:scaleX(1) skewX(0);opacity:1}}
+@keyframes goofy-slam{0%{transform:scaleX(0) scaleY(3);transform-origin:left}50%{transform:scaleX(1.2) scaleY(.5)}70%{transform:scaleX(.95) scaleY(1.2)}100%{transform:scaleX(1) scaleY(1)}}
+@keyframes goofy-bounce{0%{transform:scaleX(0);transform-origin:left}40%{transform:scaleX(1.3)}60%{transform:scaleX(.9)}80%{transform:scaleX(1.05)}100%{transform:scaleX(1)}}
+@keyframes goofy-out-explode{0%{transform:scaleX(1) scaleY(1);opacity:1}30%{transform:scaleX(1.5) scaleY(2);opacity:.8}100%{transform:scaleX(2) scaleY(0);opacity:0}}
+@keyframes goofy-out-dissolve{0%{transform:scaleX(1);opacity:1;filter:blur(0)}50%{transform:scaleX(1.1);opacity:.6;filter:blur(2px)}100%{transform:scaleX(.8);opacity:0;filter:blur(8px)}}
+@keyframes goofy-out-glitch{0%{transform:scaleX(1) skewX(0);opacity:1}20%{transform:scaleX(.8) skewX(15deg);opacity:.6}40%{transform:scaleX(.9) skewX(-20deg);opacity:1}60%{transform:scaleX(.4) skewX(10deg);opacity:.5}80%{transform:scaleX(.2) skewX(-5deg);opacity:.8}100%{transform:scaleX(0) skewX(0);opacity:0}}
+@keyframes goofy-shake{0%,100%{transform:translate(0,0)}10%{transform:translate(-3px,2px)}20%{transform:translate(3px,-2px)}30%{transform:translate(-2px,-3px)}40%{transform:translate(2px,3px)}50%{transform:translate(-3px,-2px)}60%{transform:translate(3px,2px)}70%{transform:translate(-2px,3px)}80%{transform:translate(2px,-3px)}90%{transform:translate(-3px,2px)}}
+.goofy-shake{animation:goofy-shake .15s ease-in-out}
+#goofy-scanlines{position:fixed;inset:0;pointer-events:none;z-index:99998;background:repeating-linear-gradient(0deg,rgba(0,0,0,.1) 0 1px,transparent 1px 3px);opacity:0;transition:opacity .1s}
+#goofy-scanlines.active{opacity:1}
+@media(prefers-reduced-motion:reduce){.goofy-overlay,.goofy-shake,#goofy-scanlines{animation:none!important}}
