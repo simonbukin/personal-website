@@ -1,0 +1,254 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Resume - Simon Bukin" description="Simon Bukin's professional resume">
+  <div class="max-w-2xl px-6 py-12 md:py-20">
+    <header class="mb-16">
+      <h1 class="text-4xl font-bold mb-3">Resume</h1>
+      <p class="text-neutral-400">
+        San Francisco, CA · <a href="mailto:simonbukin@gmail.com" class="text-neutral-300 hover:text-white transition-colors">simonbukin@gmail.com</a>
+      </p>
+    </header>
+
+    <section class="mb-16">
+      <h2 class="text-sm font-medium text-neutral-500 uppercase tracking-wider mb-6">Summary</h2>
+      <p class="text-neutral-200 text-lg leading-relaxed">
+        Design Engineer with expertise in designing and building scalable frontend solutions.
+        Skilled in leading projects from ideation to deployment, collaborating cross-functionally
+        to deliver high-impact features.
+      </p>
+    </section>
+
+    <section class="mb-16">
+      <h2 class="text-sm font-medium text-neutral-500 uppercase tracking-wider mb-8">Experience</h2>
+
+      <div class="space-y-12">
+        <article id="morf" class="resume-section">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-3">
+            <h3 class="text-xl font-semibold text-neutral-50"><a href="https://morf.health" target="_blank" rel="noopener" class="resume-link">Morf Health</a></h3>
+            <span class="text-sm text-neutral-500">2024 - Present</span>
+          </div>
+          <p class="text-neutral-400 mb-4">Product Engineer · San Francisco, CA</p>
+          <p class="text-neutral-300 leading-relaxed">
+            Building AI-powered healthcare automation tools. Full-stack development with React, TypeScript, and Python.
+            Designing and implementing patient-facing interfaces and internal tooling for clinical workflows.
+          </p>
+        </article>
+
+        <article id="variance" class="resume-section">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-3">
+            <h3 class="text-xl font-semibold text-neutral-50"><a href="https://variance.co" target="_blank" rel="noopener" class="resume-link">Variance</a> <span class="text-neutral-500 font-normal">(formerly Intrinsic)</span></h3>
+            <span class="text-sm text-neutral-500">2024</span>
+          </div>
+          <p class="text-neutral-400 mb-4">Senior Design Engineer · San Francisco, CA</p>
+          <p class="text-neutral-300 leading-relaxed">
+            Led frontend development for enterprise AI safety tooling. Built component library with ShadCN and Figma,
+            developed typesafe fullstack patterns with Redux, Prisma, and TypeScript. Shipped features on tight timelines
+            that closed $250K+ contracts.
+          </p>
+        </article>
+
+        <article id="archipelago" class="resume-section">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-3">
+            <h3 class="text-xl font-semibold text-neutral-50"><a href="https://www.archipelago-ai.com/" target="_blank" rel="noopener" class="resume-link">Archipelago AI</a></h3>
+            <span class="text-sm text-neutral-500">2023 - 2024</span>
+          </div>
+          <p class="text-neutral-400 mb-4">Founding Frontend Engineer · Remote</p>
+          <p class="text-neutral-300 leading-relaxed">
+            First frontend hire at an AI startup. Built the entire frontend from scratch in Svelte,
+            including onboarding flows, chat interfaces, and the marketing site using Astro and React.
+            Established the design system with Figma and Tailwind.
+          </p>
+        </article>
+
+        <article id="youtube" class="resume-section">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-3">
+            <h3 class="text-xl font-semibold text-neutral-50">Google, <a href="https://www.youtube.com/premium" target="_blank" rel="noopener" class="resume-link">YouTube</a></h3>
+            <span class="text-sm text-neutral-500">2022 - 2023</span>
+          </div>
+          <p class="text-neutral-400 mb-4">Software Engineer · San Bruno, CA</p>
+          <p class="text-neutral-300 leading-relaxed">
+            Built Web Components for YouTube Premium using C++ and Polymer. Ran A/B tests that improved
+            click-through rates by 8% across 500K users. Implemented compliance features for the Premium
+            cancellation flow serving 100K+ users.
+          </p>
+        </article>
+
+        <article id="aws" class="resume-section">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-3">
+            <h3 class="text-xl font-semibold text-neutral-50">Amazon Web Services, <a href="https://aws.amazon.com/sagemaker/" target="_blank" rel="noopener" class="resume-link">SageMaker Console</a></h3>
+            <span class="text-sm text-neutral-500">2020 - 2021</span>
+          </div>
+          <p class="text-neutral-400 mb-4">Frontend Software Development Engineer · Seattle, WA</p>
+          <p class="text-neutral-300 leading-relaxed mb-4">
+            Developed sign-up flows for RStudio integration using React, Styled Components, and RxJS.
+            Maintained 85%+ test coverage with Cypress and Jest. Documented oncall processes, reducing
+            ticket backlog by 20%.
+          </p>
+          <a href="/portfolio/sagemaker-onboarding" class="resume-link case-study">View case study</a>
+        </article>
+      </div>
+    </section>
+
+    <section class="mb-16">
+      <h2 class="text-sm font-medium text-neutral-500 uppercase tracking-wider mb-8">Open Source & Volunteer</h2>
+
+      <div class="space-y-12">
+        <article id="taxonium" class="resume-section">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-3">
+            <h3 class="text-xl font-semibold text-neutral-50"><a href="https://corbett.ucsc.edu/" target="_blank" rel="noopener" class="resume-link">Corbett-Detig Lab</a>, UCSC</h3>
+            <span class="text-sm text-neutral-500">2023</span>
+          </div>
+          <p class="text-neutral-400 mb-4">Research Programmer · Santa Cruz, CA</p>
+          <p class="text-neutral-300 leading-relaxed">
+            Added geography features to <a href="https://www.taxonium.org" target="_blank" rel="noopener" class="resume-link">Taxonium.org</a>,
+            a genomic visualization tool used by scientists to track COVID-19's genetic origins.
+            Built with React and Deck.gl, optimized for datasets with 1M+ samples.
+          </p>
+        </article>
+
+        <article id="gcs" class="resume-section">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-3">
+            <h3 class="text-xl font-semibold text-neutral-50"><a href="https://cloud.google.com/storage" target="_blank" rel="noopener" class="resume-link">Google Cloud Storage</a></h3>
+            <span class="text-sm text-neutral-500">2022 - 2023</span>
+          </div>
+          <p class="text-neutral-400 mb-4">UX Designer · Sunnyvale, CA</p>
+          <p class="text-neutral-300 leading-relaxed mb-4">
+            Designed prototypes in Figma for Google Cloud Storage's <a href="https://cloud.google.com/storage/docs/soft-delete" target="_blank" rel="noopener" class="resume-link">Soft Deletion feature</a>.
+            Led design reviews with UX Research, Engineering, and Product. Ensured WCAG accessibility compliance.
+          </p>
+          <a href="/portfolio/gcs-security" class="resume-link case-study">View case study</a>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="text-sm font-medium text-neutral-500 uppercase tracking-wider mb-8">Education</h2>
+
+      <article>
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-3">
+          <h3 class="text-xl font-semibold text-neutral-50">University of California, Santa Cruz</h3>
+          <span class="text-sm text-neutral-500">2016 - 2020</span>
+        </div>
+        <p class="text-neutral-400">BS Computer Science, Minor in Statistics</p>
+      </article>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .resume-link {
+    color: inherit;
+    text-decoration: none;
+    background-image: linear-gradient(var(--link-color, #a5b4fc), var(--link-color, #a5b4fc));
+    background-size: 100% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    padding-bottom: 2px;
+    transition: background-size 0.2s ease, color 0.2s ease;
+  }
+
+  .resume-link:hover {
+    color: white;
+    background-size: 100% 2px;
+  }
+
+  .resume-link.case-study {
+    color: var(--link-color, #a5b4fc);
+  }
+
+  .resume-link.case-study:hover {
+    color: white;
+    background-size: 100% 3px;
+  }
+
+  .resume-section {
+    scroll-margin-top: 2rem;
+  }
+
+  .resume-section h3 {
+    position: relative;
+    display: inline-block;
+  }
+
+  .resume-section h3::after {
+    content: '';
+    position: absolute;
+    inset: 0 -4px;
+    background: var(--link-color, #a5b4fc);
+    transform: scaleX(0);
+    transform-origin: left;
+    pointer-events: none;
+  }
+
+  .resume-section h3.redacting::after {
+    animation: redact 0.5s ease-in-out forwards;
+  }
+
+  @keyframes redact {
+    0%, 100% {
+      transform: scaleX(0);
+    }
+    45%, 55% {
+      transform: scaleX(1);
+    }
+    0%, 45% {
+      transform-origin: left;
+    }
+    55%, 100% {
+      transform-origin: right;
+    }
+  }
+</style>
+
+<script>
+  const PASTEL_COLORS = [
+    '#fca5a5', '#fdba74', '#fcd34d', '#bef264', '#86efac',
+    '#5eead4', '#7dd3fc', '#a5b4fc', '#c4b5fd', '#f0abfc', '#fda4af'
+  ];
+
+  function getRandomColor(): string {
+    return PASTEL_COLORS[Math.floor(Math.random() * PASTEL_COLORS.length)];
+  }
+
+  function setupResumeLinks(): void {
+    document.querySelectorAll('.resume-link').forEach(link => {
+      const el = link as HTMLElement;
+      const color = getRandomColor();
+      el.style.setProperty('--link-color', color);
+
+      el.onmouseenter = () => {
+        window.dispatchEvent(new CustomEvent('attractor-color', { detail: color }));
+      };
+      el.onmouseleave = () => {
+        window.dispatchEvent(new CustomEvent('attractor-color-reset'));
+      };
+    });
+  }
+
+  function playRedactAnimation(): void {
+    const hash = window.location.hash;
+    if (!hash) return;
+
+    const section = document.querySelector(hash);
+    if (!section?.classList.contains('resume-section')) return;
+
+    const h3 = section.querySelector('h3') as HTMLElement | null;
+    if (!h3) return;
+
+    const link = h3.querySelector('.resume-link') as HTMLElement | null;
+    const color = link?.style.getPropertyValue('--link-color') || PASTEL_COLORS[0];
+    h3.style.setProperty('--link-color', color);
+
+    setTimeout(() => h3.classList.add('redacting'), 100);
+  }
+
+  function init(): void {
+    setupResumeLinks();
+    requestAnimationFrame(playRedactAnimation);
+  }
+
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>
