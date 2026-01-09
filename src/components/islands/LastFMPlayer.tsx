@@ -37,11 +37,11 @@ export default function LastFMPlayer() {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-3 p-3 bg-neutral-900 border border-neutral-800">
-        <div className="w-10 h-10 bg-neutral-800 animate-pulse" />
-        <div className="space-y-2 flex-1">
-          <div className="h-3 w-24 bg-neutral-800 animate-pulse" />
-          <div className="h-3 w-32 bg-neutral-800 animate-pulse" />
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 bg-neutral-800 animate-pulse rounded" />
+        <div className="space-y-1.5">
+          <div className="h-3 w-20 bg-neutral-800 animate-pulse rounded" />
+          <div className="h-3 w-28 bg-neutral-800 animate-pulse rounded" />
         </div>
       </div>
     );
@@ -56,16 +56,16 @@ export default function LastFMPlayer() {
       href={track.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center gap-3 p-3 bg-neutral-900 border border-neutral-800 hover:border-neutral-600 transition-colors"
+      className="group flex items-center gap-3"
     >
       {track.albumArt && (
         <img
           src={track.albumArt}
           alt={`${track.album} album art`}
-          className="w-10 h-10 object-cover"
+          className="w-8 h-8 object-cover rounded"
         />
       )}
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0">
         <div className="flex items-center gap-2">
           {track.isPlaying && (
             <span className="flex gap-0.5 items-end h-3">
@@ -79,8 +79,8 @@ export default function LastFMPlayer() {
           </span>
         </div>
         <p className="text-sm truncate mt-0.5">
-          <span className="font-medium">{track.name}</span>
-          <span className="text-neutral-400"> — {track.artist}</span>
+          <span className="font-medium group-hover:text-white transition-colors">{track.name}</span>
+          <span className="text-neutral-500"> — {track.artist}</span>
         </p>
       </div>
     </a>

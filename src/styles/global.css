@@ -1,5 +1,35 @@
 @import "tailwindcss";
 
+/* Enable cross-document view transitions for MPA fallback */
+@view-transition {
+  navigation: auto;
+}
+
+/* Only animate the main content, not the whole page */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(main-content) {
+  animation: fadeOut 0.2s ease forwards;
+}
+
+::view-transition-new(main-content) {
+  animation: fadeIn 0.2s ease forwards;
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 @theme {
   --font-sans: 'Space Grotesk Variable', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono Variable', Menlo, monospace;

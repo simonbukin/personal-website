@@ -1,5 +1,5 @@
 ---
-import { ViewTransitions } from 'astro:transitions';
+import { ClientRouter } from 'astro:transitions';
 import '../styles/global.css';
 
 interface Props {
@@ -14,11 +14,20 @@ const {
   isHome = false
 } = Astro.props;
 
+const pathname = Astro.url.pathname;
+
+const navLinks = [
+  { name: 'Writing', href: '/writing' },
+  { name: 'Work', href: '/portfolio' },
+  { name: 'About', href: '/about' },
+];
+
 const socialLinks = [
   { name: 'GitHub', url: 'https://github.com/simonbukin', icon: 'github' },
   { name: 'LinkedIn', url: 'https://linkedin.com/in/simonbukin', icon: 'linkedin' },
   { name: 'Last.fm', url: 'https://last.fm/user/sbukin_', icon: 'music' },
 ];
+
 ---
 
 <!doctype html>
@@ -29,7 +38,7 @@ const socialLinks = [
     <meta name="description" content={description} />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <title>{title}</title>
-    <ViewTransitions />
+    <ClientRouter fallback="animate" />
   </head>
   <body class="min-h-screen flex flex-col">
     {!isHome && (
@@ -38,36 +47,49 @@ const socialLinks = [
           <a
             href="/"
             class="text-lg font-semibold hover:text-white transition-colors"
-            transition:name="site-title"
           >
             Simon Bukin
           </a>
           <div class="flex items-center gap-6 mt-4">
-            <a href="/writing" class="nav-link">Writing</a>
-            <a href="/portfolio" class="nav-link">Work</a>
-            <a href="/about" class="nav-link">About</a>
+            {navLinks.map(link => {
+              const isActive = pathname.startsWith(link.href);
+              return (
+                <a
+                  href={link.href}
+                  class:list={[
+                    "transition-colors",
+                    isActive ? "text-white border-b border-white" : "nav-link"
+                  ]}
+                  aria-current={isActive ? "page" : undefined}
+                >
+                  {link.name}
+                </a>
+              );
+            })}
           </div>
         </nav>
       </header>
     )}
 
-    <main class="flex-1">
+    <main class="flex-1" transition:name="main-content" transition:animate="none">
       <slot />
     </main>
 
     <footer class="mt-auto">
       <div class="max-w-2xl px-6 py-8">
-        <div class="flex items-center gap-4">
-          {socialLinks.map((link) => (
-            <a
-              href={link.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="text-neutral-500 hover:text-white transition-colors text-sm"
-            >
-              {link.name}
-            </a>
-          ))}
+        <div class="flex items-center justify-between sm:justify-start gap-4">
+          <div class="flex items-center gap-4">
+            {socialLinks.map((link) => (
+              <a
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-neutral-500 hover:text-white transition-colors text-sm"
+              >
+                {link.name}
+              </a>
+            ))}
+          </div>
           <span class="text-neutral-700 text-sm">
             &copy; {new Date().getFullYear()}
           </span>
