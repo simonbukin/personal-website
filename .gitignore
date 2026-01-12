@@ -1,5 +1,9 @@
+FEATURES.md
+
 # build output
 dist/
+.vercel/
+
 # generated types
 .astro/
 

@@ -1,36 +1,38 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 
-const socialLinks = [
-  { name: 'GitHub', url: 'https://github.com/simonbukin', description: 'Check out my code' },
-  { name: 'LinkedIn', url: 'https://linkedin.com/in/simonbukin', description: 'Connect professionally' },
-  { name: 'Last.fm', url: 'https://last.fm/user/sbukin_', description: 'See what I\'m listening to' },
-  { name: 'Hardcover', url: 'https://hardcover.app/@simon', description: 'See what I\'m reading' },
-  { name: 'Spotify', url: 'https://open.spotify.com/user/simonb.0', description: 'Follow my playlists' },
-];
+const email = 'simonbukin@gmail.com';
 ---
 
 <BaseLayout title="Contact - Simon Bukin" description="Get in touch">
   <div class="max-w-2xl px-6 py-12 md:py-16">
     <h1 class="text-3xl font-bold mb-2">Contact</h1>
     <p class="text-neutral-400 mb-8">
-      Reach out for freelance work, collaborations, or just to say hi.
+      Interested in working together? Feel free to reach out.
     </p>
 
-    <ul class="space-y-3">
-      {socialLinks.map((link) => (
-        <li>
-          <a
-            href={link.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="group flex items-baseline gap-3"
-          >
-            <span class="font-medium group-hover:text-white transition-colors">{link.name}</span>
-            <span class="text-sm text-neutral-400">{link.description}</span>
-          </a>
-        </li>
-      ))}
-    </ul>
+    <div class="space-y-6">
+      <div>
+        <h2 class="text-sm text-neutral-500 uppercase tracking-wide mb-2">Email</h2>
+        <a
+          href={`mailto:${email}`}
+          class="text-lg font-medium hover:text-white transition-colors"
+        >
+          {email} <span class="text-xs opacity-60">↗</span>
+        </a>
+      </div>
+
+      <div>
+        <h2 class="text-sm text-neutral-500 uppercase tracking-wide mb-2">LinkedIn</h2>
+        <a
+          href="https://linkedin.com/in/simonbukin"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-lg font-medium hover:text-white transition-colors"
+        >
+          /in/simonbukin <span class="text-xs opacity-60">↗</span>
+        </a>
+      </div>
+    </div>
   </div>
 </BaseLayout>

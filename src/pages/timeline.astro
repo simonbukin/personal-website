@@ -1,0 +1,74 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection, render } from 'astro:content';
+
+const allProjects = await getCollection('timeline', ({ data }) => data.published);
+const sorted = allProjects.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+// Group by year for visual markers
+const byYear = sorted.reduce((acc, project) => {
+  const year = project.data.date.getFullYear();
+  if (!acc[year]) acc[year] = [];
+  acc[year].push(project);
+  return acc;
+}, {} as Record<number, typeof sorted>);
+
+const years = Object.keys(byYear).sort((a, b) => Number(b) - Number(a));
+---
+
+<BaseLayout title="Timeline - Simon Bukin" description="Every project I've ever done">
+  <div class="max-w-2xl px-6 py-12 md:py-16">
+    <h1 class="text-3xl font-bold mb-2">Timeline</h1>
+    <p class="text-neutral-400 mb-12">Every project I've ever done.</p>
+
+    {years.length === 0 ? (
+      <p class="text-neutral-500 italic">Nothing here yet. Check back later.</p>
+    ) : (
+      <div class="timeline">
+        {years.map(year => (
+          <div class="year-group">
+            <div class="year-marker">{year}</div>
+            {byYear[Number(year)].map(async (project) => {
+              const { Content } = await render(project);
+              return (
+                <article class="timeline-entry">
+                  <div class="entry-meta">
+                    <span class="entry-type" data-type={project.data.type}>
+                      {project.data.type}
+                    </span>
+                    <time datetime={project.data.date.toISOString()}>
+                      {project.data.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </time>
+                  </div>
+                  <h2 class="entry-title">{project.data.title}</h2>
+                  {project.data.description && (
+                    <p class="entry-description">{project.data.description}</p>
+                  )}
+                  <div class="entry-content prose">
+                    <Content />
+                  </div>
+                  {project.data.tags && project.data.tags.length > 0 && (
+                    <div class="entry-tags">
+                      {project.data.tags.map(tag => (
+                        <span class="entry-tag">{tag}</span>
+                      ))}
+                    </div>
+                  )}
+                  {project.data.links && project.data.links.length > 0 && (
+                    <div class="entry-links">
+                      {project.data.links.map(link => (
+                        <a href={link.url} target="_blank" rel="noopener noreferrer">
+                          {link.label} <span class="text-xs opacity-60">↗</span>
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+</BaseLayout>

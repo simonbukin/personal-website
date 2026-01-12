@@ -1,93 +1,87 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection, render } from 'astro:content';
+
+const allEntries = await getCollection('resume');
+
+const summary = allEntries.find(e => e.data.section === 'summary');
+const experience = allEntries
+  .filter(e => e.data.section === 'experience')
+  .sort((a, b) => a.data.order - b.data.order);
+const volunteer = allEntries
+  .filter(e => e.data.section === 'volunteer')
+  .sort((a, b) => a.data.order - b.data.order);
+const education = allEntries
+  .filter(e => e.data.section === 'education')
+  .sort((a, b) => a.data.order - b.data.order);
+
+const summaryContent = summary ? await render(summary) : null;
+const experienceContent = await Promise.all(experience.map(e => render(e)));
+const volunteerContent = await Promise.all(volunteer.map(e => render(e)));
 ---
 
 <BaseLayout title="Resume - Simon Bukin" description="Simon Bukin's professional resume">
   <div class="max-w-2xl px-6 py-12 md:py-20">
     <header class="mb-16">
-      <h1 class="text-4xl font-bold mb-3">Resume</h1>
-      <p class="text-neutral-400">
-        San Francisco, CA · <a href="mailto:simonbukin@gmail.com" class="text-neutral-300 hover:text-white transition-colors">simonbukin@gmail.com</a>
-      </p>
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h1 class="text-4xl font-bold mb-3">Resume</h1>
+          <p class="text-neutral-400">
+            San Francisco, CA · <a href="mailto:simonbukin@gmail.com" class="text-neutral-300 hover:text-white transition-colors">simonbukin@gmail.com</a>
+          </p>
+        </div>
+        <a
+          href="/resume.pdf"
+          download="Simon_Bukin_Resume.pdf"
+          class="flex items-center gap-2 px-3 py-2 text-sm text-neutral-400 hover:text-white border border-neutral-700 hover:border-neutral-500 rounded-md transition-colors"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          PDF
+        </a>
+      </div>
     </header>
 
-    <section class="mb-16">
-      <h2 class="text-sm font-medium text-neutral-500 uppercase tracking-wider mb-6">Summary</h2>
-      <p class="text-neutral-200 text-lg leading-relaxed">
-        Design Engineer with expertise in designing and building scalable frontend solutions.
-        Skilled in leading projects from ideation to deployment, collaborating cross-functionally
-        to deliver high-impact features.
-      </p>
-    </section>
+    {summaryContent && (
+      <section class="mb-16">
+        <h2 class="text-sm font-medium text-neutral-500 uppercase tracking-wider mb-6">Summary</h2>
+        <div class="text-neutral-200 text-lg leading-relaxed prose prose-p:my-0">
+          <summaryContent.Content />
+        </div>
+      </section>
+    )}
 
     <section class="mb-16">
       <h2 class="text-sm font-medium text-neutral-500 uppercase tracking-wider mb-8">Experience</h2>
 
       <div class="space-y-12">
-        <article id="morf" class="resume-section">
-          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-3">
-            <h3 class="text-xl font-semibold text-neutral-50"><a href="https://morf.health" target="_blank" rel="noopener" class="resume-link">Morf Health</a></h3>
-            <span class="text-sm text-neutral-500">2024 - Present</span>
-          </div>
-          <p class="text-neutral-400 mb-4">Product Engineer · San Francisco, CA</p>
-          <p class="text-neutral-300 leading-relaxed">
-            Building AI-powered healthcare automation tools. Full-stack development with React, TypeScript, and Python.
-            Designing and implementing patient-facing interfaces and internal tooling for clinical workflows.
-          </p>
-        </article>
-
-        <article id="variance" class="resume-section">
-          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-3">
-            <h3 class="text-xl font-semibold text-neutral-50"><a href="https://variance.co" target="_blank" rel="noopener" class="resume-link">Variance</a> <span class="text-neutral-500 font-normal">(formerly Intrinsic)</span></h3>
-            <span class="text-sm text-neutral-500">2024</span>
-          </div>
-          <p class="text-neutral-400 mb-4">Senior Design Engineer · San Francisco, CA</p>
-          <p class="text-neutral-300 leading-relaxed">
-            Led frontend development for enterprise AI safety tooling. Built component library with ShadCN and Figma,
-            developed typesafe fullstack patterns with Redux, Prisma, and TypeScript. Shipped features on tight timelines
-            that closed $250K+ contracts.
-          </p>
-        </article>
-
-        <article id="archipelago" class="resume-section">
-          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-3">
-            <h3 class="text-xl font-semibold text-neutral-50"><a href="https://www.archipelago-ai.com/" target="_blank" rel="noopener" class="resume-link">Archipelago AI</a></h3>
-            <span class="text-sm text-neutral-500">2023 - 2024</span>
-          </div>
-          <p class="text-neutral-400 mb-4">Founding Frontend Engineer · Remote</p>
-          <p class="text-neutral-300 leading-relaxed">
-            First frontend hire at an AI startup. Built the entire frontend from scratch in Svelte,
-            including onboarding flows, chat interfaces, and the marketing site using Astro and React.
-            Established the design system with Figma and Tailwind.
-          </p>
-        </article>
-
-        <article id="youtube" class="resume-section">
-          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-3">
-            <h3 class="text-xl font-semibold text-neutral-50">Google, <a href="https://www.youtube.com/premium" target="_blank" rel="noopener" class="resume-link">YouTube</a></h3>
-            <span class="text-sm text-neutral-500">2022 - 2023</span>
-          </div>
-          <p class="text-neutral-400 mb-4">Software Engineer · San Bruno, CA</p>
-          <p class="text-neutral-300 leading-relaxed">
-            Built Web Components for YouTube Premium using C++ and Polymer. Ran A/B tests that improved
-            click-through rates by 8% across 500K users. Implemented compliance features for the Premium
-            cancellation flow serving 100K+ users.
-          </p>
-        </article>
-
-        <article id="aws" class="resume-section">
-          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-3">
-            <h3 class="text-xl font-semibold text-neutral-50">Amazon Web Services, <a href="https://aws.amazon.com/sagemaker/" target="_blank" rel="noopener" class="resume-link">SageMaker Console</a></h3>
-            <span class="text-sm text-neutral-500">2020 - 2021</span>
-          </div>
-          <p class="text-neutral-400 mb-4">Frontend Software Development Engineer · Seattle, WA</p>
-          <p class="text-neutral-300 leading-relaxed mb-4">
-            Developed sign-up flows for RStudio integration using React, Styled Components, and RxJS.
-            Maintained 85%+ test coverage with Cypress and Jest. Documented oncall processes, reducing
-            ticket backlog by 20%.
-          </p>
-          <a href="/portfolio/sagemaker-onboarding" class="resume-link case-study">View case study</a>
-        </article>
+        {experience.map((entry, i) => {
+          const { Content } = experienceContent[i];
+          const data = entry.data as { section: 'experience'; id: string; company: string; companyUrl?: string; companyNote?: string; title: string; location: string; dates: string; order: number; caseStudy?: string };
+          return (
+            <article id={data.id} class="resume-section">
+              <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-3">
+                <h3 class="text-xl font-semibold text-neutral-50">
+                  {data.companyUrl ? (
+                    <a href={data.companyUrl} target="_blank" rel="noopener" class="resume-link">{data.company}</a>
+                  ) : (
+                    data.company
+                  )}
+                  {data.companyNote && <span class="text-neutral-500 font-normal"> {data.companyNote}</span>}
+                </h3>
+                <span class="text-sm text-neutral-500">{data.dates}</span>
+              </div>
+              <p class="text-neutral-400 mb-4">{data.title} · {data.location}</p>
+              <div class="text-neutral-300 leading-relaxed prose prose-p:my-0 prose-a:text-inherit">
+                <Content />
+              </div>
+              {data.caseStudy && (
+                <a href={data.caseStudy} class="resume-link case-study mt-4 inline-block">View case study</a>
+              )}
+            </article>
+          );
+        })}
       </div>
     </section>
 
@@ -95,44 +89,49 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <h2 class="text-sm font-medium text-neutral-500 uppercase tracking-wider mb-8">Open Source & Volunteer</h2>
 
       <div class="space-y-12">
-        <article id="taxonium" class="resume-section">
-          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-3">
-            <h3 class="text-xl font-semibold text-neutral-50"><a href="https://corbett.ucsc.edu/" target="_blank" rel="noopener" class="resume-link">Corbett-Detig Lab</a>, UCSC</h3>
-            <span class="text-sm text-neutral-500">2023</span>
-          </div>
-          <p class="text-neutral-400 mb-4">Research Programmer · Santa Cruz, CA</p>
-          <p class="text-neutral-300 leading-relaxed">
-            Added geography features to <a href="https://www.taxonium.org" target="_blank" rel="noopener" class="resume-link">Taxonium.org</a>,
-            a genomic visualization tool used by scientists to track COVID-19's genetic origins.
-            Built with React and Deck.gl, optimized for datasets with 1M+ samples.
-          </p>
-        </article>
-
-        <article id="gcs" class="resume-section">
-          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-3">
-            <h3 class="text-xl font-semibold text-neutral-50"><a href="https://cloud.google.com/storage" target="_blank" rel="noopener" class="resume-link">Google Cloud Storage</a></h3>
-            <span class="text-sm text-neutral-500">2022 - 2023</span>
-          </div>
-          <p class="text-neutral-400 mb-4">UX Designer · Sunnyvale, CA</p>
-          <p class="text-neutral-300 leading-relaxed mb-4">
-            Designed prototypes in Figma for Google Cloud Storage's <a href="https://cloud.google.com/storage/docs/soft-delete" target="_blank" rel="noopener" class="resume-link">Soft Deletion feature</a>.
-            Led design reviews with UX Research, Engineering, and Product. Ensured WCAG accessibility compliance.
-          </p>
-          <a href="/portfolio/gcs-security" class="resume-link case-study">View case study</a>
-        </article>
+        {volunteer.map((entry, i) => {
+          const { Content } = volunteerContent[i];
+          const data = entry.data as { section: 'volunteer'; id: string; company: string; companyUrl?: string; title: string; location: string; dates: string; order: number; caseStudy?: string };
+          return (
+            <article id={data.id} class="resume-section">
+              <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-3">
+                <h3 class="text-xl font-semibold text-neutral-50">
+                  {data.companyUrl ? (
+                    <a href={data.companyUrl} target="_blank" rel="noopener" class="resume-link">{data.company}</a>
+                  ) : (
+                    data.company
+                  )}
+                </h3>
+                <span class="text-sm text-neutral-500">{data.dates}</span>
+              </div>
+              <p class="text-neutral-400 mb-4">{data.title} · {data.location}</p>
+              <div class="text-neutral-300 leading-relaxed prose prose-p:my-0 prose-a:text-inherit">
+                <Content />
+              </div>
+              {data.caseStudy && (
+                <a href={data.caseStudy} class="resume-link case-study mt-4 inline-block">View case study</a>
+              )}
+            </article>
+          );
+        })}
       </div>
     </section>
 
     <section>
       <h2 class="text-sm font-medium text-neutral-500 uppercase tracking-wider mb-8">Education</h2>
 
-      <article>
-        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-3">
-          <h3 class="text-xl font-semibold text-neutral-50">University of California, Santa Cruz</h3>
-          <span class="text-sm text-neutral-500">2016 - 2020</span>
-        </div>
-        <p class="text-neutral-400">BS Computer Science, Minor in Statistics</p>
-      </article>
+      {education.map((entry) => {
+        const data = entry.data as { section: 'education'; id: string; institution: string; degree: string; dates: string; order: number };
+        return (
+          <article>
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-3">
+              <h3 class="text-xl font-semibold text-neutral-50">{data.institution}</h3>
+              <span class="text-sm text-neutral-500">{data.dates}</span>
+            </div>
+            <p class="text-neutral-400">{data.degree}</p>
+          </article>
+        );
+      })}
     </section>
   </div>
 </BaseLayout>
@@ -155,7 +154,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
 
   .resume-link.case-study {
-    color: var(--link-color, #a5b4fc);
+    color: var(--color-neutral-300, #d4d4d4);
   }
 
   .resume-link.case-study:hover {
@@ -219,10 +218,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       el.style.setProperty('--link-color', color);
 
       el.onmouseenter = () => {
-        window.dispatchEvent(new CustomEvent('attractor-color', { detail: color }));
+        window.dispatchEvent(new CustomEvent('viz-color', { detail: color }));
       };
       el.onmouseleave = () => {
-        window.dispatchEvent(new CustomEvent('attractor-color-reset'));
+        window.dispatchEvent(new CustomEvent('viz-color-reset'));
       };
     });
   }

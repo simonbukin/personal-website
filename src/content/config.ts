@@ -66,4 +66,89 @@ const media = defineCollection({
   ]),
 });
 
-export const collections = { writing, media };
+const resume = defineCollection({
+  type: 'content',
+  schema: z.discriminatedUnion('section', [
+    z.object({
+      section: z.literal('summary'),
+      order: z.number().default(0),
+    }),
+    z.object({
+      section: z.literal('experience'),
+      id: z.string(),
+      company: z.string(),
+      companyUrl: z.string().url().optional(),
+      companyNote: z.string().optional(),
+      title: z.string(),
+      location: z.string(),
+      dates: z.string(),
+      order: z.number(),
+      caseStudy: z.string().optional(),
+    }),
+    z.object({
+      section: z.literal('volunteer'),
+      id: z.string(),
+      company: z.string(),
+      companyUrl: z.string().url().optional(),
+      title: z.string(),
+      location: z.string(),
+      dates: z.string(),
+      order: z.number(),
+      caseStudy: z.string().optional(),
+    }),
+    z.object({
+      section: z.literal('education'),
+      id: z.string(),
+      institution: z.string(),
+      degree: z.string(),
+      dates: z.string(),
+      order: z.number(),
+    }),
+  ]),
+});
+
+const about = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string(),
+  }),
+});
+
+const baseTimeline = {
+  title: z.string(),
+  date: z.coerce.date(),
+  endDate: z.coerce.date().optional(),
+  description: z.string().optional(),
+  published: z.boolean().default(false),
+  tags: z.array(z.string()).optional(),
+  links: z.array(z.object({
+    label: z.string(),
+    url: z.string(),
+  })).optional(),
+};
+
+const timeline = defineCollection({
+  type: 'content',
+  schema: z.discriminatedUnion('type', [
+    z.object({
+      ...baseTimeline,
+      type: z.literal('personal'),
+      repo: z.string().optional(),
+      tech: z.array(z.string()).optional(),
+    }),
+    z.object({
+      ...baseTimeline,
+      type: z.literal('class'),
+      course: z.string(),
+      institution: z.string(),
+    }),
+    z.object({
+      ...baseTimeline,
+      type: z.literal('work'),
+      company: z.string(),
+      role: z.string().optional(),
+    }),
+  ]),
+});
+
+export const collections = { writing, media, resume, about, timeline };

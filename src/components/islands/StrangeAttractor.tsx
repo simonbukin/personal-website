@@ -448,9 +448,9 @@ export default function StrangeAttractor({ variant = "full" }: Props) {
       animationId = requestAnimationFrame(animate);
     };
 
-    window.addEventListener("attractor-color", handleColorChange as EventListener);
-    window.addEventListener("attractor-color-reset", handleColorReset);
-    window.addEventListener("attractor-new", handleNewAttractor);
+    window.addEventListener("viz-color", handleColorChange as EventListener);
+    window.addEventListener("viz-color-reset", handleColorReset);
+    window.addEventListener("viz-new", handleNewAttractor);
     window.addEventListener("resize", resize);
 
     resize();
@@ -464,9 +464,9 @@ export default function StrangeAttractor({ variant = "full" }: Props) {
 
     return () => {
       window.removeEventListener("resize", resize);
-      window.removeEventListener("attractor-color", handleColorChange as EventListener);
-      window.removeEventListener("attractor-color-reset", handleColorReset);
-      window.removeEventListener("attractor-new", handleNewAttractor);
+      window.removeEventListener("viz-color", handleColorChange as EventListener);
+      window.removeEventListener("viz-color-reset", handleColorReset);
+      window.removeEventListener("viz-new", handleNewAttractor);
       cancelAnimationFrame(animationId);
     };
   }, [isFullVariant]);

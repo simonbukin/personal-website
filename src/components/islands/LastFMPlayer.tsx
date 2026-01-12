@@ -64,6 +64,7 @@ const COLOR_CYCLE_INTERVAL = 8000;
 export default function LastFMPlayer() {
   const [track, setTrack] = useState<Track | null>(null);
   const [loading, setLoading] = useState(true);
+  const [revealed, setRevealed] = useState(false);
   const [error, setError] = useState(false);
   const [colors, setColors] = useState<string[]>([]);
   const [displayedArt, setDisplayedArt] = useState<string | null>(null);
@@ -100,17 +101,22 @@ export default function LastFMPlayer() {
     lastArtUrl.current = track.albumArt;
 
     if (isNewTrack) {
-      window.dispatchEvent(new CustomEvent("attractor-new"));
+      window.dispatchEvent(new CustomEvent("viz-new"));
     }
 
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => {
-      const extracted = extractColors(img, 5);
+      const extracted = extractColors(img, 8);
       setColors(extracted);
       colorIndex.current = 0;
-      if (extracted.length > 0 && track.isPlaying) {
-        window.dispatchEvent(new CustomEvent("attractor-color", { detail: extracted[0] }));
+      if (extracted.length > 0) {
+        // Send full palette for visualizations that support it
+        window.dispatchEvent(new CustomEvent("viz-palette", { detail: extracted }));
+        // Also send first color for single-color visualizations
+        if (track.isPlaying) {
+          window.dispatchEvent(new CustomEvent("viz-color", { detail: extracted[0] }));
+        }
       }
     };
     img.src = track.albumArt;
@@ -118,15 +124,15 @@ export default function LastFMPlayer() {
 
   useEffect(() => {
     if (!track?.isPlaying || colors.length === 0) {
-      window.dispatchEvent(new CustomEvent("attractor-color-reset"));
+      window.dispatchEvent(new CustomEvent("viz-color-reset"));
       return;
     }
 
-    window.dispatchEvent(new CustomEvent("attractor-color", { detail: colors[colorIndex.current] }));
+    window.dispatchEvent(new CustomEvent("viz-color", { detail: colors[colorIndex.current] }));
 
     const interval = setInterval(() => {
       colorIndex.current = (colorIndex.current + 1) % colors.length;
-      window.dispatchEvent(new CustomEvent("attractor-color", { detail: colors[colorIndex.current] }));
+      window.dispatchEvent(new CustomEvent("viz-color", { detail: colors[colorIndex.current] }));
     }, COLOR_CYCLE_INTERVAL);
 
     return () => clearInterval(interval);
@@ -150,63 +156,84 @@ export default function LastFMPlayer() {
     }
   }, [track?.albumArt, displayedArt]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 bg-neutral-800 animate-pulse rounded" />
-        <div className="space-y-1.5">
-          <div className="h-3 w-20 bg-neutral-800 animate-pulse rounded" />
-          <div className="h-3 w-28 bg-neutral-800 animate-pulse rounded" />
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (!loading && track && !revealed) {
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(() => setRevealed(true), 50);
+      return () => clearTimeout(timer);
+    }
+  }, [loading, track, revealed]);
 
-  if (error || !track) return null;
+  if (error || (!loading && !track)) return null;
+
+  const youtubeSearchUrl = track
+    ? `https://www.youtube.com/results?search_query=${encodeURIComponent(`${track.name} ${track.artist}`)}`
+    : "#";
 
   return (
-    <a
-      href={track.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group flex items-center gap-3"
-    >
-      <div className="relative w-8 h-8 shrink-0">
-        {displayedArt && (
-          <img
-            src={displayedArt}
-            alt={`${track.album} album art`}
-            className="absolute inset-0 w-full h-full object-cover rounded transition-opacity duration-300"
-            style={{ opacity: transitioning ? 0 : 1 }}
-          />
-        )}
-        {nextArt && (
-          <img
-            src={nextArt}
-            alt={`${track.album} album art`}
-            className="absolute inset-0 w-full h-full object-cover rounded transition-opacity duration-300"
-            style={{ opacity: transitioning ? 1 : 0 }}
-          />
-        )}
-      </div>
-      <div className="min-w-0">
-        <div className="flex items-center gap-2">
-          {track.isPlaying && (
-            <span className="flex gap-0.5 items-end h-3">
-              <span className="w-0.5 h-full bg-green-500 animate-pulse" />
-              <span className="w-0.5 h-2/3 bg-green-500 animate-pulse" style={{ animationDelay: "150ms" }} />
-              <span className="w-0.5 h-1/3 bg-green-500 animate-pulse" style={{ animationDelay: "300ms" }} />
-            </span>
+    <div className="relative overflow-hidden w-fit">
+      {/* Reveal swipe overlay */}
+      <div
+        className={`absolute inset-0 bg-neutral-800 z-10 transition-transform duration-500 ease-out ${
+          revealed ? "translate-x-full" : "translate-x-0"
+        }`}
+      />
+
+      <a
+        href={youtubeSearchUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group flex items-center gap-3"
+        style={{ visibility: loading ? "hidden" : "visible" }}
+      >
+        <div className="relative w-8 h-8 shrink-0">
+          {displayedArt && (
+            <img
+              src={displayedArt}
+              alt={`${track?.album} album art`}
+              className="absolute inset-0 w-full h-full object-cover rounded transition-opacity duration-300"
+              style={{ opacity: transitioning ? 0 : 1 }}
+            />
           )}
-          <span className="text-xs text-neutral-400">
-            {track.isPlaying ? "Now playing" : "Last played"}
-          </span>
+          {nextArt && (
+            <img
+              src={nextArt}
+              alt={`${track?.album} album art`}
+              className="absolute inset-0 w-full h-full object-cover rounded transition-opacity duration-300"
+              style={{ opacity: transitioning ? 1 : 0 }}
+            />
+          )}
         </div>
-        <p className="text-sm truncate mt-0.5">
-          <span className="font-medium group-hover:text-white transition-colors">{track.name}</span>
-          <span className="text-neutral-400"> — {track.artist}</span>
-        </p>
-      </div>
-    </a>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            {track?.isPlaying && (
+              <span className="flex gap-0.5 items-end h-3">
+                <span className="w-0.5 h-full bg-green-500 animate-pulse" />
+                <span className="w-0.5 h-2/3 bg-green-500 animate-pulse" style={{ animationDelay: "150ms" }} />
+                <span className="w-0.5 h-1/3 bg-green-500 animate-pulse" style={{ animationDelay: "300ms" }} />
+              </span>
+            )}
+            <span className="text-xs text-neutral-400">
+              {track?.isPlaying ? "Now playing" : "Last played"}
+            </span>
+          </div>
+          <p className="text-sm truncate mt-0.5">
+            <span className="font-medium group-hover:text-white transition-colors">{track?.name}</span>
+            <span className="text-neutral-400"> — {track?.artist}</span>
+          </p>
+        </div>
+      </a>
+
+      {/* Skeleton for layout stability */}
+      {loading && (
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-neutral-800 rounded" />
+          <div className="space-y-1.5">
+            <div className="h-3 w-20 bg-neutral-800 rounded" />
+            <div className="h-3 w-28 bg-neutral-800 rounded" />
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

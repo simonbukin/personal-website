@@ -4,7 +4,8 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "bun run build:resume && astro build",
+    "build:resume": "./scripts/build-resume.sh",
     "preview": "astro preview",
     "astro": "astro"
   },
