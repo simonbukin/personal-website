@@ -18,10 +18,6 @@ const writing = defineCollection({
     }),
     z.object({
       ...baseWriting,
-      type: z.literal('bit'),
-    }),
-    z.object({
-      ...baseWriting,
       type: z.literal('portfolio'),
       tags: z.array(z.string()).optional(),
       company: z.string(),

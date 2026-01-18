@@ -1,5 +1,5 @@
 ---
-type: bit
+type: post
 date: 2024-01-18
 title: 'Import Aliases in Typescript'
 slug: 'tsconfig-import-aliases'

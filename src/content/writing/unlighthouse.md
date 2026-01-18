@@ -1,5 +1,5 @@
 ---
-type: bit
+type: post
 date: 2024-01-25
 title: 'Unlighthouse'
 slug: 'unlighthouse'

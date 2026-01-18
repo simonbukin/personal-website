@@ -3,7 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
 const writing = await getCollection('writing', ({ data }) =>
-  (data.type === 'post' || data.type === 'bit') && data.published
+  data.type === 'post' && data.published
 );
 const sorted = writing.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 ---
@@ -16,18 +16,13 @@ const sorted = writing.sort((a, b) => b.data.date.valueOf() - a.data.date.valueO
       {sorted.map((item) => (
         <li>
           <a href={`/writing/${item.slug}`} class="group block">
-            <div class="flex items-baseline gap-2">
-              <span class="font-semibold group-hover:text-white transition-colors">{item.data.title}</span>
-              {item.data.type === 'bit' && (
-                <span class="text-xs text-neutral-400">bit</span>
-              )}
-            </div>
+            <span class="font-semibold group-hover:text-white transition-colors">{item.data.title}</span>
             <p class="text-neutral-400 mt-1 text-sm">{item.data.description}</p>
             <div class="flex items-center gap-3 mt-2 text-sm text-neutral-400">
               <time>
                 {item.data.date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
               </time>
-              {item.data.type === 'post' && item.data.tags && (
+              {item.data.tags && (
                 <>
                   <span class="text-neutral-500">·</span>
                   <div class="flex gap-2">

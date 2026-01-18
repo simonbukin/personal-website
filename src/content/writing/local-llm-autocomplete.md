@@ -1,5 +1,5 @@
 ---
-type: bit
+type: post
 date: 2024-02-07
 title: 'Local LLM Autocomplete'
 slug: 'local-llm-autocomplete'

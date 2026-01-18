@@ -1,5 +1,5 @@
 ---
-type: bit
+type: post
 date: 2024-01-19
 title: 'Checking your User Agent'
 slug: 'user-agent-checking'

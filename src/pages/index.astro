@@ -6,7 +6,7 @@ import SFStatus from '../components/islands/SFStatus';
 import Visualization from '../components/islands/Visualization';
 
 const writing = await getCollection('writing', ({ data }) =>
-  (data.type === 'post' || data.type === 'bit') && data.published
+  data.type === 'post' && data.published
 );
 const recentWriting = writing
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())

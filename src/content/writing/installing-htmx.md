@@ -1,5 +1,5 @@
 ---
-type: bit
+type: post
 date: 2024-01-21
 title: 'Installing HTMX'
 slug: 'installing-htmx'
