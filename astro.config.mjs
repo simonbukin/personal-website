@@ -9,6 +9,12 @@ import vercel from '@astrojs/vercel';
 export default defineConfig({
   site: 'https://simonbukin.com',
   adapter: vercel(),
+  redirects: {
+    '/blog': '/writing',
+    '/blog/[...slug]': '/writing/[...slug]',
+    '/bits': '/writing',
+    '/bits/[...slug]': '/writing/[...slug]',
+  },
   integrations: [
     mdx(),
     react(),
