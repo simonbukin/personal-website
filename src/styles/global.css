@@ -353,7 +353,7 @@
 
 .entry-tag {
   font-size: 0.75rem;
-  color: var(--color-neutral-500);
+  color: var(--color-neutral-400);
   background: var(--color-neutral-800);
   padding: 0.125rem 0.5rem;
   border-radius: 0.25rem;

@@ -1646,37 +1646,31 @@ export default function MetroMap({ variant = "full" }: Props) {
       const configChanged = prevConfig !== config;
 
       if (isFullVariant) {
-        canvasWidth = window.innerWidth;
+        // Canvas is positioned on right half of screen via CSS
+        // Set canvas size to match that positioning
+        canvasWidth = Math.floor(window.innerWidth / 2);
         canvasHeight = window.innerHeight;
 
         const padding = config.padding;
 
-        if (isMobile) {
-          // On mobile, use full width with small padding
-          drawBounds = {
-            left: padding,
-            right: canvasWidth - padding,
-            top: padding,
-            bottom: canvasHeight - padding,
-          };
-        } else {
-          // On desktop, keep right 2/3 for the metro map
-          drawBounds = {
-            left: canvasWidth / 3 + padding,
-            right: canvasWidth - padding,
-            top: padding,
-            bottom: canvasHeight - padding,
-          };
-        }
+        // Use full canvas area for drawing (with padding)
+        drawBounds = {
+          left: padding,
+          right: canvasWidth - padding,
+          top: padding,
+          bottom: canvasHeight - padding,
+        };
       } else if (container) {
         const rect = container.getBoundingClientRect();
         canvasWidth = rect.width;
         canvasHeight = rect.height;
+        // No padding on mobile for contained variant
+        const containerPadding = isMobile ? 0 : config.padding;
         drawBounds = {
-          left: config.padding,
-          right: canvasWidth - config.padding,
-          top: config.padding,
-          bottom: canvasHeight - config.padding,
+          left: containerPadding,
+          right: canvasWidth - containerPadding,
+          top: containerPadding,
+          bottom: canvasHeight - containerPadding,
         };
       }
 
@@ -1790,7 +1784,7 @@ export default function MetroMap({ variant = "full" }: Props) {
     return (
       <canvas
         ref={canvasRef}
-        className="fixed inset-0 pointer-events-none -z-10"
+        className="fixed top-0 right-0 w-1/2 h-full pointer-events-none -z-10"
       />
     );
   }
