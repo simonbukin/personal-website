@@ -1,4 +1,35 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
+
+// Theme colors interface
+interface ThemeColors {
+  stationInner: string;
+  tooltipBg: string;
+  tooltipText: string;
+  tooltipMuted: string;
+  legendBg: string;
+  legendBorder: string;
+  waveColor: string;
+  bgPrimary: string;
+  textPrimary: string;
+  textSecondary: string;
+}
+
+// Get current theme colors from CSS custom properties
+function getThemeColors(): ThemeColors {
+  const style = getComputedStyle(document.documentElement);
+  return {
+    stationInner: style.getPropertyValue('--canvas-station-inner').trim() || '#ffffff',
+    tooltipBg: style.getPropertyValue('--canvas-tooltip-bg').trim() || 'rgba(23, 23, 23, 0.95)',
+    tooltipText: style.getPropertyValue('--canvas-tooltip-text').trim() || '#f0edf5',
+    tooltipMuted: style.getPropertyValue('--canvas-tooltip-muted').trim() || '#8b829e',
+    legendBg: style.getPropertyValue('--canvas-legend-bg').trim() || 'rgba(10, 10, 10, 0.85)',
+    legendBorder: style.getPropertyValue('--canvas-legend-border').trim() || 'rgba(64, 64, 64, 0.6)',
+    waveColor: style.getPropertyValue('--canvas-wave-color').trim() || 'rgba(255, 255, 255, 0.6)',
+    bgPrimary: style.getPropertyValue('--bg-primary').trim() || '#1a1625',
+    textPrimary: style.getPropertyValue('--text-primary').trim() || '#f0edf5',
+    textSecondary: style.getPropertyValue('--text-secondary').trim() || '#c4bdd4',
+  };
+}
 
 // Octilinear directions: 0°, 45°, 90°, 135°, 180°, 225°, 270°, 315°
 const DIRECTIONS = [
@@ -12,17 +43,39 @@ const DIRECTIONS = [
   { dx: 1, dy: 1 },   // Southeast
 ];
 
-// Pastel primary colors - soft, muted transit palette
-const DEFAULT_COLORS = [
-  "#f28b82", // Pastel red
-  "#aecbfa", // Pastel blue
-  "#ccff90", // Pastel green
-  "#ffd6a5", // Pastel orange
-  "#d7aefb", // Pastel purple
-  "#a7ffeb", // Pastel cyan
-  "#fff475", // Pastel yellow
-  "#e6c9a8", // Pastel brown
+// Metro line colors optimized for contrast
+// Dark mode: lighter, vibrant pastels that pop against #1a1625 (3:1+ contrast)
+const DARK_MODE_COLORS = [
+  "#e88a7d", // Coral red
+  "#7cb5db", // Sky blue
+  "#85c794", // Mint green
+  "#e5b56a", // Amber gold
+  "#b89fd6", // Soft lavender
+  "#6bc4ba", // Aqua teal
+  "#e89f7a", // Peach orange
+  "#d69eb5", // Dusty rose
 ];
+
+// Light mode: richer, medium-toned colors visible against #faf8f5 (3:1+ contrast)
+const LIGHT_MODE_COLORS = [
+  "#c75a55", // Brick red
+  "#4a7da8", // Denim blue
+  "#4d8a5c", // Forest green
+  "#b8862e", // Bronze amber
+  "#7a5a9e", // Deep lavender
+  "#3a918a", // Deep teal
+  "#c06d45", // Terracotta
+  "#a8567a", // Berry rose
+];
+
+// Get colors based on current theme
+function getThemeLineColors(): string[] {
+  const theme = document.documentElement.getAttribute('data-theme');
+  return theme === 'light' ? LIGHT_MODE_COLORS : DARK_MODE_COLORS;
+}
+
+// Legacy default for initial load
+const DEFAULT_COLORS = DARK_MODE_COLORS;
 
 // Real transit lines from cities I've used
 interface TransitLineInfo {
@@ -403,11 +456,16 @@ export default function MetroMap({ variant = "full" }: Props) {
     let animationId: number;
     let lines: MetroLine[] = [];
     let allStations: Station[] = [];
-    let availableColors = [...DEFAULT_COLORS];
-    let palette = [...DEFAULT_COLORS];
+    // Initialize with theme-appropriate colors
+    let currentLineColors = getThemeLineColors();
+    let availableColors = [...currentLineColors];
+    let palette = [...currentLineColors];
     let globalOpacity = 0;
     let drawBounds = { left: 0, right: 0, top: 0, bottom: 0 };
     let hubCenter: Point = { x: 0, y: 0 };
+
+    // Theme colors - updated when theme changes
+    let themeColors: ThemeColors = getThemeColors();
 
     // Global color shift from music/hover
     let globalColorShift: RGB | null = null;
@@ -1249,7 +1307,9 @@ export default function MetroMap({ variant = "full" }: Props) {
         if (waveOpacity > 0.01 && wave.radius > 0) {
           ctx.beginPath();
           ctx.arc(wave.origin.x, wave.origin.y, wave.radius, 0, Math.PI * 2);
-          ctx.strokeStyle = `rgba(255, 255, 255, ${opacity * waveOpacity})`;
+          // Use theme-aware wave color
+          const waveBase = themeColors.waveColor.replace(/[\d.]+\)$/, `${opacity * waveOpacity})`);
+          ctx.strokeStyle = waveBase;
           ctx.lineWidth = 3;
           ctx.stroke();
         }
@@ -1294,11 +1354,21 @@ export default function MetroMap({ variant = "full" }: Props) {
         ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${opacity})`;
         ctx.fill();
 
-        // Inner circle (white/light)
+        // Inner circle (theme-aware)
         if (innerRadius > 0) {
           ctx.beginPath();
           ctx.arc(station.x, station.y, innerRadius, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 0.95})`;
+          // Parse theme color to RGB for opacity support
+          const innerColor = themeColors.stationInner;
+          const match = innerColor.match(/^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+          if (match) {
+            const ir = parseInt(match[1], 16);
+            const ig = parseInt(match[2], 16);
+            const ib = parseInt(match[3], 16);
+            ctx.fillStyle = `rgba(${ir}, ${ig}, ${ib}, ${opacity * 0.95})`;
+          } else {
+            ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 0.95})`;
+          }
           ctx.fill();
         }
       }
@@ -1321,12 +1391,21 @@ export default function MetroMap({ variant = "full" }: Props) {
       ctx.translate(train.x, train.y);
       ctx.rotate(train.angle);
 
-      // Draw train body (white fill with colored outline)
+      // Draw train body (theme-aware fill with colored outline)
       const halfWidth = config.trainWidth / 2;
       const halfHeight = config.trainHeight / 2;
 
-      // White interior
-      ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 0.95})`;
+      // Theme-aware interior color
+      const innerColor = themeColors.stationInner;
+      const innerMatch = innerColor.match(/^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+      if (innerMatch) {
+        const ir = parseInt(innerMatch[1], 16);
+        const ig = parseInt(innerMatch[2], 16);
+        const ib = parseInt(innerMatch[3], 16);
+        ctx.fillStyle = `rgba(${ir}, ${ig}, ${ib}, ${opacity * 0.95})`;
+      } else {
+        ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 0.95})`;
+      }
       ctx.fillRect(-halfWidth, -halfHeight, config.trainWidth, config.trainHeight);
 
       // Colored outline
@@ -1385,8 +1464,9 @@ export default function MetroMap({ variant = "full" }: Props) {
         tooltipY = hoveredStation.y + config.stationRadius + 8; // Show below if no room above
       }
 
-      // Draw tooltip background
-      ctx.fillStyle = `rgba(23, 23, 23, ${opacity * 0.95})`;
+      // Draw tooltip background - parse the rgba color for opacity
+      const tooltipBgBase = themeColors.tooltipBg.replace(/[\d.]+\)$/, `${opacity * 0.95})`);
+      ctx.fillStyle = tooltipBgBase;
       ctx.beginPath();
       ctx.roundRect(tooltipX, tooltipY, tooltipWidth, tooltipHeight, 6);
       ctx.fill();
@@ -1397,15 +1477,25 @@ export default function MetroMap({ variant = "full" }: Props) {
       ctx.roundRect(tooltipX, tooltipY, 4, tooltipHeight, [6, 0, 0, 6]);
       ctx.fill();
 
-      // Draw line name
+      // Draw line name - use theme text color
       ctx.font = `600 15px "Helvetica Neue", "Arial", system-ui, sans-serif`;
-      ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+      const textMatch = themeColors.tooltipText.match(/^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+      if (textMatch) {
+        ctx.fillStyle = `rgba(${parseInt(textMatch[1], 16)}, ${parseInt(textMatch[2], 16)}, ${parseInt(textMatch[3], 16)}, ${opacity})`;
+      } else {
+        ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+      }
       ctx.textBaseline = "top";
       ctx.fillText(tooltipText, tooltipX + padding + 4, tooltipY + 8);
 
-      // Draw location
+      // Draw location - use theme muted color
       ctx.font = `12px "Helvetica Neue", "Arial", system-ui, sans-serif`;
-      ctx.fillStyle = `rgba(163, 163, 163, ${opacity})`;
+      const mutedMatch = themeColors.tooltipMuted.match(/^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+      if (mutedMatch) {
+        ctx.fillStyle = `rgba(${parseInt(mutedMatch[1], 16)}, ${parseInt(mutedMatch[2], 16)}, ${parseInt(mutedMatch[3], 16)}, ${opacity})`;
+      } else {
+        ctx.fillStyle = `rgba(163, 163, 163, ${opacity})`;
+      }
       ctx.fillText(locationText, tooltipX + padding + 4, tooltipY + 26);
     };
 
@@ -1456,25 +1546,33 @@ export default function MetroMap({ variant = "full" }: Props) {
       const boardX = canvasWidth - padding - boardWidth;
       const boardY = canvasHeight - padding - boardHeight;
 
-      // Draw board background
-      ctx.fillStyle = `rgba(10, 10, 10, ${opacity * 0.85})`;
+      // Draw board background - parse the rgba color for opacity
+      const legendBgBase = themeColors.legendBg.replace(/[\d.]+\)$/, `${opacity * 0.85})`);
+      ctx.fillStyle = legendBgBase;
       ctx.beginPath();
       ctx.roundRect(boardX, boardY, boardWidth, boardHeight, 8);
       ctx.fill();
 
       // Draw board border
-      ctx.strokeStyle = `rgba(64, 64, 64, ${opacity * 0.6})`;
+      const legendBorderBase = themeColors.legendBorder.replace(/[\d.]+\)$/, `${opacity * 0.6})`);
+      ctx.strokeStyle = legendBorderBase;
       ctx.lineWidth = 1;
       ctx.stroke();
 
-      // Draw header
+      // Draw header - use muted color
       ctx.font = `600 12px "Helvetica Neue", "Arial", system-ui, sans-serif`;
-      ctx.fillStyle = `rgba(163, 163, 163, ${opacity * 0.9})`;
+      const mutedMatch = themeColors.tooltipMuted.match(/^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+      if (mutedMatch) {
+        ctx.fillStyle = `rgba(${parseInt(mutedMatch[1], 16)}, ${parseInt(mutedMatch[2], 16)}, ${parseInt(mutedMatch[3], 16)}, ${opacity * 0.9})`;
+      } else {
+        ctx.fillStyle = `rgba(163, 163, 163, ${opacity * 0.9})`;
+      }
       ctx.textBaseline = "top";
       ctx.fillText("LINES", boardX + boardPadding, boardY + boardPadding);
 
       // Draw separator line
-      ctx.strokeStyle = `rgba(64, 64, 64, ${opacity * 0.5})`;
+      const separatorBase = themeColors.legendBorder.replace(/[\d.]+\)$/, `${opacity * 0.5})`);
+      ctx.strokeStyle = separatorBase;
       ctx.beginPath();
       ctx.moveTo(boardX + boardPadding, boardY + boardPadding + 18);
       ctx.lineTo(boardX + boardWidth - boardPadding, boardY + boardPadding + 18);
@@ -1514,7 +1612,9 @@ export default function MetroMap({ variant = "full" }: Props) {
 
         // Draw hover background
         if (isHovered) {
-          ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 0.08})`;
+          // Use a light overlay for hover in light mode, dark in dark mode
+          const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+          ctx.fillStyle = isDark ? `rgba(255, 255, 255, ${opacity * 0.08})` : `rgba(0, 0, 0, ${opacity * 0.05})`;
           ctx.beginPath();
           ctx.roundRect(itemX - 4, y - lineHeight / 2 + 4, itemWidth + 8, lineHeight - 4, 4);
           ctx.fill();
@@ -1526,22 +1626,36 @@ export default function MetroMap({ variant = "full" }: Props) {
         ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${itemOpacity})`;
         ctx.fill();
 
-        // Draw line name
+        // Draw line name - use theme text color
         ctx.font = `600 14px "Helvetica Neue", "Arial", system-ui, sans-serif`;
         ctx.textBaseline = "middle";
-        ctx.fillStyle = `rgba(255, 255, 255, ${itemOpacity})`;
+        const textMatch = themeColors.tooltipText.match(/^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+        if (textMatch) {
+          ctx.fillStyle = `rgba(${parseInt(textMatch[1], 16)}, ${parseInt(textMatch[2], 16)}, ${parseInt(textMatch[3], 16)}, ${itemOpacity})`;
+        } else {
+          ctx.fillStyle = `rgba(255, 255, 255, ${itemOpacity})`;
+        }
         ctx.fillText(planned.name, itemX + textOffset, y);
 
-        // Draw location
+        // Draw location - use theme muted color
         const nameWidth = ctx.measureText(planned.name).width;
         ctx.font = `11px "Helvetica Neue", "Arial", system-ui, sans-serif`;
-        ctx.fillStyle = `rgba(163, 163, 163, ${itemOpacity * 0.8})`;
+        const locMutedMatch = themeColors.tooltipMuted.match(/^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+        if (locMutedMatch) {
+          ctx.fillStyle = `rgba(${parseInt(locMutedMatch[1], 16)}, ${parseInt(locMutedMatch[2], 16)}, ${parseInt(locMutedMatch[3], 16)}, ${itemOpacity * 0.8})`;
+        } else {
+          ctx.fillStyle = `rgba(163, 163, 163, ${itemOpacity * 0.8})`;
+        }
         ctx.fillText(planned.location, itemX + textOffset + nameWidth + 8, y);
 
         // Draw cursor hint for hovered items
         if (isHovered) {
           ctx.font = `10px "Helvetica Neue", "Arial", system-ui, sans-serif`;
-          ctx.fillStyle = `rgba(163, 163, 163, ${opacity * 0.6})`;
+          if (locMutedMatch) {
+            ctx.fillStyle = `rgba(${parseInt(locMutedMatch[1], 16)}, ${parseInt(locMutedMatch[2], 16)}, ${parseInt(locMutedMatch[3], 16)}, ${opacity * 0.6})`;
+          } else {
+            ctx.fillStyle = `rgba(163, 163, 163, ${opacity * 0.6})`;
+          }
           ctx.fillText("↗", boardX + boardWidth - boardPadding - 12, y);
         }
       }
@@ -1748,11 +1862,46 @@ export default function MetroMap({ variant = "full" }: Props) {
       animationId = requestAnimationFrame(animate);
     };
 
+    // Handle theme changes
+    const handleThemeChange = () => {
+      themeColors = getThemeColors();
+
+      // Update line colors for new theme
+      const newLineColors = getThemeLineColors();
+      currentLineColors = newLineColors;
+
+      // Update each line's color to the equivalent in the new palette
+      // This maintains color positions but swaps to theme-appropriate variants
+      lines.forEach((line, index) => {
+        const colorIndex = index % newLineColors.length;
+        line.color = newLineColors[colorIndex];
+      });
+
+      // Update palette and available colors
+      palette = [...newLineColors];
+      availableColors = [...newLineColors];
+
+      if (prefersReducedMotion) {
+        drawStaticMap();
+      }
+    };
+
+    // Observe data-theme attribute changes
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.attributeName === 'data-theme') {
+          handleThemeChange();
+        }
+      }
+    });
+    observer.observe(document.documentElement, { attributes: true });
+
     window.addEventListener("viz-color", handleColorChange as EventListener);
     window.addEventListener("viz-palette", handlePalette as EventListener);
     window.addEventListener("viz-color-reset", handleColorReset);
     window.addEventListener("viz-new", handleNewViz);
     window.addEventListener("resize", resize);
+    window.addEventListener("theme-change", handleThemeChange);
     // Window-level mouse events work even with pointer-events-none on canvas
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseleave", handleMouseLeave);
@@ -1768,11 +1917,13 @@ export default function MetroMap({ variant = "full" }: Props) {
     }
 
     return () => {
+      observer.disconnect();
       window.removeEventListener("resize", resize);
       window.removeEventListener("viz-color", handleColorChange as EventListener);
       window.removeEventListener("viz-palette", handlePalette as EventListener);
       window.removeEventListener("viz-color-reset", handleColorReset);
       window.removeEventListener("viz-new", handleNewViz);
+      window.removeEventListener("theme-change", handleThemeChange);
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseleave", handleMouseLeave);
       window.removeEventListener("click", handleClick);

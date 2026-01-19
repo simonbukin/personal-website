@@ -18,11 +18,11 @@ const years = Object.keys(byYear).sort((a, b) => Number(b) - Number(a));
 
 <BaseLayout title="Timeline - Simon Bukin" description="Every project I've ever done">
   <div class="max-w-2xl px-6 py-12 md:py-16">
-    <h1 class="text-3xl font-bold mb-2">Timeline</h1>
-    <p class="text-neutral-400 mb-12">Every project I've ever done.</p>
+    <h1 class="text-3xl font-bold mb-2" style="color: var(--text-primary);">Timeline</h1>
+    <p class="mb-12" style="color: var(--text-tertiary);">Every project I've ever done.</p>
 
     {years.length === 0 ? (
-      <p class="text-neutral-500 italic">Nothing here yet. Check back later.</p>
+      <p class="italic" style="color: var(--text-tertiary);">Nothing here yet. Check back later.</p>
     ) : (
       <div class="timeline">
         {years.map(year => (

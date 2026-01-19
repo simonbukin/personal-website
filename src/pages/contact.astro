@@ -6,29 +6,31 @@ const email = 'simonbukin@gmail.com';
 
 <BaseLayout title="Contact - Simon Bukin" description="Get in touch">
   <div class="max-w-2xl px-6 py-12 md:py-16">
-    <h1 class="text-3xl font-bold mb-2">Contact</h1>
-    <p class="text-neutral-400 mb-8">
+    <h1 class="text-3xl font-bold mb-2" style="color: var(--text-primary);">Contact</h1>
+    <p class="mb-8" style="color: var(--text-tertiary);">
       Interested in working together? Feel free to reach out.
     </p>
 
     <div class="space-y-6">
       <div>
-        <h2 class="text-sm text-neutral-400 uppercase tracking-wide mb-2">Email</h2>
+        <h2 class="text-sm uppercase tracking-wide mb-2" style="color: var(--text-tertiary);">Email</h2>
         <a
           href={`mailto:${email}`}
-          class="text-lg font-medium hover:text-white transition-colors"
+          class="text-lg font-medium transition-colors hover:opacity-80"
+          style="color: var(--text-secondary);"
         >
           {email} <span class="text-xs opacity-60">↗</span>
         </a>
       </div>
 
       <div>
-        <h2 class="text-sm text-neutral-400 uppercase tracking-wide mb-2">LinkedIn</h2>
+        <h2 class="text-sm uppercase tracking-wide mb-2" style="color: var(--text-tertiary);">LinkedIn</h2>
         <a
           href="https://linkedin.com/in/simonbukin"
           target="_blank"
           rel="noopener noreferrer"
-          class="text-lg font-medium hover:text-white transition-colors"
+          class="text-lg font-medium transition-colors hover:opacity-80"
+          style="color: var(--text-secondary);"
         >
           /in/simonbukin <span class="text-xs opacity-60">↗</span>
         </a>

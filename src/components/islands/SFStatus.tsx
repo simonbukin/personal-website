@@ -89,7 +89,7 @@ export default function SFStatus() {
   }
 
   return (
-    <div className="text-sm text-neutral-500">
+    <div className="text-sm" style={{ color: "var(--text-tertiary)" }}>
       <span>{time} in San Francisco</span>
       {weather && (
         <span className="ml-2">

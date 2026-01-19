@@ -174,9 +174,10 @@ export default function LastFMPlayer() {
     <div className="relative overflow-hidden w-fit">
       {/* Reveal swipe overlay */}
       <div
-        className={`absolute inset-0 bg-neutral-800 z-10 transition-transform duration-500 ease-out ${
+        className={`absolute inset-0 z-10 transition-transform duration-500 ease-out ${
           revealed ? "translate-x-full" : "translate-x-0"
         }`}
+        style={{ backgroundColor: "var(--bg-tertiary)" }}
       />
 
       <a
@@ -213,13 +214,13 @@ export default function LastFMPlayer() {
                 <span className="w-0.5 h-1/3 bg-green-500 animate-pulse" style={{ animationDelay: "300ms" }} />
               </span>
             )}
-            <span className="text-xs text-neutral-400">
+            <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>
               {track?.isPlaying ? "Now playing" : "Last played"}
             </span>
           </div>
           <p className="text-sm truncate mt-0.5">
-            <span className="font-medium group-hover:text-white transition-colors">{track?.name}</span>
-            <span className="text-neutral-400"> — {track?.artist}</span>
+            <span className="font-medium transition-colors" style={{ color: "var(--text-secondary)" }}>{track?.name}</span>
+            <span style={{ color: "var(--text-tertiary)" }}> — {track?.artist}</span>
           </p>
         </div>
       </a>
@@ -227,10 +228,10 @@ export default function LastFMPlayer() {
       {/* Skeleton for layout stability */}
       {loading && (
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-neutral-800 rounded" />
+          <div className="w-8 h-8 rounded" style={{ backgroundColor: "var(--bg-tertiary)" }} />
           <div className="space-y-1.5">
-            <div className="h-3 w-20 bg-neutral-800 rounded" />
-            <div className="h-3 w-28 bg-neutral-800 rounded" />
+            <div className="h-3 w-20 rounded" style={{ backgroundColor: "var(--bg-tertiary)" }} />
+            <div className="h-3 w-28 rounded" style={{ backgroundColor: "var(--bg-tertiary)" }} />
           </div>
         </div>
       )}

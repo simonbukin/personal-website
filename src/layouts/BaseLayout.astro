@@ -2,6 +2,7 @@
 import { ClientRouter } from 'astro:transitions';
 import '../styles/global.css';
 import Visualization from '../components/islands/Visualization';
+import ThemeToggle from '../components/ThemeToggle.astro';
 
 interface Props {
   title?: string;
@@ -32,7 +33,7 @@ const socialLinks = [
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -40,6 +41,22 @@ const socialLinks = [
     <link rel="icon" type="image/svg+xml" href="/face.svg" />
     <link rel="canonical" href={Astro.url} />
     <title>{title}</title>
+
+    <!-- Theme flash prevention - runs before CSS loads -->
+    <script is:inline>
+      // Apply theme immediately on initial load
+      (function() {
+        var theme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+
+      // For Astro View Transitions: set theme on the NEW document BEFORE swap
+      // This prevents flash by ensuring incoming page already has correct theme
+      document.addEventListener('astro:before-swap', function(e) {
+        var theme = localStorage.getItem('theme') || 'dark';
+        e.newDocument.documentElement.setAttribute('data-theme', theme);
+      });
+    </script>
 
     <!-- Open Graph -->
     <meta property="og:title" content={title} />
@@ -64,7 +81,8 @@ const socialLinks = [
         <nav class="max-w-2xl px-6 py-6">
           <a
             href="/"
-            class="inline-flex items-center gap-2 text-lg font-semibold hover:text-white transition-colors"
+            class="inline-flex items-center gap-2 text-lg font-semibold transition-colors"
+            style="color: var(--text-secondary);"
           >
             Simon Bukin
             <svg class="w-5 h-5 hover:animate-spin" viewBox="0 0 57 38" fill="none">
@@ -79,7 +97,7 @@ const socialLinks = [
                   href={link.href}
                   class:list={[
                     "transition-colors",
-                    isActive ? "text-white border-b border-white" : "nav-link"
+                    isActive ? "nav-link-active" : "nav-link"
                   ]}
                   aria-current={isActive ? "page" : undefined}
                 >
@@ -98,22 +116,26 @@ const socialLinks = [
 
     <footer class="mt-auto">
       <div class="max-w-2xl px-6 py-8">
-        <div class="flex items-center justify-between sm:justify-start gap-4">
+        <div class="flex items-center justify-between gap-4">
           <div class="flex items-center gap-4">
             {socialLinks.map((link) => (
               <a
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                class="text-neutral-400 hover:text-white transition-colors text-sm"
+                class="hover:opacity-100 transition-colors text-sm"
+                style="color: var(--text-tertiary);"
               >
                 {link.name}
               </a>
             ))}
           </div>
-          <span class="text-neutral-400 text-sm">
-            &copy; {new Date().getFullYear()}
-          </span>
+          <div class="flex items-center gap-4">
+            <ThemeToggle />
+            <span class="text-sm" style="color: var(--text-tertiary);">
+              &copy; {new Date().getFullYear()}
+            </span>
+          </div>
         </div>
       </div>
     </footer>

@@ -17,28 +17,28 @@ const { Content } = await project.render();
 <BaseLayout title={`${project.data.title} - Simon Bukin`} description={project.data.description}>
   <article class="max-w-2xl px-6 py-12 md:py-16">
     <header class="mb-10">
-      <a href="/portfolio" class="text-neutral-400 hover:text-white transition-colors text-sm inline-flex items-center gap-1 group">
+      <a href="/portfolio" class="transition-colors text-sm inline-flex items-center gap-1 group hover:opacity-80" style="color: var(--text-tertiary);">
         <span class="group-hover:-translate-x-0.5 transition-transform">&larr;</span> Back to work
       </a>
-      <h1 class="text-3xl md:text-4xl font-bold mt-6 leading-tight">{project.data.title}</h1>
-      <p class="text-lg text-neutral-400 mt-3">{project.data.description}</p>
+      <h1 class="text-3xl md:text-4xl font-bold mt-6 leading-tight" style="color: var(--text-primary);">{project.data.title}</h1>
+      <p class="text-lg mt-3" style="color: var(--text-tertiary);">{project.data.description}</p>
 
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 p-4 bg-neutral-900/50 border border-neutral-800 rounded-lg">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 p-4 rounded-lg" style="background-color: var(--bg-secondary); border: 1px solid var(--border-secondary);">
         <div>
-          <p class="text-xs text-neutral-400 uppercase tracking-wide">Company</p>
-          <p class="font-medium mt-1">{project.data.company}</p>
+          <p class="text-xs uppercase tracking-wide" style="color: var(--text-tertiary);">Company</p>
+          <p class="font-medium mt-1" style="color: var(--text-primary);">{project.data.company}</p>
         </div>
         <div>
-          <p class="text-xs text-neutral-400 uppercase tracking-wide">Role</p>
-          <p class="font-medium mt-1">{project.data.role}</p>
+          <p class="text-xs uppercase tracking-wide" style="color: var(--text-tertiary);">Role</p>
+          <p class="font-medium mt-1" style="color: var(--text-primary);">{project.data.role}</p>
         </div>
         <div>
-          <p class="text-xs text-neutral-400 uppercase tracking-wide">Timeline</p>
-          <p class="font-medium mt-1">{project.data.timeline}</p>
+          <p class="text-xs uppercase tracking-wide" style="color: var(--text-tertiary);">Timeline</p>
+          <p class="font-medium mt-1" style="color: var(--text-primary);">{project.data.timeline}</p>
         </div>
         <div>
-          <p class="text-xs text-neutral-400 uppercase tracking-wide">Launch</p>
-          <p class="font-medium mt-1">{project.data.launch}</p>
+          <p class="text-xs uppercase tracking-wide" style="color: var(--text-tertiary);">Launch</p>
+          <p class="font-medium mt-1" style="color: var(--text-primary);">{project.data.launch}</p>
         </div>
       </div>
     </header>
