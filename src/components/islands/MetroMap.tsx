@@ -18,29 +18,41 @@ interface ThemeColors {
 function getThemeColors(): ThemeColors {
   const style = getComputedStyle(document.documentElement);
   return {
-    stationInner: style.getPropertyValue('--canvas-station-inner').trim() || '#ffffff',
-    tooltipBg: style.getPropertyValue('--canvas-tooltip-bg').trim() || 'rgba(23, 23, 23, 0.95)',
-    tooltipText: style.getPropertyValue('--canvas-tooltip-text').trim() || '#f0edf5',
-    tooltipMuted: style.getPropertyValue('--canvas-tooltip-muted').trim() || '#8b829e',
-    legendBg: style.getPropertyValue('--canvas-legend-bg').trim() || 'rgba(10, 10, 10, 0.85)',
-    legendBorder: style.getPropertyValue('--canvas-legend-border').trim() || 'rgba(64, 64, 64, 0.6)',
-    waveColor: style.getPropertyValue('--canvas-wave-color').trim() || 'rgba(255, 255, 255, 0.6)',
-    bgPrimary: style.getPropertyValue('--bg-primary').trim() || '#1a1625',
-    textPrimary: style.getPropertyValue('--text-primary').trim() || '#f0edf5',
-    textSecondary: style.getPropertyValue('--text-secondary').trim() || '#c4bdd4',
+    stationInner:
+      style.getPropertyValue("--canvas-station-inner").trim() || "#ffffff",
+    tooltipBg:
+      style.getPropertyValue("--canvas-tooltip-bg").trim() ||
+      "rgba(23, 23, 23, 0.95)",
+    tooltipText:
+      style.getPropertyValue("--canvas-tooltip-text").trim() || "#f0edf5",
+    tooltipMuted:
+      style.getPropertyValue("--canvas-tooltip-muted").trim() || "#8b829e",
+    legendBg:
+      style.getPropertyValue("--canvas-legend-bg").trim() ||
+      "rgba(10, 10, 10, 0.85)",
+    legendBorder:
+      style.getPropertyValue("--canvas-legend-border").trim() ||
+      "rgba(64, 64, 64, 0.6)",
+    waveColor:
+      style.getPropertyValue("--canvas-wave-color").trim() ||
+      "rgba(255, 255, 255, 0.6)",
+    bgPrimary: style.getPropertyValue("--bg-primary").trim() || "#1a1625",
+    textPrimary: style.getPropertyValue("--text-primary").trim() || "#f0edf5",
+    textSecondary:
+      style.getPropertyValue("--text-secondary").trim() || "#c4bdd4",
   };
 }
 
 // Octilinear directions: 0°, 45°, 90°, 135°, 180°, 225°, 270°, 315°
 const DIRECTIONS = [
-  { dx: 1, dy: 0 },   // East
-  { dx: 1, dy: -1 },  // Northeast
-  { dx: 0, dy: -1 },  // North
+  { dx: 1, dy: 0 }, // East
+  { dx: 1, dy: -1 }, // Northeast
+  { dx: 0, dy: -1 }, // North
   { dx: -1, dy: -1 }, // Northwest
-  { dx: -1, dy: 0 },  // West
-  { dx: -1, dy: 1 },  // Southwest
-  { dx: 0, dy: 1 },   // South
-  { dx: 1, dy: 1 },   // Southeast
+  { dx: -1, dy: 0 }, // West
+  { dx: -1, dy: 1 }, // Southwest
+  { dx: 0, dy: 1 }, // South
+  { dx: 1, dy: 1 }, // Southeast
 ];
 
 // Metro line colors optimized for contrast
@@ -70,8 +82,8 @@ const LIGHT_MODE_COLORS = [
 
 // Get colors based on current theme
 function getThemeLineColors(): string[] {
-  const theme = document.documentElement.getAttribute('data-theme');
-  return theme === 'light' ? LIGHT_MODE_COLORS : DARK_MODE_COLORS;
+  const theme = document.documentElement.getAttribute("data-theme");
+  return theme === "light" ? LIGHT_MODE_COLORS : DARK_MODE_COLORS;
 }
 
 // Legacy default for initial load
@@ -85,18 +97,66 @@ interface TransitLineInfo {
 }
 
 const TRANSIT_LINES: TransitLineInfo[] = [
-  { name: "山手線 Yamanote", location: "Tokyo", wiki: "https://en.wikipedia.org/wiki/Yamanote_Line" },
-  { name: "銀座線 Ginza", location: "Tokyo", wiki: "https://en.wikipedia.org/wiki/Tokyo_Metro_Ginza_Line" },
-  { name: "中央線 Chūō", location: "Tokyo", wiki: "https://en.wikipedia.org/wiki/Ch%C5%AB%C5%8D_Line_(Rapid)" },
-  { name: "U2", location: "Berlin", wiki: "https://en.wikipedia.org/wiki/U2_(Berlin_U-Bahn)" },
-  { name: "U6", location: "Berlin", wiki: "https://en.wikipedia.org/wiki/U6_(Berlin_U-Bahn)" },
-  { name: "Red Line", location: "Salt Lake City", wiki: "https://en.wikipedia.org/wiki/Red_Line_(TRAX)" },
-  { name: "Blue Line", location: "Salt Lake City", wiki: "https://en.wikipedia.org/wiki/Blue_Line_(TRAX)" },
-  { name: "T Third", location: "San Francisco", wiki: "https://en.wikipedia.org/wiki/T_Third_Street" },
-  { name: "1 Line", location: "Seattle", wiki: "https://en.wikipedia.org/wiki/1_Line_(Link_light_rail)" },
-  { name: "Route 3", location: "Santa Cruz", wiki: "https://en.wikipedia.org/wiki/Santa_Cruz_Metropolitan_Transit_District" },
-  { name: "Route 10", location: "Santa Cruz", wiki: "https://en.wikipedia.org/wiki/Santa_Cruz_Metropolitan_Transit_District" },
-  { name: "Caltrain", location: "Bay Area", wiki: "https://en.wikipedia.org/wiki/Caltrain" },
+  {
+    name: "山手線 Yamanote",
+    location: "Tokyo",
+    wiki: "https://en.wikipedia.org/wiki/Yamanote_Line",
+  },
+  {
+    name: "銀座線 Ginza",
+    location: "Tokyo",
+    wiki: "https://en.wikipedia.org/wiki/Tokyo_Metro_Ginza_Line",
+  },
+  {
+    name: "中央線 Chūō",
+    location: "Tokyo",
+    wiki: "https://en.wikipedia.org/wiki/Ch%C5%AB%C5%8D_Line_(Rapid)",
+  },
+  {
+    name: "U2",
+    location: "Berlin",
+    wiki: "https://en.wikipedia.org/wiki/U2_(Berlin_U-Bahn)",
+  },
+  {
+    name: "U6",
+    location: "Berlin",
+    wiki: "https://en.wikipedia.org/wiki/U6_(Berlin_U-Bahn)",
+  },
+  {
+    name: "Red Line",
+    location: "Salt Lake City",
+    wiki: "https://en.wikipedia.org/wiki/Red_Line_(TRAX)",
+  },
+  {
+    name: "Blue Line",
+    location: "Salt Lake City",
+    wiki: "https://en.wikipedia.org/wiki/Blue_Line_(TRAX)",
+  },
+  {
+    name: "T Third",
+    location: "San Francisco",
+    wiki: "https://en.wikipedia.org/wiki/T_Third_Street",
+  },
+  {
+    name: "1 Line",
+    location: "Seattle",
+    wiki: "https://en.wikipedia.org/wiki/1_Line_(Link_light_rail)",
+  },
+  {
+    name: "Route 3",
+    location: "Santa Cruz",
+    wiki: "https://en.wikipedia.org/wiki/Santa_Cruz_Metropolitan_Transit_District",
+  },
+  {
+    name: "Route 10",
+    location: "Santa Cruz",
+    wiki: "https://en.wikipedia.org/wiki/Santa_Cruz_Metropolitan_Transit_District",
+  },
+  {
+    name: "Caltrain",
+    location: "Bay Area",
+    wiki: "https://en.wikipedia.org/wiki/Caltrain",
+  },
 ];
 
 // Select one random line per unique location
@@ -295,7 +355,10 @@ function parseColor(color: string): RGB {
 }
 
 function rgbToHex(rgb: RGB): string {
-  const toHex = (n: number) => Math.round(Math.min(255, Math.max(0, n))).toString(16).padStart(2, "0");
+  const toHex = (n: number) =>
+    Math.round(Math.min(255, Math.max(0, n)))
+      .toString(16)
+      .padStart(2, "0");
   return `#${toHex(rgb.r)}${toHex(rgb.g)}${toHex(rgb.b)}`;
 }
 
@@ -339,14 +402,24 @@ function getPositionAtDistance(
   for (let i = 0; i < points.length - 1; i++) {
     const segmentLength = distance(points[i], points[i + 1]);
 
-    if (accumulatedDist + segmentLength >= targetDist || i === points.length - 2) {
+    if (
+      accumulatedDist + segmentLength >= targetDist ||
+      i === points.length - 2
+    ) {
       // We're on this segment
-      const segmentProgress = segmentLength > 0
-        ? Math.min(1, Math.max(0, (targetDist - accumulatedDist) / segmentLength))
-        : 0;
+      const segmentProgress =
+        segmentLength > 0
+          ? Math.min(
+              1,
+              Math.max(0, (targetDist - accumulatedDist) / segmentLength)
+            )
+          : 0;
       const x = points[i].x + (points[i + 1].x - points[i].x) * segmentProgress;
       const y = points[i].y + (points[i + 1].y - points[i].y) * segmentProgress;
-      const angle = Math.atan2(points[i + 1].y - points[i].y, points[i + 1].x - points[i].x);
+      const angle = Math.atan2(
+        points[i + 1].y - points[i].y,
+        points[i + 1].x - points[i].x
+      );
       return { x, y, angle };
     }
 
@@ -377,7 +450,9 @@ function findDistanceAlongLine(points: Point[], target: Point): number {
     const dy = points[i + 1].y - points[i].y;
 
     if (segmentLength > 0) {
-      let t = ((target.x - points[i].x) * dx + (target.y - points[i].y) * dy) / (segmentLength * segmentLength);
+      let t =
+        ((target.x - points[i].x) * dx + (target.y - points[i].y) * dy) /
+        (segmentLength * segmentLength);
       t = Math.max(0, Math.min(1, t));
 
       const projX = points[i].x + t * dx;
@@ -439,13 +514,13 @@ function selectWeightedDirection(
   if (availableDirs.length === 1) return availableDirs[0];
 
   // Calculate scores for each direction
-  const scores = availableDirs.map(dir =>
+  const scores = availableDirs.map((dir) =>
     getCenterWeightScore(position, dir, canvasCenter, segmentLength)
   );
 
   // Convert scores to exponential weights (higher score = higher probability)
   // Add a baseline so all directions have some chance
-  const weights = scores.map(score =>
+  const weights = scores.map((score) =>
     Math.exp(score * CENTER_WEIGHT_STRENGTH)
   );
 
@@ -492,7 +567,9 @@ function isInBounds(
   y: number,
   bounds: { left: number; right: number; top: number; bottom: number }
 ): boolean {
-  return x > bounds.left && x < bounds.right && y > bounds.top && y < bounds.bottom;
+  return (
+    x > bounds.left && x < bounds.right && y > bounds.top && y < bounds.bottom
+  );
 }
 
 interface Props {
@@ -587,7 +664,11 @@ export default function MetroMap({ variant = "full" }: Props) {
       return true;
     };
 
-    const addStation = (line: MetroLine, pos: Point, isJunction: boolean): boolean => {
+    const addStation = (
+      line: MetroLine,
+      pos: Point,
+      isJunction: boolean
+    ): boolean => {
       if (canPlaceStation(pos)) {
         const station: Station = {
           x: pos.x,
@@ -703,7 +784,11 @@ export default function MetroMap({ variant = "full" }: Props) {
       for (const segId of nearby) {
         const seg = corridorSegments[segId];
         if (!seg || seg.lineIds.has(line.id)) continue;
-        if (!parallelDirs.includes(seg.direction) && !parallelDirs.includes((seg.direction + 4) % 8)) continue;
+        if (
+          !parallelDirs.includes(seg.direction) &&
+          !parallelDirs.includes((seg.direction + 4) % 8)
+        )
+          continue;
 
         if (perpendicularDistance(start, end, seg) < threshold) {
           seg.lineIds.add(line.id);
@@ -775,7 +860,10 @@ export default function MetroMap({ variant = "full" }: Props) {
       };
     };
 
-    const createBranchLine = (branchPoint: Point, direction: number): MetroLine => {
+    const createBranchLine = (
+      branchPoint: Point,
+      direction: number
+    ): MetroLine => {
       const id = lineIdCounter++;
       const transitInfo = plannedLines[id % plannedLines.length];
       const color = plannedColors[id % plannedColors.length];
@@ -884,7 +972,8 @@ export default function MetroMap({ variant = "full" }: Props) {
       // Use easing derivative for speed: starts fast, slows down
       // Derivative of easeOutCubic is 3(1-t)^2, normalized
       const easedSpeedMultiplier = 3 * Math.pow(1 - growthProgress, 2);
-      const effectiveSpeed = config.lineSpeed * Math.max(0.3, easedSpeedMultiplier);
+      const effectiveSpeed =
+        config.lineSpeed * Math.max(0.3, easedSpeedMultiplier);
 
       const dir = DIRECTIONS[line.currentDirection];
       const lastPoint = line.points[line.points.length - 1];
@@ -924,23 +1013,32 @@ export default function MetroMap({ variant = "full" }: Props) {
 
         // Filter out directions that would be parallel to nearby lines
         const nonParallelDirs = continueDirs.filter(
-          dir => !isDirectionParallelToNearbyLines(line, position, dir)
+          (dir) => !isDirectionParallelToNearbyLines(line, position, dir)
         );
 
         // Also filter out directions that would cross existing lines
         const nonCrossingDirs = nonParallelDirs.filter(
-          dir => !wouldCrossExistingLine(line, position, dir)
+          (dir) => !wouldCrossExistingLine(line, position, dir)
         );
 
         // Use non-crossing directions if available, fall back to non-parallel, then original
-        const availableDirs = nonCrossingDirs.length > 0 ? nonCrossingDirs :
-                              (nonParallelDirs.length > 0 ? nonParallelDirs : continueDirs);
+        const availableDirs =
+          nonCrossingDirs.length > 0
+            ? nonCrossingDirs
+            : nonParallelDirs.length > 0
+              ? nonParallelDirs
+              : continueDirs;
         // Use center-weighted selection to bias growth toward canvas center
         const canvasCenter = {
           x: (drawBounds.left + drawBounds.right) / 2,
           y: (drawBounds.top + drawBounds.bottom) / 2,
         };
-        const newDir = selectWeightedDirection(availableDirs, position, canvasCenter, config.segmentLength);
+        const newDir = selectWeightedDirection(
+          availableDirs,
+          position,
+          canvasCenter,
+          config.segmentLength
+        );
 
         if (newDir !== line.currentDirection) {
           line.points.push({ x: newX, y: newY });
@@ -956,13 +1054,17 @@ export default function MetroMap({ variant = "full" }: Props) {
           const branchDirs = getValidBranchDirections(line.currentDirection);
           // Filter branch directions to avoid parallel lines and crossings
           const nonParallelBranchDirs = branchDirs.filter(
-            dir => !isDirectionParallelToNearbyLines(line, position, dir)
+            (dir) => !isDirectionParallelToNearbyLines(line, position, dir)
           );
           const nonCrossingBranchDirs = nonParallelBranchDirs.filter(
-            dir => !wouldCrossExistingLine(line, position, dir)
+            (dir) => !wouldCrossExistingLine(line, position, dir)
           );
-          const candidateBranchDirs = nonCrossingBranchDirs.length > 0 ? nonCrossingBranchDirs :
-                                       (nonParallelBranchDirs.length > 0 ? nonParallelBranchDirs : branchDirs);
+          const candidateBranchDirs =
+            nonCrossingBranchDirs.length > 0
+              ? nonCrossingBranchDirs
+              : nonParallelBranchDirs.length > 0
+                ? nonParallelBranchDirs
+                : branchDirs;
 
           // Sort by center weight (best direction first) for branch selection
           const branchCanvasCenter = {
@@ -970,14 +1072,26 @@ export default function MetroMap({ variant = "full" }: Props) {
             y: (drawBounds.top + drawBounds.bottom) / 2,
           };
           const sortedByWeight = [...candidateBranchDirs].sort((a, b) => {
-            const scoreA = getCenterWeightScore(position, a, branchCanvasCenter, config.segmentLength);
-            const scoreB = getCenterWeightScore(position, b, branchCanvasCenter, config.segmentLength);
+            const scoreA = getCenterWeightScore(
+              position,
+              a,
+              branchCanvasCenter,
+              config.segmentLength
+            );
+            const scoreB = getCenterWeightScore(
+              position,
+              b,
+              branchCanvasCenter,
+              config.segmentLength
+            );
             return scoreB - scoreA; // Higher score first
           });
 
           for (const branchDir of sortedByWeight) {
-            const testX = newX + DIRECTIONS[branchDir].dx * config.segmentLength;
-            const testY = newY + DIRECTIONS[branchDir].dy * config.segmentLength;
+            const testX =
+              newX + DIRECTIONS[branchDir].dx * config.segmentLength;
+            const testY =
+              newY + DIRECTIONS[branchDir].dy * config.segmentLength;
 
             if (isInBounds(testX, testY, drawBounds)) {
               line.lastBranchDistance = 0;
@@ -991,8 +1105,12 @@ export default function MetroMap({ variant = "full" }: Props) {
 
         // Add station along the line periodically (lines grow, stations appear on them)
         // Stations appear more frequently near the start, less as line extends
-        const stationChance = line.lastStationDistance > config.segmentLength * 1.5 ? 0.4 : 0.15;
-        if (Math.random() < stationChance && line.totalLength > config.segmentLength) {
+        const stationChance =
+          line.lastStationDistance > config.segmentLength * 1.5 ? 0.4 : 0.15;
+        if (
+          Math.random() < stationChance &&
+          line.totalLength > config.segmentLength
+        ) {
           addStation(line, { x: newX, y: newY }, false);
         }
       }
@@ -1003,11 +1121,17 @@ export default function MetroMap({ variant = "full" }: Props) {
     const updateColors = () => {
       // Update each line's current color towards its target
       for (const line of lines) {
-        line.currentColor = lerpColor(line.currentColor, line.targetColor, COLOR_LERP_SPEED);
+        line.currentColor = lerpColor(
+          line.currentColor,
+          line.targetColor,
+          COLOR_LERP_SPEED
+        );
       }
 
       // Lerp colorShiftIntensity towards target for smooth fade in/out
-      colorShiftIntensity += (targetColorShiftIntensity - colorShiftIntensity) * COLOR_SHIFT_LERP_SPEED;
+      colorShiftIntensity +=
+        (targetColorShiftIntensity - colorShiftIntensity) *
+        COLOR_SHIFT_LERP_SPEED;
 
       // Decay the target over time (gradual fade out)
       if (targetColorShiftIntensity > 0) {
@@ -1070,19 +1194,25 @@ export default function MetroMap({ variant = "full" }: Props) {
           if (dist > waveFront - waveWidth && dist < waveFront + waveWidth) {
             // Station is within the wave - boost its glow
             const waveIntensity = 1 - Math.abs(dist - waveFront) / waveWidth;
-            station.glowIntensity = Math.max(station.glowIntensity, waveIntensity * 0.8);
+            station.glowIntensity = Math.max(
+              station.glowIntensity,
+              waveIntensity * 0.8
+            );
           }
         }
 
         // Lerp hover scale towards target
-        station.hoverScale += (targetHoverScale - station.hoverScale) * HOVER_LERP_SPEED;
+        station.hoverScale +=
+          (targetHoverScale - station.hoverScale) * HOVER_LERP_SPEED;
 
         // Update glow intensity based on hover scale, but let it decay smoothly
         const targetGlow = station.hoverScale;
         if (targetGlow > station.glowIntensity) {
-          station.glowIntensity += (targetGlow - station.glowIntensity) * HOVER_LERP_SPEED;
+          station.glowIntensity +=
+            (targetGlow - station.glowIntensity) * HOVER_LERP_SPEED;
         } else {
-          station.glowIntensity += (targetGlow - station.glowIntensity) * HOVER_LERP_SPEED * 0.5;
+          station.glowIntensity +=
+            (targetGlow - station.glowIntensity) * HOVER_LERP_SPEED * 0.5;
         }
       }
     };
@@ -1090,7 +1220,7 @@ export default function MetroMap({ variant = "full" }: Props) {
     // Update click waves
     const updateClickWaves = () => {
       const now = performance.now();
-      clickWaves = clickWaves.filter(wave => {
+      clickWaves = clickWaves.filter((wave) => {
         const elapsed = now - wave.startTime;
         if (elapsed > WAVE_DURATION) return false;
         wave.radius = (elapsed / 1000) * WAVE_SPEED;
@@ -1108,7 +1238,7 @@ export default function MetroMap({ variant = "full" }: Props) {
       if (lineLength < 10) return null;
 
       // Calculate distance along line for each station
-      const stationDistances = line.stations.map(station =>
+      const stationDistances = line.stations.map((station) =>
         findDistanceAlongLine(line.points, station)
       );
 
@@ -1143,7 +1273,7 @@ export default function MetroMap({ variant = "full" }: Props) {
 
       for (const line of lines) {
         // Check if this line already has a train
-        const hasTrain = trains.some(t => t.line === line);
+        const hasTrain = trains.some((t) => t.line === line);
         if (hasTrain) continue;
 
         // Line must be done growing and have enough stations
@@ -1192,7 +1322,8 @@ export default function MetroMap({ variant = "full" }: Props) {
           if (station === train.lastStoppedAt) continue;
 
           // Check if station is ahead in our direction
-          const distToStation = (stationDist - train.distanceAlongLine) * train.direction;
+          const distToStation =
+            (stationDist - train.distanceAlongLine) * train.direction;
           if (distToStation > 0 && distToStation < nearestStationDist) {
             nearestStationDist = distToStation;
             nearestStation = station;
@@ -1320,7 +1451,11 @@ export default function MetroMap({ variant = "full" }: Props) {
     const getLineDisplayColor = (line: MetroLine): RGB => {
       let displayColor = line.currentColor;
       if (globalColorShift && colorShiftIntensity > 0) {
-        displayColor = shiftColorTowards(line.currentColor, globalColorShift, colorShiftIntensity * 0.4);
+        displayColor = shiftColorTowards(
+          line.currentColor,
+          globalColorShift,
+          colorShiftIntensity * 0.4
+        );
       }
       return displayColor;
     };
@@ -1332,7 +1467,7 @@ export default function MetroMap({ variant = "full" }: Props) {
       const angle = Math.atan2(dy, dx);
       // Convert angle to 0-7 direction index
       // 0 = East, 2 = North, 4 = West, 6 = South
-      const normalizedAngle = ((angle + Math.PI * 2) % (Math.PI * 2));
+      const normalizedAngle = (angle + Math.PI * 2) % (Math.PI * 2);
       return Math.round(normalizedAngle / (Math.PI / 4)) % 8;
     };
 
@@ -1353,8 +1488,12 @@ export default function MetroMap({ variant = "full" }: Props) {
           const segEnd = otherLine.points[j + 1];
 
           // Check if segment is close enough
-          const segMid = { x: (segStart.x + segEnd.x) / 2, y: (segStart.y + segEnd.y) / 2 };
-          if (distance(position, segMid) > PARALLEL_AVOIDANCE_DISTANCE) continue;
+          const segMid = {
+            x: (segStart.x + segEnd.x) / 2,
+            y: (segStart.y + segEnd.y) / 2,
+          };
+          if (distance(position, segMid) > PARALLEL_AVOIDANCE_DISTANCE)
+            continue;
 
           // Check if parallel
           const otherDir = getSegmentDirection(segStart, segEnd);
@@ -1368,8 +1507,10 @@ export default function MetroMap({ variant = "full" }: Props) {
 
     // Check if two line segments intersect (excluding endpoints)
     const segmentsIntersect = (
-      p1: Point, p2: Point,  // First segment
-      p3: Point, p4: Point   // Second segment
+      p1: Point,
+      p2: Point, // First segment
+      p3: Point,
+      p4: Point // Second segment
     ): boolean => {
       // Using cross product method
       const d1 = (p4.x - p3.x) * (p1.y - p3.y) - (p4.y - p3.y) * (p1.x - p3.x);
@@ -1378,8 +1519,10 @@ export default function MetroMap({ variant = "full" }: Props) {
       const d4 = (p2.x - p1.x) * (p4.y - p1.y) - (p2.y - p1.y) * (p4.x - p1.x);
 
       // Check if segments straddle each other
-      if (((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) &&
-          ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))) {
+      if (
+        ((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) &&
+        ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))
+      ) {
         return true;
       }
       return false;
@@ -1404,12 +1547,19 @@ export default function MetroMap({ variant = "full" }: Props) {
           const segEnd = otherLine.points[j + 1];
 
           // Skip if segment is too far away (optimization)
-          const segMid = { x: (segStart.x + segEnd.x) / 2, y: (segStart.y + segEnd.y) / 2 };
+          const segMid = {
+            x: (segStart.x + segEnd.x) / 2,
+            y: (segStart.y + segEnd.y) / 2,
+          };
           if (distance(start, segMid) > config.segmentLength * 2) continue;
 
           // Skip segments that share our start point (junction points)
-          if ((Math.abs(segStart.x - start.x) < 5 && Math.abs(segStart.y - start.y) < 5) ||
-              (Math.abs(segEnd.x - start.x) < 5 && Math.abs(segEnd.y - start.y) < 5)) {
+          if (
+            (Math.abs(segStart.x - start.x) < 5 &&
+              Math.abs(segStart.y - start.y) < 5) ||
+            (Math.abs(segEnd.x - start.x) < 5 &&
+              Math.abs(segEnd.y - start.y) < 5)
+          ) {
             continue;
           }
 
@@ -1453,7 +1603,10 @@ export default function MetroMap({ variant = "full" }: Props) {
           ctx.beginPath();
           ctx.arc(wave.origin.x, wave.origin.y, wave.radius, 0, Math.PI * 2);
           // Use theme-aware wave color
-          const waveBase = themeColors.waveColor.replace(/[\d.]+\)$/, `${opacity * waveOpacity})`);
+          const waveBase = themeColors.waveColor.replace(
+            /[\d.]+\)$/,
+            `${opacity * waveOpacity})`
+          );
           ctx.strokeStyle = waveBase;
           ctx.lineWidth = 3;
           ctx.stroke();
@@ -1464,8 +1617,12 @@ export default function MetroMap({ variant = "full" }: Props) {
     // Draw a single station
     const drawStation = (station: Station, color: RGB, opacity: number) => {
       const { r, g, b } = color;
-      const baseRadius = station.isJunction ? config.stationRadius + 3 : config.stationRadius;
-      const innerBaseRadius = station.isJunction ? config.stationRadius - 1 : config.stationRadius - 3;
+      const baseRadius = station.isJunction
+        ? config.stationRadius + 3
+        : config.stationRadius;
+      const innerBaseRadius = station.isJunction
+        ? config.stationRadius - 1
+        : config.stationRadius - 3;
 
       // Calculate scale with idle pulse and hover effect
       const idlePulse = 1 + Math.sin(station.pulsePhase) * IDLE_PULSE_AMOUNT;
@@ -1480,11 +1637,21 @@ export default function MetroMap({ variant = "full" }: Props) {
         if (station.glowIntensity > 0.01) {
           const glowRadius = radius * 2.5;
           const gradient = ctx.createRadialGradient(
-            station.x, station.y, radius * 0.5,
-            station.x, station.y, glowRadius
+            station.x,
+            station.y,
+            radius * 0.5,
+            station.x,
+            station.y,
+            glowRadius
           );
-          gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${opacity * station.glowIntensity * 0.5})`);
-          gradient.addColorStop(0.5, `rgba(${r}, ${g}, ${b}, ${opacity * station.glowIntensity * 0.2})`);
+          gradient.addColorStop(
+            0,
+            `rgba(${r}, ${g}, ${b}, ${opacity * station.glowIntensity * 0.5})`
+          );
+          gradient.addColorStop(
+            0.5,
+            `rgba(${r}, ${g}, ${b}, ${opacity * station.glowIntensity * 0.2})`
+          );
           gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
 
           ctx.beginPath();
@@ -1505,7 +1672,9 @@ export default function MetroMap({ variant = "full" }: Props) {
           ctx.arc(station.x, station.y, innerRadius, 0, Math.PI * 2);
           // Parse theme color to RGB for opacity support
           const innerColor = themeColors.stationInner;
-          const match = innerColor.match(/^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+          const match = innerColor.match(
+            /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i
+          );
           if (match) {
             const ir = parseInt(match[1], 16);
             const ig = parseInt(match[2], 16);
@@ -1542,7 +1711,9 @@ export default function MetroMap({ variant = "full" }: Props) {
 
       // Theme-aware interior color
       const innerColor = themeColors.stationInner;
-      const innerMatch = innerColor.match(/^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+      const innerMatch = innerColor.match(
+        /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i
+      );
       if (innerMatch) {
         const ir = parseInt(innerMatch[1], 16);
         const ig = parseInt(innerMatch[2], 16);
@@ -1551,12 +1722,22 @@ export default function MetroMap({ variant = "full" }: Props) {
       } else {
         ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 0.95})`;
       }
-      ctx.fillRect(-halfWidth, -halfHeight, config.trainWidth, config.trainHeight);
+      ctx.fillRect(
+        -halfWidth,
+        -halfHeight,
+        config.trainWidth,
+        config.trainHeight
+      );
 
       // Colored outline
       ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${opacity})`;
       ctx.lineWidth = 2;
-      ctx.strokeRect(-halfWidth, -halfHeight, config.trainWidth, config.trainHeight);
+      ctx.strokeRect(
+        -halfWidth,
+        -halfHeight,
+        config.trainWidth,
+        config.trainHeight
+      );
 
       ctx.restore();
     };
@@ -1601,16 +1782,23 @@ export default function MetroMap({ variant = "full" }: Props) {
 
       // Position tooltip above station
       let tooltipX = hoveredStation.x - tooltipWidth / 2;
-      let tooltipY = hoveredStation.y - config.stationRadius - tooltipHeight - 8;
+      let tooltipY =
+        hoveredStation.y - config.stationRadius - tooltipHeight - 8;
 
       // Keep tooltip in bounds
-      tooltipX = Math.max(8, Math.min(canvasWidth - tooltipWidth - 8, tooltipX));
+      tooltipX = Math.max(
+        8,
+        Math.min(canvasWidth - tooltipWidth - 8, tooltipX)
+      );
       if (tooltipY < 8) {
         tooltipY = hoveredStation.y + config.stationRadius + 8; // Show below if no room above
       }
 
       // Draw tooltip background - parse the rgba color for opacity
-      const tooltipBgBase = themeColors.tooltipBg.replace(/[\d.]+\)$/, `${opacity * 0.95})`);
+      const tooltipBgBase = themeColors.tooltipBg.replace(
+        /[\d.]+\)$/,
+        `${opacity * 0.95})`
+      );
       ctx.fillStyle = tooltipBgBase;
       ctx.beginPath();
       ctx.roundRect(tooltipX, tooltipY, tooltipWidth, tooltipHeight, 6);
@@ -1624,7 +1812,9 @@ export default function MetroMap({ variant = "full" }: Props) {
 
       // Draw line name - use theme text color
       ctx.font = `600 15px "Helvetica Neue", "Arial", system-ui, sans-serif`;
-      const textMatch = themeColors.tooltipText.match(/^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+      const textMatch = themeColors.tooltipText.match(
+        /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i
+      );
       if (textMatch) {
         ctx.fillStyle = `rgba(${parseInt(textMatch[1], 16)}, ${parseInt(textMatch[2], 16)}, ${parseInt(textMatch[3], 16)}, ${opacity})`;
       } else {
@@ -1635,7 +1825,9 @@ export default function MetroMap({ variant = "full" }: Props) {
 
       // Draw location - use theme muted color
       ctx.font = `12px "Helvetica Neue", "Arial", system-ui, sans-serif`;
-      const mutedMatch = themeColors.tooltipMuted.match(/^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+      const mutedMatch = themeColors.tooltipMuted.match(
+        /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i
+      );
       if (mutedMatch) {
         ctx.fillStyle = `rgba(${parseInt(mutedMatch[1], 16)}, ${parseInt(mutedMatch[2], 16)}, ${parseInt(mutedMatch[3], 16)}, ${opacity})`;
       } else {
@@ -1686,29 +1878,42 @@ export default function MetroMap({ variant = "full" }: Props) {
 
       const boardWidth = maxWidth + boardPadding * 2 + 10;
       // Shrink-wrap: header + content + padding
-      const contentOffset = 20; // Header (12px) + gap
-      const boardHeight = boardPadding + contentOffset + plannedLines.length * lineHeight - lineHeight / 2 + boardPadding;
+      const contentOffset = 30; // Header (12px) + gap below header
+      const boardHeight =
+        boardPadding +
+        contentOffset +
+        plannedLines.length * lineHeight -
+        lineHeight / 2 +
+        boardPadding;
 
       // Position at bottom right
       const boardX = canvasWidth - padding - boardWidth;
       const boardY = canvasHeight - padding - boardHeight;
 
       // Draw board background - parse the rgba color for opacity
-      const legendBgBase = themeColors.legendBg.replace(/[\d.]+\)$/, `${opacity * 0.85})`);
+      const legendBgBase = themeColors.legendBg.replace(
+        /[\d.]+\)$/,
+        `${opacity * 0.85})`
+      );
       ctx.fillStyle = legendBgBase;
       ctx.beginPath();
       ctx.roundRect(boardX, boardY, boardWidth, boardHeight, 8);
       ctx.fill();
 
       // Draw board border
-      const legendBorderBase = themeColors.legendBorder.replace(/[\d.]+\)$/, `${opacity * 0.6})`);
+      const legendBorderBase = themeColors.legendBorder.replace(
+        /[\d.]+\)$/,
+        `${opacity * 0.6})`
+      );
       ctx.strokeStyle = legendBorderBase;
       ctx.lineWidth = 1;
       ctx.stroke();
 
       // Draw header - use muted color
       ctx.font = `600 12px "Helvetica Neue", "Arial", system-ui, sans-serif`;
-      const mutedMatch = themeColors.tooltipMuted.match(/^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+      const mutedMatch = themeColors.tooltipMuted.match(
+        /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i
+      );
       if (mutedMatch) {
         ctx.fillStyle = `rgba(${parseInt(mutedMatch[1], 16)}, ${parseInt(mutedMatch[2], 16)}, ${parseInt(mutedMatch[3], 16)}, ${opacity * 0.9})`;
       } else {
@@ -1730,7 +1935,7 @@ export default function MetroMap({ variant = "full" }: Props) {
         const itemWidth = boardWidth - boardPadding * 2;
 
         // Check if this line has been rendered
-        const renderedLine = lines.find(l => l.name === planned.name);
+        const renderedLine = lines.find((l) => l.name === planned.name);
         const isRendered = !!renderedLine;
         const isHovered = hoveredLegendIndex === i;
 
@@ -1752,10 +1957,19 @@ export default function MetroMap({ variant = "full" }: Props) {
         // Draw hover background
         if (isHovered) {
           // Use a light overlay for hover in light mode, dark in dark mode
-          const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-          ctx.fillStyle = isDark ? `rgba(255, 255, 255, ${opacity * 0.08})` : `rgba(0, 0, 0, ${opacity * 0.05})`;
+          const isDark =
+            document.documentElement.getAttribute("data-theme") !== "light";
+          ctx.fillStyle = isDark
+            ? `rgba(255, 255, 255, ${opacity * 0.08})`
+            : `rgba(0, 0, 0, ${opacity * 0.05})`;
           ctx.beginPath();
-          ctx.roundRect(itemX - 4, y - lineHeight / 2 + 4, itemWidth + 8, lineHeight - 4, 4);
+          ctx.roundRect(
+            itemX - 4,
+            y - lineHeight / 2 + 4,
+            itemWidth + 8,
+            lineHeight - 4,
+            4
+          );
           ctx.fill();
         }
 
@@ -1768,7 +1982,9 @@ export default function MetroMap({ variant = "full" }: Props) {
         // Draw line name - use theme text color
         ctx.font = `600 14px "Helvetica Neue", "Arial", system-ui, sans-serif`;
         ctx.textBaseline = "middle";
-        const textMatch = themeColors.tooltipText.match(/^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+        const textMatch = themeColors.tooltipText.match(
+          /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i
+        );
         if (textMatch) {
           ctx.fillStyle = `rgba(${parseInt(textMatch[1], 16)}, ${parseInt(textMatch[2], 16)}, ${parseInt(textMatch[3], 16)}, ${itemOpacity})`;
         } else {
@@ -1779,7 +1995,9 @@ export default function MetroMap({ variant = "full" }: Props) {
         // Draw location - use theme muted color
         const nameWidth = ctx.measureText(planned.name).width;
         ctx.font = `11px "Helvetica Neue", "Arial", system-ui, sans-serif`;
-        const locMutedMatch = themeColors.tooltipMuted.match(/^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+        const locMutedMatch = themeColors.tooltipMuted.match(
+          /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i
+        );
         if (locMutedMatch) {
           ctx.fillStyle = `rgba(${parseInt(locMutedMatch[1], 16)}, ${parseInt(locMutedMatch[2], 16)}, ${parseInt(locMutedMatch[3], 16)}, ${itemOpacity * 0.8})`;
         } else {
@@ -1817,7 +2035,7 @@ export default function MetroMap({ variant = "full" }: Props) {
         }
         lines.push(...newLines);
 
-        if (lines.every(l => !l.growing)) break;
+        if (lines.every((l) => !l.growing)) break;
       }
 
       // Set all stations to full scale for static view
@@ -2028,7 +2246,7 @@ export default function MetroMap({ variant = "full" }: Props) {
     // Observe data-theme attribute changes
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
-        if (mutation.attributeName === 'data-theme') {
+        if (mutation.attributeName === "data-theme") {
           handleThemeChange();
         }
       }
@@ -2058,7 +2276,10 @@ export default function MetroMap({ variant = "full" }: Props) {
     return () => {
       observer.disconnect();
       window.removeEventListener("resize", resize);
-      window.removeEventListener("viz-color", handleColorChange as EventListener);
+      window.removeEventListener(
+        "viz-color",
+        handleColorChange as EventListener
+      );
       window.removeEventListener("viz-palette", handlePalette as EventListener);
       window.removeEventListener("viz-color-reset", handleColorReset);
       window.removeEventListener("viz-new", handleNewViz);
