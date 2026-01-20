@@ -146,6 +146,7 @@ const TRAIN_MIN_WAIT = 800; // Min wait time at station (ms)
 const TRAIN_MAX_WAIT = 2500; // Max wait time at station (ms)
 const PARALLEL_AVOIDANCE_DISTANCE = 80; // Avoid parallel directions within this distance
 const MIN_STATIONS_FOR_TRAIN = 2; // Minimum stations before spawning a train
+const CENTER_WEIGHT_STRENGTH = 0.5; // How strongly lines are pulled toward center (0 = no bias, 1 = strong)
 
 // Viewport-dependent configuration
 interface MapConfig {
@@ -398,6 +399,70 @@ function findDistanceAlongLine(points: Point[], target: Point): number {
 // Random wait time between min and max
 function randomWaitTime(): number {
   return TRAIN_MIN_WAIT + Math.random() * (TRAIN_MAX_WAIT - TRAIN_MIN_WAIT);
+}
+
+// Calculate center weight score for a direction from a given position
+// Returns positive score if direction moves toward center, negative if away
+// Score is scaled by how far from center the point currently is
+function getCenterWeightScore(
+  position: Point,
+  direction: number,
+  canvasCenter: Point,
+  segmentLength: number
+): number {
+  const dir = DIRECTIONS[direction];
+  const newPos = {
+    x: position.x + dir.dx * segmentLength,
+    y: position.y + dir.dy * segmentLength,
+  };
+
+  const currentDistFromCenter = distance(position, canvasCenter);
+  const newDistFromCenter = distance(newPos, canvasCenter);
+
+  // Positive if moving toward center, negative if away
+  const improvement = currentDistFromCenter - newDistFromCenter;
+
+  // Scale the score by how far we are from center (stronger pull when far away)
+  const distanceScale = currentDistFromCenter / 200; // Normalize by typical canvas distance
+
+  return improvement * (1 + distanceScale);
+}
+
+// Select a direction using weighted random based on center weights
+function selectWeightedDirection(
+  availableDirs: number[],
+  position: Point,
+  canvasCenter: Point,
+  segmentLength: number
+): number {
+  if (availableDirs.length === 0) return 0;
+  if (availableDirs.length === 1) return availableDirs[0];
+
+  // Calculate scores for each direction
+  const scores = availableDirs.map(dir =>
+    getCenterWeightScore(position, dir, canvasCenter, segmentLength)
+  );
+
+  // Convert scores to exponential weights (higher score = higher probability)
+  // Add a baseline so all directions have some chance
+  const weights = scores.map(score =>
+    Math.exp(score * CENTER_WEIGHT_STRENGTH)
+  );
+
+  // Calculate total weight
+  const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+
+  // Weighted random selection
+  let random = Math.random() * totalWeight;
+  for (let i = 0; i < availableDirs.length; i++) {
+    random -= weights[i];
+    if (random <= 0) {
+      return availableDirs[i];
+    }
+  }
+
+  // Fallback to last direction
+  return availableDirs[availableDirs.length - 1];
 }
 
 // Get valid directions for branching (perpendicular or near-perpendicular)
@@ -745,7 +810,7 @@ export default function MetroMap({ variant = "full" }: Props) {
       const boundsWidth = drawBounds.right - drawBounds.left;
       const boundsHeight = drawBounds.bottom - drawBounds.top;
       hubCenter = {
-        x: drawBounds.left + boundsWidth * 0.3,
+        x: drawBounds.left + boundsWidth * 0.5,
         y: drawBounds.top + boundsHeight * 0.5,
       };
 
@@ -789,7 +854,7 @@ export default function MetroMap({ variant = "full" }: Props) {
       allStations.push(hubStation);
 
       // Create initial lines fanning out from hub
-      const startDirections = [0, 2, 6]; // E, N, SW - spread around
+      const startDirections = [0, 2, 4, 6]; // E, N, W, S - balanced spread from centered hub
       for (let i = 0; i < config.initialLines; i++) {
         const dir = startDirections[i % startDirections.length];
         const line = createLineFromHub(dir, i);
@@ -853,7 +918,7 @@ export default function MetroMap({ variant = "full" }: Props) {
       if (line.progress >= config.segmentLength) {
         line.progress = 0;
 
-        // Potentially change direction - avoid parallel to nearby lines
+        // Potentially change direction - avoid parallel and crossing lines
         const continueDirs = getValidContinueDirections(line.currentDirection);
         const position = { x: newX, y: newY };
 
@@ -862,9 +927,20 @@ export default function MetroMap({ variant = "full" }: Props) {
           dir => !isDirectionParallelToNearbyLines(line, position, dir)
         );
 
-        // Use non-parallel directions if available, otherwise fall back to original
-        const availableDirs = nonParallelDirs.length > 0 ? nonParallelDirs : continueDirs;
-        const newDir = availableDirs[Math.floor(Math.random() * availableDirs.length)];
+        // Also filter out directions that would cross existing lines
+        const nonCrossingDirs = nonParallelDirs.filter(
+          dir => !wouldCrossExistingLine(line, position, dir)
+        );
+
+        // Use non-crossing directions if available, fall back to non-parallel, then original
+        const availableDirs = nonCrossingDirs.length > 0 ? nonCrossingDirs :
+                              (nonParallelDirs.length > 0 ? nonParallelDirs : continueDirs);
+        // Use center-weighted selection to bias growth toward canvas center
+        const canvasCenter = {
+          x: (drawBounds.left + drawBounds.right) / 2,
+          y: (drawBounds.top + drawBounds.bottom) / 2,
+        };
+        const newDir = selectWeightedDirection(availableDirs, position, canvasCenter, config.segmentLength);
 
         if (newDir !== line.currentDirection) {
           line.points.push({ x: newX, y: newY });
@@ -878,14 +954,28 @@ export default function MetroMap({ variant = "full" }: Props) {
           Math.random() < BRANCH_PROBABILITY
         ) {
           const branchDirs = getValidBranchDirections(line.currentDirection);
-          // Filter branch directions to avoid parallel lines
+          // Filter branch directions to avoid parallel lines and crossings
           const nonParallelBranchDirs = branchDirs.filter(
             dir => !isDirectionParallelToNearbyLines(line, position, dir)
           );
-          const shuffled = (nonParallelBranchDirs.length > 0 ? nonParallelBranchDirs : branchDirs)
-            .sort(() => Math.random() - 0.5);
+          const nonCrossingBranchDirs = nonParallelBranchDirs.filter(
+            dir => !wouldCrossExistingLine(line, position, dir)
+          );
+          const candidateBranchDirs = nonCrossingBranchDirs.length > 0 ? nonCrossingBranchDirs :
+                                       (nonParallelBranchDirs.length > 0 ? nonParallelBranchDirs : branchDirs);
 
-          for (const branchDir of shuffled) {
+          // Sort by center weight (best direction first) for branch selection
+          const branchCanvasCenter = {
+            x: (drawBounds.left + drawBounds.right) / 2,
+            y: (drawBounds.top + drawBounds.bottom) / 2,
+          };
+          const sortedByWeight = [...candidateBranchDirs].sort((a, b) => {
+            const scoreA = getCenterWeightScore(position, a, branchCanvasCenter, config.segmentLength);
+            const scoreB = getCenterWeightScore(position, b, branchCanvasCenter, config.segmentLength);
+            return scoreB - scoreA; // Higher score first
+          });
+
+          for (const branchDir of sortedByWeight) {
             const testX = newX + DIRECTIONS[branchDir].dx * config.segmentLength;
             const testY = newY + DIRECTIONS[branchDir].dy * config.segmentLength;
 
@@ -1144,13 +1234,12 @@ export default function MetroMap({ variant = "full" }: Props) {
           const stationDist = train.stationDistances[i];
 
           // Check if we're close to this station
-          if (Math.abs(train.distanceAlongLine - stationDist) < config.stationStopThreshold) {
+          if (Math.abs(train.distanceAlongLine - stationDist) < 3) {
             // Don't stop at the same station we just left
             if (station !== train.lastStoppedAt) {
               train.waiting = true;
               train.waitEndTime = now + randomWaitTime();
               train.lastStoppedAt = station;
-              train.distanceAlongLine = stationDist; // Snap to station
               train.speed = 0;
               break;
             }
@@ -1166,8 +1255,9 @@ export default function MetroMap({ variant = "full" }: Props) {
         train.x += (train.targetX - train.x) * POSITION_LERP;
         train.y += (train.targetY - train.y) * POSITION_LERP;
 
-        // Calculate and smooth the angle
-        const targetAngle = train.direction === 1 ? pos.angle : pos.angle + Math.PI;
+        // Calculate and smooth the angle - trains don't rotate 180° when reversing
+        // They just move backward along the track, keeping their orientation
+        const targetAngle = pos.angle;
 
         // Handle angle wrapping for smooth rotation
         let angleDiff = targetAngle - train.angle;
@@ -1269,6 +1359,61 @@ export default function MetroMap({ variant = "full" }: Props) {
           // Check if parallel
           const otherDir = getSegmentDirection(segStart, segEnd);
           if (parallelDirs.includes(otherDir)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    };
+
+    // Check if two line segments intersect (excluding endpoints)
+    const segmentsIntersect = (
+      p1: Point, p2: Point,  // First segment
+      p3: Point, p4: Point   // Second segment
+    ): boolean => {
+      // Using cross product method
+      const d1 = (p4.x - p3.x) * (p1.y - p3.y) - (p4.y - p3.y) * (p1.x - p3.x);
+      const d2 = (p4.x - p3.x) * (p2.y - p3.y) - (p4.y - p3.y) * (p2.x - p3.x);
+      const d3 = (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x);
+      const d4 = (p2.x - p1.x) * (p4.y - p1.y) - (p2.y - p1.y) * (p4.x - p1.x);
+
+      // Check if segments straddle each other
+      if (((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) &&
+          ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))) {
+        return true;
+      }
+      return false;
+    };
+
+    // Check if a proposed segment would cross any existing line
+    const wouldCrossExistingLine = (
+      currentLine: MetroLine,
+      start: Point,
+      direction: number
+    ): boolean => {
+      const dir = DIRECTIONS[direction];
+      const end = {
+        x: start.x + dir.dx * config.segmentLength,
+        y: start.y + dir.dy * config.segmentLength,
+      };
+
+      for (const otherLine of lines) {
+        // Check all segments of other lines
+        for (let j = 0; j < otherLine.points.length - 1; j++) {
+          const segStart = otherLine.points[j];
+          const segEnd = otherLine.points[j + 1];
+
+          // Skip if segment is too far away (optimization)
+          const segMid = { x: (segStart.x + segEnd.x) / 2, y: (segStart.y + segEnd.y) / 2 };
+          if (distance(start, segMid) > config.segmentLength * 2) continue;
+
+          // Skip segments that share our start point (junction points)
+          if ((Math.abs(segStart.x - start.x) < 5 && Math.abs(segStart.y - start.y) < 5) ||
+              (Math.abs(segEnd.x - start.x) < 5 && Math.abs(segEnd.y - start.y) < 5)) {
+            continue;
+          }
+
+          if (segmentsIntersect(start, end, segStart, segEnd)) {
             return true;
           }
         }
@@ -1540,7 +1685,9 @@ export default function MetroMap({ variant = "full" }: Props) {
       }
 
       const boardWidth = maxWidth + boardPadding * 2 + 10;
-      const boardHeight = plannedLines.length * lineHeight + boardPadding * 2 + 24; // +24 for header
+      // Shrink-wrap: header + content + padding
+      const contentOffset = 20; // Header (12px) + gap
+      const boardHeight = boardPadding + contentOffset + plannedLines.length * lineHeight - lineHeight / 2 + boardPadding;
 
       // Position at bottom right
       const boardX = canvasWidth - padding - boardWidth;
@@ -1570,14 +1717,6 @@ export default function MetroMap({ variant = "full" }: Props) {
       ctx.textBaseline = "top";
       ctx.fillText("LINES", boardX + boardPadding, boardY + boardPadding);
 
-      // Draw separator line
-      const separatorBase = themeColors.legendBorder.replace(/[\d.]+\)$/, `${opacity * 0.5})`);
-      ctx.strokeStyle = separatorBase;
-      ctx.beginPath();
-      ctx.moveTo(boardX + boardPadding, boardY + boardPadding + 18);
-      ctx.lineTo(boardX + boardWidth - boardPadding, boardY + boardPadding + 18);
-      ctx.stroke();
-
       // Reset legend items for click detection
       legendItems = [];
 
@@ -1586,7 +1725,7 @@ export default function MetroMap({ variant = "full" }: Props) {
         const planned = plannedLines[i];
         const color = plannedColors[i];
         const rgb = parseColor(color);
-        const y = boardY + boardPadding + 28 + i * lineHeight;
+        const y = boardY + boardPadding + contentOffset + i * lineHeight;
         const itemX = boardX + boardPadding;
         const itemWidth = boardWidth - boardPadding * 2;
 
