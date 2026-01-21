@@ -114,6 +114,29 @@ function getThemeLineColors(): string[] {
   return theme === "light" ? LIGHT_MODE_COLORS : DARK_MODE_COLORS;
 }
 
+// Map color keywords in line names to palette indices
+const COLOR_NAME_TO_INDEX: Record<string, number> = {
+  'red': 0,      // Coral red / Brick red
+  'blue': 1,     // Sky blue / Denim blue
+  'green': 2,    // Mint green / Forest green
+  'gold': 3,     // Amber gold
+  'yellow': 3,   // Map to gold
+  'orange': 6,   // Peach orange / Terracotta
+  'purple': 4,   // Soft lavender / Deep lavender
+  'pink': 7,     // Dusty rose / Berry rose
+  'teal': 5,     // Aqua teal / Deep teal
+};
+
+function getColorIndexFromLineName(name: string): number | null {
+  const lowerName = name.toLowerCase();
+  for (const [keyword, index] of Object.entries(COLOR_NAME_TO_INDEX)) {
+    if (lowerName.includes(keyword)) {
+      return index;
+    }
+  }
+  return null;
+}
+
 // Legacy default for initial load
 const DEFAULT_COLORS = DARK_MODE_COLORS;
 
@@ -334,6 +357,17 @@ interface MetroLine {
   growthDuration: number; // How long the growth animation takes (ms)
   // Corridor tracking for parallel line stacking
   corridorSegmentIndices: number[]; // Which corridor segments this line participates in
+  // Pre-computed geometry for reveal animation
+  targetPoints: Point[]; // Full path from headless simulation
+  targetStations: Point[]; // All station positions along this line (as Points)
+  revealedLength: number; // How much of the path is currently visible (in pixels)
+  totalTargetLength: number; // Total length of targetPoints path
+  // Station-to-station animation
+  stationDistances: number[]; // Sorted distances along path for each station
+  currentSegmentIndex: number; // Which segment (0 = start to first station, 1 = first to second, etc.)
+  segmentStartTime: number; // When current segment animation started
+  pausingAtStation: boolean; // Whether we're paused at a station
+  pauseEndTime: number; // When to resume after pause
 }
 
 // Corridor segment shared by multiple lines (for parallel line stacking)
@@ -415,6 +449,33 @@ function calculateLineLength(points: Point[]): number {
   return length;
 }
 
+// Get points from a path up to a certain length (for reveal animation)
+function getPointsUpToLength(points: Point[], targetLength: number): Point[] {
+  if (points.length === 0) return [];
+  if (targetLength <= 0) return [{ ...points[0] }];
+
+  const result: Point[] = [{ ...points[0] }];
+  let accumulated = 0;
+
+  for (let i = 1; i < points.length; i++) {
+    const segLength = distance(points[i - 1], points[i]);
+    if (accumulated + segLength <= targetLength) {
+      result.push({ ...points[i] });
+      accumulated += segLength;
+    } else {
+      // Interpolate final point
+      const remaining = targetLength - accumulated;
+      const t = segLength > 0 ? remaining / segLength : 0;
+      result.push({
+        x: points[i - 1].x + (points[i].x - points[i - 1].x) * t,
+        y: points[i - 1].y + (points[i].y - points[i - 1].y) * t,
+      });
+      break;
+    }
+  }
+  return result;
+}
+
 // Get position and angle along a polyline at a given distance from start
 function getPositionAtDistance(
   points: Point[],
@@ -462,7 +523,7 @@ function getPositionAtDistance(
   return { x: points[lastIdx].x, y: points[lastIdx].y, angle };
 }
 
-// Find the distance along a line where a point is closest
+// Find the distance along a line where a point is closest, and the perpendicular distance to the line
 function findDistanceAlongLine(points: Point[], target: Point): number {
   let bestDist = Infinity;
   let bestDistanceAlong = 0;
@@ -496,6 +557,30 @@ function findDistanceAlongLine(points: Point[], target: Point): number {
   }
 
   return bestDistanceAlong;
+}
+
+// Check if a point is close to any segment of a polyline (within threshold)
+function isPointOnLine(points: Point[], target: Point, threshold: number): boolean {
+  for (let i = 0; i < points.length - 1; i++) {
+    const segmentLength = distance(points[i], points[i + 1]);
+    if (segmentLength === 0) continue;
+
+    const dx = points[i + 1].x - points[i].x;
+    const dy = points[i + 1].y - points[i].y;
+
+    let t = ((target.x - points[i].x) * dx + (target.y - points[i].y) * dy) /
+            (segmentLength * segmentLength);
+    t = Math.max(0, Math.min(1, t));
+
+    const projX = points[i].x + t * dx;
+    const projY = points[i].y + t * dy;
+    const dist = distance({ x: projX, y: projY }, target);
+
+    if (dist <= threshold) {
+      return true;
+    }
+  }
+  return false;
 }
 
 // Random wait time between min and max
@@ -631,6 +716,13 @@ interface HeadlessLine {
   stations: Point[];
 }
 
+// Pre-computed geometry from headless simulation (used to animate reveal)
+interface PrecomputedGeometry {
+  lines: HeadlessLine[];
+  stations: Point[];
+  seed: number;
+}
+
 // Coverage score breakdown
 interface CoverageScore {
   gridCoverage: number;
@@ -655,6 +747,23 @@ function runHeadlessSimulation(
     x: bounds.left + boundsWidth * 0.5,
     y: bounds.top + boundsHeight * 0.5,
   };
+
+  // IMPORTANT: Consume RNG in the same order as initializeMap to keep sequences synchronized
+  // 1. selectLinesOnePerLocation uses RNG for shuffling
+  const plannedLines = selectLinesOnePerLocation(config.maxLines, rng);
+
+  // 2. Color assignment uses RNG for shuffling unassigned colors
+  const reservedColors = new Map<number, number>();
+  for (let i = 0; i < plannedLines.length; i++) {
+    const colorIdx = getColorIndexFromLineName(plannedLines[i].name);
+    if (colorIdx !== null) {
+      reservedColors.set(i, colorIdx);
+    }
+  }
+  const reservedIndices = new Set(reservedColors.values());
+  const dummyPalette = [0, 1, 2, 3, 4, 5, 6, 7]; // Just need to consume same RNG calls
+  const unassignedColors = dummyPalette.filter((_, idx) => !reservedIndices.has(idx));
+  rng.shuffle([...unassignedColors]); // Consume RNG to stay synchronized
 
   const lines: HeadlessLine[] = [];
   const allStations: Point[] = [{ ...hubCenter }]; // Hub station
@@ -972,27 +1081,31 @@ function calculateCoverage(
   }
   const gridCoverage = coveredCells.size / (gridSize * gridSize);
 
-  // 2. Quadrant balance: check if lines actually penetrate into the CENTER of each quadrant
-  // Define center zones as the middle 50% of each quadrant
+  // 2. Quadrant balance: check if lines reach the center of each quadrant
   const centerX = bounds.left + boundsWidth / 2;
   const centerY = bounds.top + boundsHeight / 2;
   const quadrantWidth = boundsWidth / 2;
   const quadrantHeight = boundsHeight / 2;
 
-  // Center zone of each quadrant (inner 50% area)
+  // Target zone size: 50% of the smaller quadrant dimension
+  const zoneSize = Math.min(quadrantWidth, quadrantHeight) * 0.5;
+  const halfZone = zoneSize / 2;
+
+  // Define check zones at the TRUE CENTER of each quadrant
+  // Each quadrant's center is at quadrantWidth/2, quadrantHeight/2 from its origin
   const quadrantCenters = [
-    // TL quadrant center zone
-    { left: bounds.left + quadrantWidth * 0.25, right: bounds.left + quadrantWidth * 0.75,
-      top: bounds.top + quadrantHeight * 0.25, bottom: bounds.top + quadrantHeight * 0.75 },
-    // TR quadrant center zone
-    { left: centerX + quadrantWidth * 0.25, right: centerX + quadrantWidth * 0.75,
-      top: bounds.top + quadrantHeight * 0.25, bottom: bounds.top + quadrantHeight * 0.75 },
-    // BL quadrant center zone
-    { left: bounds.left + quadrantWidth * 0.25, right: bounds.left + quadrantWidth * 0.75,
-      top: centerY + quadrantHeight * 0.25, bottom: centerY + quadrantHeight * 0.75 },
-    // BR quadrant center zone
-    { left: centerX + quadrantWidth * 0.25, right: centerX + quadrantWidth * 0.75,
-      top: centerY + quadrantHeight * 0.25, bottom: centerY + quadrantHeight * 0.75 },
+    // TL quadrant center: (bounds.left + quadrantWidth/2, bounds.top + quadrantHeight/2)
+    { left: bounds.left + quadrantWidth / 2 - halfZone, right: bounds.left + quadrantWidth / 2 + halfZone,
+      top: bounds.top + quadrantHeight / 2 - halfZone, bottom: bounds.top + quadrantHeight / 2 + halfZone },
+    // TR quadrant center: (centerX + quadrantWidth/2, bounds.top + quadrantHeight/2)
+    { left: centerX + quadrantWidth / 2 - halfZone, right: centerX + quadrantWidth / 2 + halfZone,
+      top: bounds.top + quadrantHeight / 2 - halfZone, bottom: bounds.top + quadrantHeight / 2 + halfZone },
+    // BL quadrant center: (bounds.left + quadrantWidth/2, centerY + quadrantHeight/2)
+    { left: bounds.left + quadrantWidth / 2 - halfZone, right: bounds.left + quadrantWidth / 2 + halfZone,
+      top: centerY + quadrantHeight / 2 - halfZone, bottom: centerY + quadrantHeight / 2 + halfZone },
+    // BR quadrant center: (centerX + quadrantWidth/2, centerY + quadrantHeight/2)
+    { left: centerX + quadrantWidth / 2 - halfZone, right: centerX + quadrantWidth / 2 + halfZone,
+      top: centerY + quadrantHeight / 2 - halfZone, bottom: centerY + quadrantHeight / 2 + halfZone },
   ];
 
   const quadrantsTouched = [false, false, false, false];
@@ -1096,8 +1209,8 @@ function calculateCoverage(
   // Score: tortuosity of 1.0 -> 0, tortuosity of 2.0+ -> 1.0
   const windiness = Math.min(1, Math.max(0, (avgTortuosity - 1) / 1.0));
 
-  // Weights: prioritize quadrant penetration and grid coverage
-  const total = 0.50 * quadrantBalance + 0.25 * gridCoverage + 0.20 * windiness + 0.05 * lineSpread;
+  // Weights for scoring (quadrant coverage is now a hard requirement, not weighted)
+  const total = 0.50 * gridCoverage + 0.30 * windiness + 0.20 * lineSpread;
 
   return {
     gridCoverage,
@@ -1109,52 +1222,74 @@ function calculateCoverage(
   };
 }
 
-// Find the best seed among N simulations
+// Find the best simulation that hits all 4 quadrants
 function findBestSimulation(
-  count: number,
+  _count: number, // Unused - we run until we find 4/4 quadrants
   config: MapConfig,
   bounds: DrawBounds,
   variant: string = "unknown"
-): number {
-  // Guard against invalid bounds
+): PrecomputedGeometry {
+  // Guard against invalid bounds - return empty geometry with fallback seed
   const boundsWidth = bounds.right - bounds.left;
   const boundsHeight = bounds.bottom - bounds.top;
   if (boundsWidth <= 0 || boundsHeight <= 0) {
     console.warn(`[MetroMap:${variant}] Skipping precompute - invalid bounds`);
-    return Date.now(); // Return a fallback seed
+    const fallbackSeed = Date.now();
+    return { lines: [], stations: [], seed: fallbackSeed };
   }
 
   const startTime = performance.now();
   let bestSeed = Date.now();
+  let bestLines: HeadlessLine[] = [];
+  let bestStations: Point[] = [];
   let bestScore = -Infinity;
-  const scores: number[] = [];
+  let totalSims = 0;
+  const maxAttempts = 1000; // Safety limit
 
-  for (let i = 0; i < count; i++) {
-    const seed = Date.now() + i * 12345 + Math.floor(Math.random() * 10000);
+  // Keep running until we find a simulation that hits all 4 quadrants
+  while (totalSims < maxAttempts) {
+    const seed = Date.now() + totalSims * 12345 + Math.floor(Math.random() * 10000);
     const { lines, stations } = runHeadlessSimulation(seed, config, bounds);
     const score = calculateCoverage(lines, stations, bounds);
-    scores.push(score.total);
+    const quads = Math.round(score.quadrantBalance * 4);
+    totalSims++;
 
-    if (score.total > bestScore) {
-      bestScore = score.total;
-      bestSeed = seed;
+    // Only consider simulations that hit all 4 quadrants
+    if (quads === 4) {
+      // Among 4/4 quadrant simulations, pick the one with best score
+      if (score.total > bestScore) {
+        bestScore = score.total;
+        bestSeed = seed;
+        bestLines = lines;
+        bestStations = stations;
+      }
+      // Found a good one - but keep looking for a few more to find the best
+      // Stop after finding 5 valid candidates or hitting max attempts
+      if (totalSims >= 5 && bestScore > 0) break;
     }
   }
 
-  // Get detailed breakdown for best result
-  const { lines: bestLines, stations: bestStations } = runHeadlessSimulation(bestSeed, config, bounds);
-  const bestBreakdown = calculateCoverage(bestLines, bestStations, bounds);
+  // Fallback: if we never found 4/4, use the last simulation
+  if (bestLines.length === 0) {
+    const fallbackSeed = Date.now();
+    const { lines, stations } = runHeadlessSimulation(fallbackSeed, config, bounds);
+    bestLines = lines;
+    bestStations = stations;
+    bestSeed = fallbackSeed;
+    console.warn(`[MetroMap:${variant}] Could not find 4/4 quadrant coverage after ${totalSims} attempts`);
+  }
 
+  const bestBreakdown = calculateCoverage(bestLines, bestStations, bounds);
   const elapsed = performance.now() - startTime;
   const quadsHit = Math.round(bestBreakdown.quadrantBalance * 4);
   console.log(
-    `[MetroMap:${variant}] Precompute: ${count} sims in ${elapsed.toFixed(0)}ms | ` +
-    `best: ${bestScore.toFixed(2)} | ` +
+    `[MetroMap:${variant}] Precompute: ${totalSims} sims in ${elapsed.toFixed(0)}ms | ` +
+    `score:${bestScore.toFixed(2)} seed=${bestSeed} | ` +
     `quads:${quadsHit}/4 grid:${bestBreakdown.gridCoverage.toFixed(2)} ` +
     `wind:${bestBreakdown.windiness.toFixed(2)}`
   );
 
-  return bestSeed;
+  return { lines: bestLines, stations: bestStations, seed: bestSeed };
 }
 
 interface Props {
@@ -1221,8 +1356,8 @@ export default function MetroMap({ variant = "full" }: Props) {
     let plannedLines: TransitLineInfo[] = [];
     let plannedColors: string[] = [];
 
-    // Precomputed best seed for map generation
-    let bestSeed: number | null = null;
+    // Precomputed geometry from headless simulation
+    let precomputedGeometry: PrecomputedGeometry | null = null;
     let currentRng: SeededRandom | null = null;
 
     // Legend interaction
@@ -1418,6 +1553,7 @@ export default function MetroMap({ variant = "full" }: Props) {
       return 0;
     };
 
+    // Note: This function is kept for potential future use but is not used in reveal-based animation
     const createLineFromHub = (direction: number, index: number): MetroLine => {
       const id = lineIdCounter++;
       const transitInfo = plannedLines[id % plannedLines.length];
@@ -1441,14 +1577,25 @@ export default function MetroMap({ variant = "full" }: Props) {
         lastBranchDistance: 0,
         lastStationDistance: 0,
         stations: [],
-        // Stagger initial lines with small delays
+        // Stagger initial lines with small delays (use seeded RNG for determinism)
         createdAt: now,
-        growthDelay: index * 300 + Math.random() * 200, // 0-200ms, 300-500ms, 600-800ms...
-        growthDuration: 1500 + Math.random() * 1000, // 1.5-2.5 seconds to reach max length
+        growthDelay: index * 300, // Fixed delays: 0ms, 300ms, 600ms, 900ms
+        growthDuration: 2000, // Fixed duration for consistent growth
         corridorSegmentIndices: [],
+        // Reveal animation fields (unused in legacy mode)
+        targetPoints: [],
+        targetStations: [],
+        revealedLength: 0,
+        totalTargetLength: 0,
+        stationDistances: [],
+        currentSegmentIndex: 0,
+        segmentStartTime: 0,
+        pausingAtStation: false,
+        pauseEndTime: 0,
       };
     };
 
+    // Note: This function is kept for potential future use but is not used in reveal-based animation
     const createBranchLine = (
       branchPoint: Point,
       direction: number
@@ -1480,11 +1627,28 @@ export default function MetroMap({ variant = "full" }: Props) {
         growthDelay: 200 + Math.random() * 600, // 200-800ms delay before growing
         growthDuration: 1200 + Math.random() * 800, // 1.2-2 seconds growth
         corridorSegmentIndices: [],
+        // Reveal animation fields (unused in legacy mode)
+        targetPoints: [],
+        targetStations: [],
+        revealedLength: 0,
+        totalTargetLength: 0,
+        stationDistances: [],
+        currentSegmentIndex: 0,
+        segmentStartTime: 0,
+        pausingAtStation: false,
+        pauseEndTime: 0,
       };
     };
 
-    const initializeMap = (seed: number) => {
-      // Create seeded RNG for deterministic geometry
+    const initializeMap = (geometry: PrecomputedGeometry) => {
+      const { lines: headlessLines, stations: headlessStations, seed } = geometry;
+
+      // DEBUG: Log seed and bounds
+      if (import.meta.env.DEV) {
+        console.log(`[DEBUG initializeMap] seed=${seed} bounds=${JSON.stringify(drawBounds)} headlessLines=${headlessLines.length}`);
+      }
+
+      // Use seed for transit line selection and colors (visual only, not geometry)
       currentRng = new SeededRandom(seed);
 
       const boundsWidth = drawBounds.right - drawBounds.left;
@@ -1515,9 +1679,30 @@ export default function MetroMap({ variant = "full" }: Props) {
       // Pre-select transit lines (one per location) and colors using seeded RNG
       plannedLines = selectLinesOnePerLocation(config.maxLines, currentRng);
       plannedColors = [];
-      const shuffledColors = currentRng.shuffle([...palette]);
+
+      // First: identify lines with color names and reserve those colors
+      const reservedColors = new Map<number, number>(); // lineIndex -> paletteIndex
       for (let i = 0; i < plannedLines.length; i++) {
-        plannedColors.push(shuffledColors[i % shuffledColors.length]);
+        const colorIdx = getColorIndexFromLineName(plannedLines[i].name);
+        if (colorIdx !== null) {
+          reservedColors.set(i, colorIdx);
+        }
+      }
+
+      // Shuffle remaining colors (excluding reserved ones)
+      const reservedIndices = new Set(reservedColors.values());
+      const unassignedColors = palette.filter((_, idx) => !reservedIndices.has(idx));
+      const shuffledAvailable = currentRng.shuffle([...unassignedColors]);
+
+      // Assign colors
+      let availIdx = 0;
+      for (let i = 0; i < plannedLines.length; i++) {
+        if (reservedColors.has(i)) {
+          plannedColors.push(palette[reservedColors.get(i)!]);
+        } else {
+          plannedColors.push(shuffledAvailable[availIdx % shuffledAvailable.length]);
+          availIdx++;
+        }
       }
 
       // Create central hub station (belongs to no line initially, drawn separately)
@@ -1533,183 +1718,176 @@ export default function MetroMap({ variant = "full" }: Props) {
       };
       allStations.push(hubStation);
 
-      // Create initial lines fanning out from hub
-      const startDirections = [0, 2, 4, 6]; // E, N, W, S - balanced spread from centered hub
-      for (let i = 0; i < config.initialLines; i++) {
-        const dir = startDirections[i % startDirections.length];
-        const line = createLineFromHub(dir, i);
-        // First line owns the hub station for drawing purposes
-        if (i === 0) {
-          line.stations.push(hubStation);
-        }
-        lines.push(line);
-      }
+      const now = performance.now();
+
+      // Convert headless lines to MetroLines with reveal animation state
+      lines = headlessLines.map((hl, index) => {
+        const transitInfo = plannedLines[index % plannedLines.length];
+        const color = plannedColors[index % plannedColors.length];
+        const rgb = parseColor(color);
+        const totalLength = calculateLineLength(hl.points);
+
+        // Calculate station distances along the path and sort them
+        // Filter out stations too close to the start (they'd appear orphaned)
+        const minStationDistance = config.segmentLength * 0.5;
+        const stationDistances = hl.stations
+          .map(pos => findDistanceAlongLine(hl.points, pos))
+          .filter(d => d >= minStationDistance) // Only include stations with meaningful distance
+          .sort((a, b) => a - b);
+
+        // Add the end of the line as a final "checkpoint"
+        stationDistances.push(totalLength);
+
+        const metroLine: MetroLine = {
+          id: lineIdCounter++,
+          name: transitInfo.name,
+          location: transitInfo.location,
+          wiki: transitInfo.wiki,
+          baseColor: color,
+          currentColor: { ...rgb },
+          targetColor: { ...rgb },
+          // Start with just the first point visible
+          points: hl.points.length > 0 ? [{ ...hl.points[0] }] : [],
+          currentDirection: hl.currentDirection,
+          growing: true, // Still "growing" in terms of reveal animation
+          progress: 0,
+          totalLength: 0, // Will be updated as line reveals
+          lastBranchDistance: 0,
+          lastStationDistance: 0,
+          stations: [], // Stations added as line reveals (hub station added when line has visible length)
+          // Animation timing - stagger reveal for visual interest
+          createdAt: now,
+          growthDelay: index * 800, // Stagger lines more
+          growthDuration: 0, // Not used in station-to-station mode
+          corridorSegmentIndices: [],
+          // Pre-computed geometry for reveal
+          targetPoints: hl.points,
+          targetStations: hl.stations,
+          revealedLength: 0,
+          totalTargetLength: totalLength,
+          // Station-to-station animation
+          stationDistances,
+          currentSegmentIndex: 0,
+          segmentStartTime: 0, // Will be set when animation starts
+          pausingAtStation: false,
+          pauseEndTime: 0,
+        };
+
+        return metroLine;
+      });
     };
 
-    const updateLine = (line: MetroLine): MetroLine | null => {
-      if (!line.growing) return null;
+    // Animation constants for station-to-station reveal
+    const PIXELS_PER_MS = 0.15; // Speed of line travel (pixels per millisecond)
+    const STATION_PAUSE_MS = 400; // Pause duration at each station
+
+    // Reveal line station-to-station with pauses
+    const revealLine = (line: MetroLine): void => {
+      if (!line.growing) return;
+      if (line.targetPoints.length === 0 || line.stationDistances.length === 0) {
+        line.growing = false;
+        return;
+      }
 
       const now = performance.now();
       const elapsed = now - line.createdAt;
 
-      // Wait for delay before growing
+      // Wait for delay before revealing
       if (elapsed < line.growthDelay) {
-        return null;
+        return;
       }
 
-      // Calculate eased speed based on growth progress
-      const growthElapsed = elapsed - line.growthDelay;
-      const growthProgress = Math.min(1, growthElapsed / line.growthDuration);
-
-      // Use easing derivative for speed: starts fast, slows down
-      // Derivative of easeOutCubic is 3(1-t)^2, normalized
-      const easedSpeedMultiplier = 3 * Math.pow(1 - growthProgress, 2);
-      const effectiveSpeed =
-        config.lineSpeed * Math.max(0.3, easedSpeedMultiplier);
-
-      const dir = DIRECTIONS[line.currentDirection];
-      const lastPoint = line.points[line.points.length - 1];
-
-      line.progress += effectiveSpeed;
-      line.totalLength += effectiveSpeed;
-      line.lastBranchDistance += effectiveSpeed;
-      line.lastStationDistance += effectiveSpeed;
-
-      const newX = lastPoint.x + dir.dx * effectiveSpeed;
-      const newY = lastPoint.y + dir.dy * effectiveSpeed;
-
-      // Check bounds
-      if (!isInBounds(newX, newY, drawBounds)) {
-        line.growing = false;
-        addStation(line, lastPoint, false);
-        return null;
+      // Initialize segment start time on first frame after delay
+      if (line.segmentStartTime === 0) {
+        line.segmentStartTime = now;
       }
 
-      // Check max length
-      if (line.totalLength >= config.maxLineLength) {
-        line.growing = false;
-        addStation(line, { x: newX, y: newY }, false);
-        return null;
-      }
+      // If pausing at a station, check if pause is over
+      if (line.pausingAtStation) {
+        if (now >= line.pauseEndTime) {
+          line.pausingAtStation = false;
+          line.currentSegmentIndex++;
+          line.segmentStartTime = now;
 
-      // Update last point (line grows)
-      line.points[line.points.length - 1] = { x: newX, y: newY };
-
-      // Check if we've completed a segment
-      if (line.progress >= config.segmentLength) {
-        line.progress = 0;
-
-        // Potentially change direction - avoid parallel and crossing lines
-        const continueDirs = getValidContinueDirections(line.currentDirection);
-        const position = { x: newX, y: newY };
-
-        // Filter out directions that would be parallel to nearby lines
-        const nonParallelDirs = continueDirs.filter(
-          (dir) => !isDirectionParallelToNearbyLines(line, position, dir)
-        );
-
-        // Also filter out directions that would cross existing lines
-        const nonCrossingDirs = nonParallelDirs.filter(
-          (dir) => !wouldCrossExistingLine(line, position, dir)
-        );
-
-        // Use non-crossing directions if available, fall back to non-parallel, then original
-        const availableDirs =
-          nonCrossingDirs.length > 0
-            ? nonCrossingDirs
-            : nonParallelDirs.length > 0
-              ? nonParallelDirs
-              : continueDirs;
-        // Use center-weighted selection to bias growth toward canvas center
-        const canvasCenter = {
-          x: (drawBounds.left + drawBounds.right) / 2,
-          y: (drawBounds.top + drawBounds.bottom) / 2,
-        };
-        const newDir = selectWeightedDirection(
-          availableDirs,
-          position,
-          canvasCenter,
-          config.segmentLength,
-          currentRng!
-        );
-
-        if (newDir !== line.currentDirection) {
-          line.points.push({ x: newX, y: newY });
-          line.currentDirection = newDir;
+          // Check if we've completed all segments
+          if (line.currentSegmentIndex >= line.stationDistances.length) {
+            line.growing = false;
+            return;
+          }
+        } else {
+          // Still pausing, don't update position
+          return;
         }
+      }
 
-        // Try to branch (use seeded RNG for deterministic geometry)
-        if (
-          lines.length < config.maxLines &&
-          line.lastBranchDistance >= config.minBranchDistance &&
-          currentRng!.next() < BRANCH_PROBABILITY
-        ) {
-          const branchDirs = getValidBranchDirections(line.currentDirection);
-          // Filter branch directions to avoid parallel lines and crossings
-          const nonParallelBranchDirs = branchDirs.filter(
-            (dir) => !isDirectionParallelToNearbyLines(line, position, dir)
-          );
-          const nonCrossingBranchDirs = nonParallelBranchDirs.filter(
-            (dir) => !wouldCrossExistingLine(line, position, dir)
-          );
-          const candidateBranchDirs =
-            nonCrossingBranchDirs.length > 0
-              ? nonCrossingBranchDirs
-              : nonParallelBranchDirs.length > 0
-                ? nonParallelBranchDirs
-                : branchDirs;
+      // Calculate current segment bounds
+      const segmentStart = line.currentSegmentIndex === 0
+        ? 0
+        : line.stationDistances[line.currentSegmentIndex - 1];
+      const segmentEnd = line.stationDistances[line.currentSegmentIndex];
+      const segmentLength = segmentEnd - segmentStart;
 
-          // Sort by center weight (best direction first) for branch selection
-          const branchCanvasCenter = {
-            x: (drawBounds.left + drawBounds.right) / 2,
-            y: (drawBounds.top + drawBounds.bottom) / 2,
-          };
-          const sortedByWeight = [...candidateBranchDirs].sort((a, b) => {
-            const scoreA = getCenterWeightScore(
-              position,
-              a,
-              branchCanvasCenter,
-              config.segmentLength
+      // Calculate progress within current segment
+      const segmentElapsed = now - line.segmentStartTime;
+      const segmentDuration = segmentLength / PIXELS_PER_MS;
+      const segmentProgress = Math.min(1, segmentElapsed / segmentDuration);
+
+      // Easing for smooth acceleration/deceleration within segment
+      const easedProgress = segmentProgress < 0.5
+        ? 2 * segmentProgress * segmentProgress
+        : 1 - Math.pow(-2 * segmentProgress + 2, 2) / 2;
+
+      // Update revealed length
+      line.revealedLength = segmentStart + easedProgress * segmentLength;
+      line.totalLength = line.revealedLength;
+
+      // Build points array up to revealed length
+      line.points = getPointsUpToLength(line.targetPoints, line.revealedLength);
+
+      // Add hub station to first line once it has visible length
+      if (line.id === 0 && line.points.length >= 2 && line.stations.length === 0) {
+        // Find the hub station in allStations and add it to this line's stations
+        const hubStation = allStations.find(s =>
+          Math.abs(s.x - hubCenter.x) < 3 && Math.abs(s.y - hubCenter.y) < 3
+        );
+        if (hubStation) {
+          line.stations.push(hubStation);
+        }
+      }
+
+      // Reveal stations as line passes them (only if line has visible length)
+      if (line.revealedLength > config.segmentLength * 0.3 && line.points.length >= 2) {
+        for (const stationPos of line.targetStations) {
+          const stationDistance = findDistanceAlongLine(line.targetPoints, stationPos);
+          // Only add station if:
+          // 1. Line has reached this distance
+          // 2. Station is far enough from start
+          // 3. Station is actually ON the visible line path (within 5 pixels)
+          if (stationDistance <= line.revealedLength &&
+              stationDistance > 0 &&
+              isPointOnLine(line.points, stationPos, 5)) {
+            // Check if station already exists at this position
+            const exists = allStations.some(
+              (s) => Math.abs(s.x - stationPos.x) < 3 && Math.abs(s.y - stationPos.y) < 3
             );
-            const scoreB = getCenterWeightScore(
-              position,
-              b,
-              branchCanvasCenter,
-              config.segmentLength
-            );
-            return scoreB - scoreA; // Higher score first
-          });
-
-          for (const branchDir of sortedByWeight) {
-            const testX =
-              newX + DIRECTIONS[branchDir].dx * config.segmentLength;
-            const testY =
-              newY + DIRECTIONS[branchDir].dy * config.segmentLength;
-
-            if (isInBounds(testX, testY, drawBounds)) {
-              line.lastBranchDistance = 0;
-              // Junction station where branch occurs
-              if (addStation(line, { x: newX, y: newY }, true)) {
-                return createBranchLine({ x: newX, y: newY }, branchDir);
-              }
+            if (!exists) {
+              addStation(line, stationPos, false);
             }
           }
         }
-
-        // Add station along the line periodically (lines grow, stations appear on them)
-        // Stations appear more frequently near the start, less as line extends
-        // Use seeded RNG for deterministic geometry
-        const stationChance =
-          line.lastStationDistance > config.segmentLength * 1.5 ? 0.4 : 0.15;
-        if (
-          currentRng!.next() < stationChance &&
-          line.totalLength > config.segmentLength
-        ) {
-          addStation(line, { x: newX, y: newY }, false);
-        }
       }
 
-      return null;
+      // Check if segment is complete
+      if (segmentProgress >= 1) {
+        // Check if this is the last segment (end of line, no pause needed)
+        if (line.currentSegmentIndex >= line.stationDistances.length - 1) {
+          line.growing = false;
+        } else {
+          // Pause at station before continuing
+          line.pausingAtStation = true;
+          line.pauseEndTime = now + STATION_PAUSE_MS;
+        }
+      }
     };
 
     const updateColors = () => {
@@ -2612,6 +2790,194 @@ export default function MetroMap({ variant = "full" }: Props) {
       }
     };
 
+    // Debug overlay for dev mode - shows grid, quadrants, and coverage stats
+    const drawDebugOverlay = (opacity: number) => {
+      // Only show in dev mode
+      if (!import.meta.env.DEV) return;
+
+      const boundsWidth = drawBounds.right - drawBounds.left;
+      const boundsHeight = drawBounds.bottom - drawBounds.top;
+      const centerX = drawBounds.left + boundsWidth / 2;
+      const centerY = drawBounds.top + boundsHeight / 2;
+
+      ctx.save();
+
+      // Draw 20x20 grid
+      const gridSize = 20;
+      const cellWidth = boundsWidth / gridSize;
+      const cellHeight = boundsHeight / gridSize;
+
+      ctx.strokeStyle = `rgba(128, 128, 128, ${opacity * 0.15})`;
+      ctx.lineWidth = 0.5;
+
+      for (let i = 0; i <= gridSize; i++) {
+        // Vertical lines
+        const x = drawBounds.left + i * cellWidth;
+        ctx.beginPath();
+        ctx.moveTo(x, drawBounds.top);
+        ctx.lineTo(x, drawBounds.bottom);
+        ctx.stroke();
+
+        // Horizontal lines
+        const y = drawBounds.top + i * cellHeight;
+        ctx.beginPath();
+        ctx.moveTo(drawBounds.left, y);
+        ctx.lineTo(drawBounds.right, y);
+        ctx.stroke();
+      }
+
+      // Draw quadrant dividers (thicker lines at center)
+      ctx.strokeStyle = `rgba(255, 200, 0, ${opacity * 0.4})`;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([8, 4]);
+
+      // Vertical center line
+      ctx.beginPath();
+      ctx.moveTo(centerX, drawBounds.top);
+      ctx.lineTo(centerX, drawBounds.bottom);
+      ctx.stroke();
+
+      // Horizontal center line
+      ctx.beginPath();
+      ctx.moveTo(drawBounds.left, centerY);
+      ctx.lineTo(drawBounds.right, centerY);
+      ctx.stroke();
+
+      ctx.setLineDash([]);
+
+      // Draw quadrant corner zones (squares offset from far corners toward center)
+      const quadrantWidth = boundsWidth / 2;
+      const quadrantHeight = boundsHeight / 2;
+      const zoneSize = Math.min(quadrantWidth, quadrantHeight) * 0.5;
+      const halfZone = zoneSize / 2;
+
+      const quadrantCenters = [
+        // TL quadrant center
+        { left: drawBounds.left + quadrantWidth / 2 - halfZone, right: drawBounds.left + quadrantWidth / 2 + halfZone,
+          top: drawBounds.top + quadrantHeight / 2 - halfZone, bottom: drawBounds.top + quadrantHeight / 2 + halfZone, label: "TL" },
+        // TR quadrant center
+        { left: centerX + quadrantWidth / 2 - halfZone, right: centerX + quadrantWidth / 2 + halfZone,
+          top: drawBounds.top + quadrantHeight / 2 - halfZone, bottom: drawBounds.top + quadrantHeight / 2 + halfZone, label: "TR" },
+        // BL quadrant center
+        { left: drawBounds.left + quadrantWidth / 2 - halfZone, right: drawBounds.left + quadrantWidth / 2 + halfZone,
+          top: centerY + quadrantHeight / 2 - halfZone, bottom: centerY + quadrantHeight / 2 + halfZone, label: "BL" },
+        // BR quadrant center
+        { left: centerX + quadrantWidth / 2 - halfZone, right: centerX + quadrantWidth / 2 + halfZone,
+          top: centerY + quadrantHeight / 2 - halfZone, bottom: centerY + quadrantHeight / 2 + halfZone, label: "BR" },
+      ];
+
+      // Calculate which quadrants are touched by current lines
+      const quadrantsTouched = [false, false, false, false];
+      for (const line of lines) {
+        for (let i = 0; i < line.points.length - 1; i++) {
+          const p1 = line.points[i];
+          const p2 = line.points[i + 1];
+          const segDist = Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2);
+          const steps = Math.max(1, Math.ceil(segDist / 10));
+          for (let s = 0; s <= steps; s++) {
+            const t = s / steps;
+            const x = p1.x + (p2.x - p1.x) * t;
+            const y = p1.y + (p2.y - p1.y) * t;
+            for (let q = 0; q < 4; q++) {
+              const zone = quadrantCenters[q];
+              if (x >= zone.left && x <= zone.right && y >= zone.top && y <= zone.bottom) {
+                quadrantsTouched[q] = true;
+              }
+            }
+          }
+        }
+      }
+
+      // Calculate grid coverage
+      const coveredCells = new Set<string>();
+      for (const line of lines) {
+        for (let i = 0; i < line.points.length - 1; i++) {
+          const p1 = line.points[i];
+          const p2 = line.points[i + 1];
+          const segDist = Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2);
+          const steps = Math.max(1, Math.ceil(segDist / Math.min(cellWidth, cellHeight)));
+          for (let s = 0; s <= steps; s++) {
+            const t = s / steps;
+            const x = p1.x + (p2.x - p1.x) * t;
+            const y = p1.y + (p2.y - p1.y) * t;
+            const cellX = Math.floor((x - drawBounds.left) / cellWidth);
+            const cellY = Math.floor((y - drawBounds.top) / cellHeight);
+            if (cellX >= 0 && cellX < gridSize && cellY >= 0 && cellY < gridSize) {
+              coveredCells.add(`${cellX},${cellY}`);
+            }
+          }
+        }
+      }
+      const gridCoverage = coveredCells.size / (gridSize * gridSize);
+
+      // Draw quadrant center zones
+      for (let q = 0; q < 4; q++) {
+        const zone = quadrantCenters[q];
+        const touched = quadrantsTouched[q];
+
+        ctx.fillStyle = touched
+          ? `rgba(0, 255, 0, ${opacity * 0.1})`
+          : `rgba(255, 0, 0, ${opacity * 0.1})`;
+        ctx.fillRect(zone.left, zone.top, zone.right - zone.left, zone.bottom - zone.top);
+
+        ctx.strokeStyle = touched
+          ? `rgba(0, 255, 0, ${opacity * 0.5})`
+          : `rgba(255, 0, 0, ${opacity * 0.5})`;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(zone.left, zone.top, zone.right - zone.left, zone.bottom - zone.top);
+
+        // Label
+        ctx.font = "bold 12px monospace";
+        ctx.fillStyle = touched
+          ? `rgba(0, 255, 0, ${opacity * 0.8})`
+          : `rgba(255, 0, 0, ${opacity * 0.8})`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(
+          `${zone.label} ${touched ? "✓" : "✗"}`,
+          (zone.left + zone.right) / 2,
+          (zone.top + zone.bottom) / 2
+        );
+      }
+
+      // Draw debug stats panel (top-left)
+      const quadsHit = quadrantsTouched.filter(t => t).length;
+      const stats = [
+        `Quadrants: ${quadsHit}/4`,
+        `Grid: ${(gridCoverage * 100).toFixed(1)}%`,
+        `Lines: ${lines.length}`,
+        `Stations: ${allStations.length}`,
+        `Growing: ${lines.filter(l => l.growing).length}`,
+      ];
+
+      const panelX = drawBounds.left + 10;
+      const panelY = drawBounds.top + 10;
+      const panelPadding = 8;
+      const lineHeight = 16;
+      const panelWidth = 130;
+      const panelHeight = stats.length * lineHeight + panelPadding * 2;
+
+      ctx.fillStyle = `rgba(0, 0, 0, ${opacity * 0.7})`;
+      ctx.beginPath();
+      ctx.roundRect(panelX, panelY, panelWidth, panelHeight, 4);
+      ctx.fill();
+
+      ctx.font = "12px monospace";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "top";
+
+      for (let i = 0; i < stats.length; i++) {
+        const isQuadrant = i === 0;
+        const isWarning = isQuadrant && quadsHit < 4;
+        ctx.fillStyle = isWarning
+          ? `rgba(255, 100, 100, ${opacity})`
+          : `rgba(255, 255, 255, ${opacity * 0.9})`;
+        ctx.fillText(stats[i], panelX + panelPadding, panelY + panelPadding + i * lineHeight);
+      }
+
+      ctx.restore();
+    };
+
     // Legacy function for static drawing compatibility
     const drawLine = (line: MetroLine, opacity: number) => {
       drawLinePath(line, opacity);
@@ -2619,21 +2985,40 @@ export default function MetroMap({ variant = "full" }: Props) {
     };
 
     const drawStaticMap = () => {
-      // Use existing best seed or compute new one
-      if (!bestSeed) {
-        bestSeed = findBestSimulation(50, config, drawBounds, variant);
+      // Use existing geometry or compute new one
+      if (!precomputedGeometry) {
+        precomputedGeometry = findBestSimulation(50, config, drawBounds, variant);
       }
-      initializeMap(bestSeed);
+      initializeMap(precomputedGeometry);
 
-      for (let i = 0; i < 3000; i++) {
-        const newLines: MetroLine[] = [];
-        for (const line of lines) {
-          const branch = updateLine(line);
-          if (branch) newLines.push(branch);
+      // For static view, immediately reveal all lines fully
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        line.revealedLength = line.totalTargetLength;
+        line.totalLength = line.totalTargetLength;
+        line.points = [...line.targetPoints];
+        line.growing = false;
+
+        // Add hub station to first line
+        if (i === 0) {
+          const hubStation = allStations.find(s =>
+            Math.abs(s.x - hubCenter.x) < 3 && Math.abs(s.y - hubCenter.y) < 3
+          );
+          if (hubStation && !line.stations.includes(hubStation)) {
+            line.stations.push(hubStation);
+          }
         }
-        lines.push(...newLines);
 
-        if (lines.every((l) => !l.growing)) break;
+        // Add all stations for this line (only if they're actually on the line path)
+        for (const stationPos of line.targetStations) {
+          if (!isPointOnLine(line.points, stationPos, 5)) continue;
+          const exists = allStations.some(
+            (s) => Math.abs(s.x - stationPos.x) < 3 && Math.abs(s.y - stationPos.y) < 3
+          );
+          if (!exists) {
+            addStation(line, stationPos, false);
+          }
+        }
       }
 
       // Set all stations to full scale for static view
@@ -2646,6 +3031,7 @@ export default function MetroMap({ variant = "full" }: Props) {
         drawLine(line, 0.75);
       }
       drawLegend(0.75);
+      drawDebugOverlay(0.75);
     };
 
     const handleColorChange = (e: CustomEvent<string>) => {
@@ -2751,9 +3137,9 @@ export default function MetroMap({ variant = "full" }: Props) {
 
       // Reinitialize map if config changed (e.g., switching between mobile/desktop)
       if (configChanged && lines.length > 0) {
-        // Run precompute to find best seed for new config
-        bestSeed = findBestSimulation(50, config, drawBounds, variant);
-        initializeMap(bestSeed);
+        // Run precompute to find best geometry for new config
+        precomputedGeometry = findBestSimulation(50, config, drawBounds, variant);
+        initializeMap(precomputedGeometry);
       }
 
       if (prefersReducedMotion) {
@@ -2768,13 +3154,10 @@ export default function MetroMap({ variant = "full" }: Props) {
         if (globalOpacity > 1) globalOpacity = 1;
       }
 
-      // Update line growth
-      const newLines: MetroLine[] = [];
+      // Reveal pre-computed lines (no new branches created - all lines are pre-computed)
       for (const line of lines) {
-        const branch = updateLine(line);
-        if (branch) newLines.push(branch);
+        revealLine(line);
       }
-      lines.push(...newLines);
 
       // Update colors (lerp towards targets)
       updateColors();
@@ -2815,6 +3198,9 @@ export default function MetroMap({ variant = "full" }: Props) {
 
       // Layer 6: Station tooltip (on top of everything)
       drawStationTooltip(globalOpacity);
+
+      // Layer 7: Debug overlay (dev mode only)
+      drawDebugOverlay(globalOpacity);
 
       animationId = requestAnimationFrame(animate);
     };
@@ -2871,8 +3257,14 @@ export default function MetroMap({ variant = "full" }: Props) {
     resize();
 
     // Precompute: run N headless simulations, pick the best one
-    bestSeed = findBestSimulation(50, config, drawBounds, variant);
-    initializeMap(bestSeed);
+    precomputedGeometry = findBestSimulation(50, config, drawBounds, variant);
+
+    // DEBUG: Log bounds used for precompute
+    if (import.meta.env.DEV) {
+      console.log(`[DEBUG] Precompute bounds:`, JSON.stringify(drawBounds));
+    }
+
+    initializeMap(precomputedGeometry);
 
     if (prefersReducedMotion) {
       drawStaticMap();

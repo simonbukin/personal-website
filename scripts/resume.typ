@@ -117,9 +117,9 @@
   "Founding Frontend Engineer",
   "Remote",
   (
-    [First frontend hire at an AI startup.],
     [Built the entire frontend from scratch in *Svelte*, including onboarding flows, chat interfaces, and the marketing site using *Astro* and *React*.],
     [Established the design system with *Figma* and *Tailwind*.],
+    [Built custom refraction shader for use with *D3.js* in marketing materials],
   ),
 )
 

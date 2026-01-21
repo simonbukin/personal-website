@@ -1,4 +1,25 @@
 import { useState, useEffect, useRef } from "react";
+import {
+  RegExpMatcher,
+  TextCensor,
+  englishDataset,
+  englishRecommendedTransformers,
+  asteriskCensorStrategy,
+} from "obscenity";
+
+// Set up profanity filter with asterisk replacement
+const matcher = new RegExpMatcher({
+  ...englishDataset.build(),
+  ...englishRecommendedTransformers,
+});
+
+const censor = new TextCensor().setStrategy(asteriskCensorStrategy());
+
+function censorProfanity(text: string): string {
+  if (!text) return text;
+  const matches = matcher.getAllMatches(text);
+  return censor.applyTo(text, matches);
+}
 
 interface Track {
   isPlaying: boolean;
@@ -184,8 +205,9 @@ export default function LastFMPlayer() {
         href={youtubeSearchUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="group flex items-center gap-3"
-        style={{ visibility: loading ? "hidden" : "visible" }}
+        className={`group flex items-center gap-3 transition-opacity duration-300 ease-out ${
+          loading ? 'opacity-0' : 'opacity-100'
+        }`}
       >
         <div className="relative w-8 h-8 shrink-0">
           {displayedArt && (
@@ -219,22 +241,34 @@ export default function LastFMPlayer() {
             </span>
           </div>
           <p className="text-sm truncate mt-0.5">
-            <span className="font-medium transition-colors" style={{ color: "var(--text-secondary)" }}>{track?.name}</span>
-            <span style={{ color: "var(--text-tertiary)" }}> — {track?.artist}</span>
+            <span className="font-medium transition-colors" style={{ color: "var(--text-secondary)" }}>{censorProfanity(track?.name ?? '')}</span>
+            <span style={{ color: "var(--text-tertiary)" }}> — {censorProfanity(track?.artist ?? '')}</span>
           </p>
         </div>
       </a>
 
-      {/* Skeleton for layout stability */}
-      {loading && (
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded" style={{ backgroundColor: "var(--bg-tertiary)" }} />
-          <div className="space-y-1.5">
-            <div className="h-3 w-20 rounded" style={{ backgroundColor: "var(--bg-tertiary)" }} />
-            <div className="h-3 w-28 rounded" style={{ backgroundColor: "var(--bg-tertiary)" }} />
+      {/* Skeleton - absolutely positioned, fades out */}
+      <div
+        className={`absolute inset-0 flex items-center gap-3 transition-opacity duration-300 ease-out ${
+          loading ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+      >
+        {/* Album art - matches actual 32x32 */}
+        <div className="w-8 h-8 rounded" style={{ backgroundColor: "var(--bg-tertiary)" }} />
+        <div className="min-w-0">
+          {/* Status line with bars placeholder */}
+          <div className="flex items-center gap-2">
+            <div className="flex gap-0.5 items-end h-3">
+              <div className="w-0.5 h-full rounded-sm" style={{ backgroundColor: "var(--bg-tertiary)" }} />
+              <div className="w-0.5 h-2/3 rounded-sm" style={{ backgroundColor: "var(--bg-tertiary)" }} />
+              <div className="w-0.5 h-1/3 rounded-sm" style={{ backgroundColor: "var(--bg-tertiary)" }} />
+            </div>
+            <div className="h-3 w-16 rounded" style={{ backgroundColor: "var(--bg-tertiary)" }} />
           </div>
+          {/* Track + artist line - wider */}
+          <div className="h-4 w-36 rounded mt-0.5" style={{ backgroundColor: "var(--bg-tertiary)" }} />
         </div>
-      )}
+      </div>
     </div>
   );
 }
