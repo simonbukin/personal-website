@@ -140,17 +140,10 @@ const socialLinks = [
             ))}
           </div>
 
-          <!-- Mobile: theme toggle + copyright -->
-          <div class="flex items-center gap-4 lg:hidden">
+          <!-- Mobile: theme toggle -->
+          <div class="lg:hidden">
             <ThemeToggle />
-            <span class="text-sm" style="color: var(--text-tertiary);">
-              &copy; {new Date().getFullYear()}
-            </span>
           </div>
-          <!-- Desktop: copyright only (theme toggle is in overlay) -->
-          <span class="hidden lg:inline text-sm" style="color: var(--text-tertiary);">
-            &copy; {new Date().getFullYear()}
-          </span>
         </div>
       </div>
     </footer>
