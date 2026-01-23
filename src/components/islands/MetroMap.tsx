@@ -360,6 +360,7 @@ interface MetroLine {
   // Pre-computed geometry for reveal animation
   targetPoints: Point[]; // Full path from headless simulation
   targetStations: Point[]; // All station positions along this line (as Points)
+  targetStationDistances: number[]; // Pre-computed distances along path for each targetStation
   revealedLength: number; // How much of the path is currently visible (in pixels)
   totalTargetLength: number; // Total length of targetPoints path
   // Station-to-station animation
@@ -368,6 +369,8 @@ interface MetroLine {
   segmentStartTime: number; // When current segment animation started
   pausingAtStation: boolean; // Whether we're paused at a station
   pauseEndTime: number; // When to resume after pause
+  // Performance optimization: track which target stations have been processed
+  processedStationIndices: Set<number>;
 }
 
 // Corridor segment shared by multiple lines (for parallel line stacking)
@@ -450,6 +453,7 @@ function calculateLineLength(points: Point[]): number {
 }
 
 // Get points from a path up to a certain length (for reveal animation)
+// Rounds interpolated coordinates to avoid sub-pixel anti-aliasing shimmer
 function getPointsUpToLength(points: Point[], targetLength: number): Point[] {
   if (points.length === 0) return [];
   if (targetLength <= 0) return [{ ...points[0] }];
@@ -459,16 +463,24 @@ function getPointsUpToLength(points: Point[], targetLength: number): Point[] {
 
   for (let i = 1; i < points.length; i++) {
     const segLength = distance(points[i - 1], points[i]);
+
+    // Snap to exact vertex if we're very close (within 0.5 pixels)
+    // This prevents jitter at segment boundaries
+    if (Math.abs(accumulated + segLength - targetLength) < 0.5) {
+      result.push({ ...points[i] });
+      break;
+    }
+
     if (accumulated + segLength <= targetLength) {
       result.push({ ...points[i] });
       accumulated += segLength;
     } else {
-      // Interpolate final point
+      // Interpolate final point - round to nearest 0.5 pixel for stable anti-aliasing
       const remaining = targetLength - accumulated;
       const t = segLength > 0 ? remaining / segLength : 0;
       result.push({
-        x: points[i - 1].x + (points[i].x - points[i - 1].x) * t,
-        y: points[i - 1].y + (points[i].y - points[i - 1].y) * t,
+        x: Math.round((points[i - 1].x + (points[i].x - points[i - 1].x) * t) * 2) / 2,
+        y: Math.round((points[i - 1].y + (points[i].y - points[i - 1].y) * t) * 2) / 2,
       });
       break;
     }
@@ -1315,7 +1327,9 @@ export default function MetroMap({ variant = "full" }: Props) {
 
     let canvasWidth = 0;
     let canvasHeight = 0;
-    let animationId: number;
+    let animationId: number = 0;
+    let isAnimating = false;
+    let isDrawing = false; // Re-entrance guard
     let lines: MetroLine[] = [];
     let allStations: Station[] = [];
     // Initialize with theme-appropriate colors
@@ -1727,11 +1741,13 @@ export default function MetroMap({ variant = "full" }: Props) {
         const rgb = parseColor(color);
         const totalLength = calculateLineLength(hl.points);
 
+        // Pre-compute distances for all target stations (used during reveal)
+        const targetStationDistances = hl.stations.map(pos => findDistanceAlongLine(hl.points, pos));
+
         // Calculate station distances along the path and sort them
         // Filter out stations too close to the start (they'd appear orphaned)
         const minStationDistance = config.segmentLength * 0.5;
-        const stationDistances = hl.stations
-          .map(pos => findDistanceAlongLine(hl.points, pos))
+        const stationDistances = targetStationDistances
           .filter(d => d >= minStationDistance) // Only include stations with meaningful distance
           .sort((a, b) => a - b);
 
@@ -1763,6 +1779,7 @@ export default function MetroMap({ variant = "full" }: Props) {
           // Pre-computed geometry for reveal
           targetPoints: hl.points,
           targetStations: hl.stations,
+          targetStationDistances,
           revealedLength: 0,
           totalTargetLength: totalLength,
           // Station-to-station animation
@@ -1771,6 +1788,8 @@ export default function MetroMap({ variant = "full" }: Props) {
           segmentStartTime: 0, // Will be set when animation starts
           pausingAtStation: false,
           pauseEndTime: 0,
+          // Performance optimization
+          processedStationIndices: new Set<number>(),
         };
 
         return metroLine;
@@ -1780,6 +1799,7 @@ export default function MetroMap({ variant = "full" }: Props) {
     // Animation constants for station-to-station reveal
     const PIXELS_PER_MS = 0.15; // Speed of line travel (pixels per millisecond)
     const STATION_PAUSE_MS = 400; // Pause duration at each station
+    const MIN_SEGMENT_DURATION_MS = 100; // Minimum time to animate any segment (prevents jumps)
 
     // Reveal line station-to-station with pauses
     const revealLine = (line: MetroLine): void => {
@@ -1829,7 +1849,8 @@ export default function MetroMap({ variant = "full" }: Props) {
 
       // Calculate progress within current segment
       const segmentElapsed = now - line.segmentStartTime;
-      const segmentDuration = segmentLength / PIXELS_PER_MS;
+      // Ensure minimum duration to prevent very short segments from "jumping"
+      const segmentDuration = Math.max(MIN_SEGMENT_DURATION_MS, segmentLength / PIXELS_PER_MS);
       const segmentProgress = Math.min(1, segmentElapsed / segmentDuration);
 
       // Easing for smooth acceleration/deceleration within segment
@@ -1856,9 +1877,15 @@ export default function MetroMap({ variant = "full" }: Props) {
       }
 
       // Reveal stations as line passes them (only if line has visible length)
+      // Performance optimization: only check unprocessed stations, use pre-computed distances
       if (line.revealedLength > config.segmentLength * 0.3 && line.points.length >= 2) {
-        for (const stationPos of line.targetStations) {
-          const stationDistance = findDistanceAlongLine(line.targetPoints, stationPos);
+        for (let i = 0; i < line.targetStations.length; i++) {
+          // Skip already processed stations
+          if (line.processedStationIndices.has(i)) continue;
+
+          const stationPos = line.targetStations[i];
+          const stationDistance = line.targetStationDistances[i]; // Use pre-computed distance
+
           // Only add station if:
           // 1. Line has reached this distance
           // 2. Station is far enough from start
@@ -1873,6 +1900,8 @@ export default function MetroMap({ variant = "full" }: Props) {
             if (!exists) {
               addStation(line, stationPos, false);
             }
+            // Mark as processed regardless of whether we added it
+            line.processedStationIndices.add(i);
           }
         }
       }
@@ -3137,6 +3166,10 @@ export default function MetroMap({ variant = "full" }: Props) {
       canvas.style.height = `${canvasHeight}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
+      // Immediately fill with background color to prevent flash after canvas clear
+      ctx.fillStyle = themeColors.bgPrimary;
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
       // Reinitialize map if config changed (e.g., switching between mobile/desktop)
       if (configChanged && lines.length > 0) {
         // Preserve opacity to prevent flickering during resize
@@ -3148,40 +3181,17 @@ export default function MetroMap({ variant = "full" }: Props) {
         globalOpacity = preservedOpacity;
       }
 
-      if (prefersReducedMotion) {
+      // Immediately draw current state to prevent flash
+      if (isAnimating && lines.length > 0) {
+        drawFrame();
+      } else if (prefersReducedMotion) {
         drawStaticMap();
       }
     };
 
-    const animate = () => {
-      // Fade in at start
-      if (globalOpacity < 1) {
-        globalOpacity += 0.015;
-        if (globalOpacity > 1) globalOpacity = 1;
-      }
-
-      // Reveal pre-computed lines (no new branches created - all lines are pre-computed)
-      for (const line of lines) {
-        revealLine(line);
-      }
-
-      // Update colors (lerp towards targets)
-      updateColors();
-
-      // Update station animations
-      updateStations();
-
-      // Update hover effects and click waves
-      updateHoverEffects();
-      updateLegendHover();
-      updateClickWaves();
-
-      // Update trains
-      checkTrainSpawning();
-      updateTrains();
-
-      // Draw in layers: lines first, then wave rings, then trains, then stations on top
-      // Fill with background color instead of clearing to prevent flickering
+    // Draw a single frame (for immediate redraw after resize)
+    const drawFrame = () => {
+      // Fill with background color
       ctx.fillStyle = themeColors.bgPrimary;
       ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
@@ -3209,7 +3219,47 @@ export default function MetroMap({ variant = "full" }: Props) {
 
       // Layer 7: Debug overlay (dev mode only)
       drawDebugOverlay(globalOpacity);
+    };
 
+    const animate = () => {
+      // Re-entrance guard - prevent overlapping draws
+      if (isDrawing) {
+        animationId = requestAnimationFrame(animate);
+        return;
+      }
+      isDrawing = true;
+      isAnimating = true;
+
+      // Fade in at start
+      if (globalOpacity < 1) {
+        globalOpacity += 0.015;
+        if (globalOpacity > 1) globalOpacity = 1;
+      }
+
+      // Reveal pre-computed lines (no new branches created - all lines are pre-computed)
+      for (const line of lines) {
+        revealLine(line);
+      }
+
+      // Update colors (lerp towards targets)
+      updateColors();
+
+      // Update station animations
+      updateStations();
+
+      // Update hover effects and click waves
+      updateHoverEffects();
+      updateLegendHover();
+      updateClickWaves();
+
+      // Update trains
+      checkTrainSpawning();
+      updateTrains();
+
+      // Draw the frame
+      drawFrame();
+
+      isDrawing = false;
       animationId = requestAnimationFrame(animate);
     };
 
@@ -3251,11 +3301,23 @@ export default function MetroMap({ variant = "full" }: Props) {
     });
     observer.observe(document.documentElement, { attributes: true });
 
+    // Debounced resize to prevent flicker from rapid resize events
+    let resizeTimeout: ReturnType<typeof setTimeout> | null = null;
+    const debouncedResize = () => {
+      // Immediately fill with background to prevent flash
+      if (canvasWidth > 0 && canvasHeight > 0) {
+        ctx.fillStyle = themeColors.bgPrimary;
+        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+      }
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(resize, 100);
+    };
+
     window.addEventListener("viz-color", handleColorChange as EventListener);
     window.addEventListener("viz-palette", handlePalette as EventListener);
     window.addEventListener("viz-color-reset", handleColorReset);
     window.addEventListener("viz-new", handleNewViz);
-    window.addEventListener("resize", resize);
+    window.addEventListener("resize", debouncedResize);
     window.addEventListener("theme-change", handleThemeChange);
     // Window-level mouse events work even with pointer-events-none on canvas
     window.addEventListener("mousemove", handleMouseMove);
@@ -3282,7 +3344,8 @@ export default function MetroMap({ variant = "full" }: Props) {
 
     return () => {
       observer.disconnect();
-      window.removeEventListener("resize", resize);
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+      window.removeEventListener("resize", debouncedResize);
       window.removeEventListener(
         "viz-color",
         handleColorChange as EventListener
