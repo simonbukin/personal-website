@@ -4,7 +4,6 @@
 ---
 
 <button
-  id="theme-toggle"
   class="theme-toggle"
   aria-label="Toggle theme"
   title="Toggle theme"
@@ -107,14 +106,16 @@
   }
 
   function initThemeToggle() {
-    const toggle = document.getElementById('theme-toggle');
-    if (!toggle || toggle.dataset.initialized) return;
-    toggle.dataset.initialized = 'true';
+    const toggles = document.querySelectorAll('.theme-toggle');
+    toggles.forEach(toggle => {
+      if (toggle.dataset.initialized) return;
+      toggle.dataset.initialized = 'true';
 
-    toggle.addEventListener('click', () => {
-      const currentTheme = document.documentElement.getAttribute('data-theme');
-      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-      setTheme(newTheme);
+      toggle.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        setTheme(newTheme);
+      });
     });
   }
 
