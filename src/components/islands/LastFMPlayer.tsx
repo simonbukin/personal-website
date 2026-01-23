@@ -91,6 +91,8 @@ export default function LastFMPlayer() {
   const [displayedArt, setDisplayedArt] = useState<string | null>(null);
   const [nextArt, setNextArt] = useState<string | null>(null);
   const [transitioning, setTransitioning] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const lastArtUrl = useRef<string | null>(null);
   const colorIndex = useRef(0);
 
@@ -163,6 +165,10 @@ export default function LastFMPlayer() {
     if (!track?.albumArt) return;
     if (track.albumArt === displayedArt) return;
 
+    // Reset image load state for new image
+    setImageLoaded(false);
+    setImageError(false);
+
     if (!displayedArt) {
       setDisplayedArt(track.albumArt);
     } else {
@@ -210,12 +216,29 @@ export default function LastFMPlayer() {
         }`}
       >
         <div className="relative w-8 h-8 shrink-0">
+          {/* Fallback music note icon - shows when image hasn't loaded or failed */}
+          <div
+            className="absolute inset-0 w-full h-full rounded flex items-center justify-center transition-opacity duration-300"
+            style={{
+              backgroundColor: "var(--bg-tertiary)",
+              opacity: (!imageLoaded || imageError) && !transitioning ? 1 : 0,
+            }}
+          >
+            <span
+              className="text-base select-none"
+              style={{ color: "var(--text-tertiary)" }}
+            >
+              ♪
+            </span>
+          </div>
           {displayedArt && (
             <img
               src={displayedArt}
               alt={`${track?.album} album art`}
               className="absolute inset-0 w-full h-full object-cover rounded transition-opacity duration-300"
-              style={{ opacity: transitioning ? 0 : 1 }}
+              style={{ opacity: transitioning ? 0 : imageLoaded && !imageError ? 1 : 0 }}
+              onLoad={() => setImageLoaded(true)}
+              onError={() => setImageError(true)}
             />
           )}
           {nextArt && (

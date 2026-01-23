@@ -1306,7 +1306,7 @@ export default function MetroMap({ variant = "full" }: Props) {
     const container = containerRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext("2d", { alpha: true });
+    const ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx) return;
 
     const prefersReducedMotion = window.matchMedia(
@@ -3026,7 +3026,9 @@ export default function MetroMap({ variant = "full" }: Props) {
         station.scale = 1;
       }
 
-      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      // Fill with background color instead of clearing to prevent flickering
+      ctx.fillStyle = themeColors.bgPrimary;
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
       for (const line of lines) {
         drawLine(line, 0.75);
       }
@@ -3137,9 +3139,13 @@ export default function MetroMap({ variant = "full" }: Props) {
 
       // Reinitialize map if config changed (e.g., switching between mobile/desktop)
       if (configChanged && lines.length > 0) {
+        // Preserve opacity to prevent flickering during resize
+        const preservedOpacity = globalOpacity;
         // Run precompute to find best geometry for new config
         precomputedGeometry = findBestSimulation(50, config, drawBounds, variant);
         initializeMap(precomputedGeometry);
+        // Restore opacity so we don't fade in again
+        globalOpacity = preservedOpacity;
       }
 
       if (prefersReducedMotion) {
@@ -3175,7 +3181,9 @@ export default function MetroMap({ variant = "full" }: Props) {
       updateTrains();
 
       // Draw in layers: lines first, then wave rings, then trains, then stations on top
-      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      // Fill with background color instead of clearing to prevent flickering
+      ctx.fillStyle = themeColors.bgPrimary;
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
       // Layer 1: All line paths
       for (const line of lines) {
