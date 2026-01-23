@@ -34,7 +34,7 @@ export const GET: APIRoute = async () => {
     }
 
     const isPlaying = track['@attr']?.nowplaying === 'true';
-    const albumArt = track.image?.find((img: { size: string; '#text': string }) => img.size === 'large')?.['#text'] || '';
+    const albumArt = track.image?.find((img: { size: string; '#text': string }) => img.size === 'extralarge')?.['#text'] || '';
 
     return new Response(JSON.stringify({
       isPlaying,
