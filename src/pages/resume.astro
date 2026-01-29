@@ -21,232 +21,232 @@ const volunteerContent = await Promise.all(volunteer.map(e => render(e)));
 ---
 
 <BaseLayout title="Resume - Simon Bukin" description="Simon Bukin's professional resume">
-  <div class="max-w-2xl px-6 py-12 md:py-20">
-    <header class="mb-16">
-      <div class="flex items-center gap-4 mb-3">
-        <h1 class="text-4xl font-bold" style="color: var(--text-primary);">Resume</h1>
-        <a
-          href="/resume.pdf"
-          download="Simon_Bukin_Resume.pdf"
-          class="flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors"
-          style="background-color: var(--text-primary); color: var(--bg-primary);"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-          PDF
-        </a>
-      </div>
-      <p style="color: var(--text-tertiary);">
-        San Francisco, CA · <a href="mailto:simonbukin@gmail.com" class="transition-colors hover:opacity-80" style="color: var(--text-secondary);">simonbukin@gmail.com</a>
-      </p>
-    </header>
+    <div class="max-w-2xl px-6 py-12 md:py-20">
+      <header class="mb-16">
+        <div class="flex items-center gap-4 mb-3">
+          <h1 class="text-4xl font-bold" style="color: var(--text-primary);">Resume</h1>
+          <a
+            href="/resume.pdf"
+            download="Simon_Bukin_Resume.pdf"
+            class="flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors"
+            style="background-color: var(--text-primary); color: var(--bg-primary);"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            PDF
+          </a>
+        </div>
+        <p style="color: var(--text-tertiary);">
+          San Francisco, CA · <a href="mailto:simonbukin@gmail.com" class="transition-colors hover:opacity-80" style="color: var(--text-secondary);">simonbukin@gmail.com</a>
+        </p>
+      </header>
 
-    {summaryContent && (
+      {summaryContent && (
+        <section class="mb-16">
+          <h2 class="text-sm font-medium uppercase tracking-wider mb-6" style="color: var(--text-tertiary);">Summary</h2>
+          <div class="text-lg leading-relaxed prose prose-p:my-0" style="color: var(--text-primary);">
+            <summaryContent.Content />
+          </div>
+        </section>
+      )}
+
       <section class="mb-16">
-        <h2 class="text-sm font-medium uppercase tracking-wider mb-6" style="color: var(--text-tertiary);">Summary</h2>
-        <div class="text-lg leading-relaxed prose prose-p:my-0" style="color: var(--text-primary);">
-          <summaryContent.Content />
+        <h2 class="text-sm font-medium uppercase tracking-wider mb-8" style="color: var(--text-tertiary);">Experience</h2>
+
+        <div class="space-y-12">
+          {experience.map((entry, i) => {
+            const { Content } = experienceContent[i];
+            const data = entry.data as { section: 'experience'; id: string; company: string; companyUrl?: string; companyNote?: string; title: string; location: string; dates: string; order: number; caseStudy?: string };
+            return (
+              <article id={data.id} class="resume-section">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-3">
+                  <h3 class="text-xl font-semibold" style="color: var(--text-primary);">
+                    {data.companyUrl ? (
+                      <a href={data.companyUrl} target="_blank" rel="noopener" class="resume-link">{data.company}</a>
+                    ) : (
+                      data.company
+                    )}
+                    {data.companyNote && <span class="font-normal" style="color: var(--text-tertiary);"> {data.companyNote}</span>}
+                  </h3>
+                  <span class="text-sm" style="color: var(--text-tertiary);">{data.dates}</span>
+                </div>
+                <p class="mb-4" style="color: var(--text-tertiary);">{data.title} · {data.location}</p>
+                <div class="leading-relaxed prose prose-p:my-0 prose-a:text-inherit" style="color: var(--text-secondary);">
+                  <Content />
+                </div>
+                {data.caseStudy && (
+                  <a href={data.caseStudy} class="resume-link case-study mt-4 inline-block">View case study</a>
+                )}
+              </article>
+            );
+          })}
         </div>
       </section>
-    )}
 
-    <section class="mb-16">
-      <h2 class="text-sm font-medium uppercase tracking-wider mb-8" style="color: var(--text-tertiary);">Experience</h2>
+      <section class="mb-16">
+        <h2 class="text-sm font-medium uppercase tracking-wider mb-8" style="color: var(--text-tertiary);">Open Source & Volunteer</h2>
 
-      <div class="space-y-12">
-        {experience.map((entry, i) => {
-          const { Content } = experienceContent[i];
-          const data = entry.data as { section: 'experience'; id: string; company: string; companyUrl?: string; companyNote?: string; title: string; location: string; dates: string; order: number; caseStudy?: string };
+        <div class="space-y-12">
+          {volunteer.map((entry, i) => {
+            const { Content } = volunteerContent[i];
+            const data = entry.data as { section: 'volunteer'; id: string; company: string; companyUrl?: string; title: string; location: string; dates: string; order: number; caseStudy?: string };
+            return (
+              <article id={data.id} class="resume-section">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-3">
+                  <h3 class="text-xl font-semibold" style="color: var(--text-primary);">
+                    {data.companyUrl ? (
+                      <a href={data.companyUrl} target="_blank" rel="noopener" class="resume-link">{data.company}</a>
+                    ) : (
+                      data.company
+                    )}
+                  </h3>
+                  <span class="text-sm" style="color: var(--text-tertiary);">{data.dates}</span>
+                </div>
+                <p class="mb-4" style="color: var(--text-tertiary);">{data.title} · {data.location}</p>
+                <div class="leading-relaxed prose prose-p:my-0 prose-a:text-inherit" style="color: var(--text-secondary);">
+                  <Content />
+                </div>
+                {data.caseStudy && (
+                  <a href={data.caseStudy} class="resume-link case-study mt-4 inline-block">View case study</a>
+                )}
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <section>
+        <h2 class="text-sm font-medium uppercase tracking-wider mb-8" style="color: var(--text-tertiary);">Education</h2>
+
+        {education.map((entry) => {
+          const data = entry.data as { section: 'education'; id: string; institution: string; degree: string; dates: string; order: number };
           return (
-            <article id={data.id} class="resume-section">
+            <article>
               <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-3">
-                <h3 class="text-xl font-semibold" style="color: var(--text-primary);">
-                  {data.companyUrl ? (
-                    <a href={data.companyUrl} target="_blank" rel="noopener" class="resume-link">{data.company}</a>
-                  ) : (
-                    data.company
-                  )}
-                  {data.companyNote && <span class="font-normal" style="color: var(--text-tertiary);"> {data.companyNote}</span>}
-                </h3>
+                <h3 class="text-xl font-semibold" style="color: var(--text-primary);">{data.institution}</h3>
                 <span class="text-sm" style="color: var(--text-tertiary);">{data.dates}</span>
               </div>
-              <p class="mb-4" style="color: var(--text-tertiary);">{data.title} · {data.location}</p>
-              <div class="leading-relaxed prose prose-p:my-0 prose-a:text-inherit" style="color: var(--text-secondary);">
-                <Content />
-              </div>
-              {data.caseStudy && (
-                <a href={data.caseStudy} class="resume-link case-study mt-4 inline-block">View case study</a>
-              )}
+              <p style="color: var(--text-tertiary);">{data.degree}</p>
             </article>
           );
         })}
-      </div>
-    </section>
-
-    <section class="mb-16">
-      <h2 class="text-sm font-medium uppercase tracking-wider mb-8" style="color: var(--text-tertiary);">Open Source & Volunteer</h2>
-
-      <div class="space-y-12">
-        {volunteer.map((entry, i) => {
-          const { Content } = volunteerContent[i];
-          const data = entry.data as { section: 'volunteer'; id: string; company: string; companyUrl?: string; title: string; location: string; dates: string; order: number; caseStudy?: string };
-          return (
-            <article id={data.id} class="resume-section">
-              <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-3">
-                <h3 class="text-xl font-semibold" style="color: var(--text-primary);">
-                  {data.companyUrl ? (
-                    <a href={data.companyUrl} target="_blank" rel="noopener" class="resume-link">{data.company}</a>
-                  ) : (
-                    data.company
-                  )}
-                </h3>
-                <span class="text-sm" style="color: var(--text-tertiary);">{data.dates}</span>
-              </div>
-              <p class="mb-4" style="color: var(--text-tertiary);">{data.title} · {data.location}</p>
-              <div class="leading-relaxed prose prose-p:my-0 prose-a:text-inherit" style="color: var(--text-secondary);">
-                <Content />
-              </div>
-              {data.caseStudy && (
-                <a href={data.caseStudy} class="resume-link case-study mt-4 inline-block">View case study</a>
-              )}
-            </article>
-          );
-        })}
-      </div>
-    </section>
-
-    <section>
-      <h2 class="text-sm font-medium uppercase tracking-wider mb-8" style="color: var(--text-tertiary);">Education</h2>
-
-      {education.map((entry) => {
-        const data = entry.data as { section: 'education'; id: string; institution: string; degree: string; dates: string; order: number };
-        return (
-          <article>
-            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-3">
-              <h3 class="text-xl font-semibold" style="color: var(--text-primary);">{data.institution}</h3>
-              <span class="text-sm" style="color: var(--text-tertiary);">{data.dates}</span>
-            </div>
-            <p style="color: var(--text-tertiary);">{data.degree}</p>
-          </article>
-        );
-      })}
-    </section>
-  </div>
-</BaseLayout>
+      </section>
+    </div>
+  </BaseLayout>
 
 <style>
-  .resume-link {
-    color: inherit;
-    text-decoration: none;
-    background-image: linear-gradient(var(--link-color, #a5b4fc), var(--link-color, #a5b4fc));
-    background-size: 100% 1px;
-    background-position: 0 100%;
-    background-repeat: no-repeat;
-    padding-bottom: 2px;
-    transition: background-size 0.2s ease, color 0.2s ease;
-  }
+    .resume-link {
+      color: inherit;
+      text-decoration: none;
+      background-image: linear-gradient(var(--link-color, #a5b4fc), var(--link-color, #a5b4fc));
+      background-size: 100% 1px;
+      background-position: 0 100%;
+      background-repeat: no-repeat;
+      padding-bottom: 2px;
+      transition: background-size 0.2s ease, color 0.2s ease;
+    }
 
-  .resume-link:hover {
-    color: var(--text-primary);
-    background-size: 100% 2px;
-  }
+    .resume-link:hover {
+      color: var(--text-primary);
+      background-size: 100% 2px;
+    }
 
-  .resume-link.case-study {
-    color: var(--text-secondary);
-  }
+    .resume-link.case-study {
+      color: var(--text-secondary);
+    }
 
-  .resume-link.case-study:hover {
-    color: var(--text-primary);
-    background-size: 100% 3px;
-  }
+    .resume-link.case-study:hover {
+      color: var(--text-primary);
+      background-size: 100% 3px;
+    }
 
-  .resume-section {
-    scroll-margin-top: 2rem;
-  }
+    .resume-section {
+      scroll-margin-top: 2rem;
+    }
 
-  .resume-section h3 {
-    position: relative;
-    display: inline-block;
-  }
+    .resume-section h3 {
+      position: relative;
+      display: inline-block;
+    }
 
-  .resume-section h3::after {
-    content: '';
-    position: absolute;
-    inset: 0 -4px;
-    background: var(--link-color, #a5b4fc);
-    transform: scaleX(0);
-    transform-origin: left;
-    pointer-events: none;
-  }
-
-  .resume-section h3.redacting::after {
-    animation: redact 0.5s ease-in-out forwards;
-  }
-
-  @keyframes redact {
-    0%, 100% {
+    .resume-section h3::after {
+      content: '';
+      position: absolute;
+      inset: 0 -4px;
+      background: var(--link-color, #a5b4fc);
       transform: scaleX(0);
-    }
-    45%, 55% {
-      transform: scaleX(1);
-    }
-    0%, 45% {
       transform-origin: left;
+      pointer-events: none;
     }
-    55%, 100% {
-      transform-origin: right;
+
+    .resume-section h3.redacting::after {
+      animation: redact 0.5s ease-in-out forwards;
     }
-  }
-</style>
 
-<script>
-  const PASTEL_COLORS = [
-    '#fca5a5', '#fdba74', '#fcd34d', '#bef264', '#86efac',
-    '#5eead4', '#7dd3fc', '#a5b4fc', '#c4b5fd', '#f0abfc', '#fda4af'
-  ];
+    @keyframes redact {
+      0%, 100% {
+        transform: scaleX(0);
+      }
+      45%, 55% {
+        transform: scaleX(1);
+      }
+      0%, 45% {
+        transform-origin: left;
+      }
+      55%, 100% {
+        transform-origin: right;
+      }
+    }
+  </style>
 
-  function getRandomColor(): string {
-    return PASTEL_COLORS[Math.floor(Math.random() * PASTEL_COLORS.length)];
-  }
+  <script>
+    const PASTEL_COLORS = [
+      '#fca5a5', '#fdba74', '#fcd34d', '#bef264', '#86efac',
+      '#5eead4', '#7dd3fc', '#a5b4fc', '#c4b5fd', '#f0abfc', '#fda4af'
+    ];
 
-  function setupResumeLinks(): void {
-    document.querySelectorAll('.resume-link').forEach(link => {
-      const el = link as HTMLElement;
-      const color = getRandomColor();
-      el.style.setProperty('--link-color', color);
+    function getRandomColor(): string {
+      return PASTEL_COLORS[Math.floor(Math.random() * PASTEL_COLORS.length)];
+    }
 
-      el.onmouseenter = () => {
-        window.dispatchEvent(new CustomEvent('viz-color', { detail: color }));
-      };
-      el.onmouseleave = () => {
-        window.dispatchEvent(new CustomEvent('viz-color-reset'));
-      };
-    });
-  }
+    function setupResumeLinks(): void {
+      document.querySelectorAll('.resume-link').forEach(link => {
+        const el = link as HTMLElement;
+        const color = getRandomColor();
+        el.style.setProperty('--link-color', color);
 
-  function playRedactAnimation(): void {
-    const hash = window.location.hash;
-    if (!hash) return;
+        el.onmouseenter = () => {
+          window.dispatchEvent(new CustomEvent('viz-color', { detail: color }));
+        };
+        el.onmouseleave = () => {
+          window.dispatchEvent(new CustomEvent('viz-color-reset'));
+        };
+      });
+    }
 
-    const section = document.querySelector(hash);
-    if (!section?.classList.contains('resume-section')) return;
+    function playRedactAnimation(): void {
+      const hash = window.location.hash;
+      if (!hash) return;
 
-    const h3 = section.querySelector('h3') as HTMLElement | null;
-    if (!h3) return;
+      const section = document.querySelector(hash);
+      if (!section?.classList.contains('resume-section')) return;
 
-    const link = h3.querySelector('.resume-link') as HTMLElement | null;
-    const color = link?.style.getPropertyValue('--link-color') || PASTEL_COLORS[0];
-    h3.style.setProperty('--link-color', color);
+      const h3 = section.querySelector('h3') as HTMLElement | null;
+      if (!h3) return;
 
-    setTimeout(() => h3.classList.add('redacting'), 100);
-  }
+      const link = h3.querySelector('.resume-link') as HTMLElement | null;
+      const color = link?.style.getPropertyValue('--link-color') || PASTEL_COLORS[0];
+      h3.style.setProperty('--link-color', color);
 
-  function init(): void {
-    setupResumeLinks();
-    requestAnimationFrame(playRedactAnimation);
-  }
+      setTimeout(() => h3.classList.add('redacting'), 100);
+    }
 
-  init();
-  document.addEventListener('astro:after-swap', init);
-</script>
+    function init(): void {
+      setupResumeLinks();
+      requestAnimationFrame(playRedactAnimation);
+    }
+
+    init();
+    document.addEventListener('astro:after-swap', init);
+  </script>

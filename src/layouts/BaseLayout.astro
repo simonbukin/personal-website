@@ -3,6 +3,7 @@ import { ClientRouter } from 'astro:transitions';
 import '../styles/global.css';
 import Visualization from '../components/islands/Visualization';
 import ThemeToggle from '../components/ThemeToggle.astro';
+import PostHog from '../components/posthog.astro';
 
 interface Props {
   title?: string;
@@ -71,6 +72,7 @@ const socialLinks = [
     <meta name="twitter:description" content={description} />
 
     <ClientRouter fallback="animate" />
+    <PostHog />
   </head>
   <body class="min-h-screen flex flex-col">
     <div transition:persist="visualization" class="hidden lg:block">

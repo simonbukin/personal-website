@@ -7,26 +7,26 @@ const sortedPortfolio = portfolio.sort((a, b) => b.data.date.valueOf() - a.data.
 ---
 
 <BaseLayout title="Work - Simon Bukin" description="Case studies and portfolio">
-  <div class="max-w-2xl px-6 py-12 md:py-16">
-    <h1 class="text-3xl font-bold mb-2" style="color: var(--text-primary);">Work</h1>
-    <p class="mb-8" style="color: var(--text-tertiary);">Selected case studies and projects.</p>
+    <div class="max-w-2xl px-6 py-12 md:py-16">
+      <h1 class="text-3xl font-bold mb-2" style="color: var(--text-primary);">Work</h1>
+      <p class="mb-8" style="color: var(--text-tertiary);">Selected case studies and projects.</p>
 
-    <ul class="space-y-6">
-      {sortedPortfolio.map((project) => (
-        <li>
-          <a href={`/portfolio/${project.slug}`} class="group block">
-            <h2 class="font-semibold transition-colors" style="color: var(--text-secondary);">{project.data.title}</h2>
-            <p class="mt-1 text-sm" style="color: var(--text-tertiary);">{project.data.description}</p>
-            <div class="flex flex-wrap items-center gap-2 mt-2 text-sm" style="color: var(--text-tertiary);">
-              <span>{project.data.company}</span>
-              <span style="color: var(--border-primary);">·</span>
-              <span>{project.data.role}</span>
-              <span style="color: var(--border-primary);">·</span>
-              <span>{project.data.launch}</span>
-            </div>
-          </a>
-        </li>
-      ))}
-    </ul>
-  </div>
-</BaseLayout>
+      <ul class="space-y-6">
+        {sortedPortfolio.map((project) => (
+          <li>
+            <a href={`/portfolio/${project.slug}`} class="group block">
+              <h2 class="font-semibold transition-colors" style="color: var(--text-secondary);">{project.data.title}</h2>
+              <p class="mt-1 text-sm" style="color: var(--text-tertiary);">{project.data.description}</p>
+              <div class="flex flex-wrap items-center gap-2 mt-2 text-sm" style="color: var(--text-tertiary);">
+                <span>{project.data.company}</span>
+                <span style="color: var(--border-primary);">·</span>
+                <span>{project.data.role}</span>
+                <span style="color: var(--border-primary);">·</span>
+                <span>{project.data.launch}</span>
+              </div>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </BaseLayout>

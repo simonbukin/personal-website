@@ -15,60 +15,59 @@ const byYear = sorted.reduce((acc, project) => {
 
 const years = Object.keys(byYear).sort((a, b) => Number(b) - Number(a));
 ---
-
 <BaseLayout title="Timeline - Simon Bukin" description="Every project I've ever done">
-  <div class="max-w-2xl px-6 py-12 md:py-16">
-    <h1 class="text-3xl font-bold mb-2" style="color: var(--text-primary);">Timeline</h1>
-    <p class="mb-12" style="color: var(--text-tertiary);">Every project I've ever done.</p>
+    <div class="max-w-2xl px-6 py-12 md:py-16">
+      <h1 class="text-3xl font-bold mb-2" style="color: var(--text-primary);">Timeline</h1>
+      <p class="mb-12" style="color: var(--text-tertiary);">Every project I've ever done.</p>
 
-    {years.length === 0 ? (
-      <p class="italic" style="color: var(--text-tertiary);">Nothing here yet. Check back later.</p>
-    ) : (
-      <div class="timeline">
-        {years.map(year => (
-          <div class="year-group">
-            <div class="year-marker">{year}</div>
-            {byYear[Number(year)].map(async (project) => {
-              const { Content } = await render(project);
-              return (
-                <article class="timeline-entry">
-                  <div class="entry-meta">
-                    <span class="entry-type" data-type={project.data.type}>
-                      {project.data.type}
-                    </span>
-                    <time datetime={project.data.date.toISOString()}>
-                      {project.data.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    </time>
-                  </div>
-                  <h2 class="entry-title">{project.data.title}</h2>
-                  {project.data.description && (
-                    <p class="entry-description">{project.data.description}</p>
-                  )}
-                  <div class="entry-content prose">
-                    <Content />
-                  </div>
-                  {project.data.tags && project.data.tags.length > 0 && (
-                    <div class="entry-tags">
-                      {project.data.tags.map(tag => (
-                        <span class="entry-tag">{tag}</span>
-                      ))}
+      {years.length === 0 ? (
+        <p class="italic" style="color: var(--text-tertiary);">Nothing here yet. Check back later.</p>
+      ) : (
+        <div class="timeline">
+          {years.map(year => (
+            <div class="year-group">
+              <div class="year-marker">{year}</div>
+              {byYear[Number(year)].map(async (project) => {
+                const { Content } = await render(project);
+                return (
+                  <article class="timeline-entry">
+                    <div class="entry-meta">
+                      <span class="entry-type" data-type={project.data.type}>
+                        {project.data.type}
+                      </span>
+                      <time datetime={project.data.date.toISOString()}>
+                        {project.data.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </time>
                     </div>
-                  )}
-                  {project.data.links && project.data.links.length > 0 && (
-                    <div class="entry-links">
-                      {project.data.links.map(link => (
-                        <a href={link.url} target="_blank" rel="noopener noreferrer">
-                          {link.label} <span class="text-xs opacity-60">↗</span>
-                        </a>
-                      ))}
+                    <h2 class="entry-title">{project.data.title}</h2>
+                    {project.data.description && (
+                      <p class="entry-description">{project.data.description}</p>
+                    )}
+                    <div class="entry-content prose">
+                      <Content />
                     </div>
-                  )}
-                </article>
-              );
-            })}
-          </div>
-        ))}
-      </div>
-    )}
-  </div>
-</BaseLayout>
+                    {project.data.tags && project.data.tags.length > 0 && (
+                      <div class="entry-tags">
+                        {project.data.tags.map(tag => (
+                          <span class="entry-tag">{tag}</span>
+                        ))}
+                      </div>
+                    )}
+                    {project.data.links && project.data.links.length > 0 && (
+                      <div class="entry-links">
+                        {project.data.links.map(link => (
+                          <a href={link.url} target="_blank" rel="noopener noreferrer">
+                            {link.label} <span class="text-xs opacity-60">↗</span>
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </BaseLayout>

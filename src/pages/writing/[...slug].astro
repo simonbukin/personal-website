@@ -17,31 +17,31 @@ const { Content } = await item.render();
 ---
 
 <BaseLayout title={`${item.data.title} - Simon Bukin`} description={item.data.description}>
-  <article class="max-w-2xl px-6 py-12 md:py-16">
-    <header class="mb-10">
-      <a href="/writing" class="transition-colors text-sm inline-flex items-center gap-1 group hover:opacity-80" style="color: var(--text-tertiary);">
-        <span class="group-hover:-translate-x-0.5 transition-transform">&larr;</span> Back to writing
-      </a>
-      <h1 class="text-3xl md:text-4xl font-bold mt-6 leading-tight" style="color: var(--text-primary);">{item.data.title}</h1>
-      <div class="flex flex-wrap items-center gap-3 mt-4 text-sm" style="color: var(--text-tertiary);">
-        <time>
-          {item.data.date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-        </time>
-        {item.data.type === 'post' && item.data.tags && (
-          <>
-            <span style="color: var(--border-primary);">·</span>
-            <div class="flex flex-wrap gap-2">
-              {item.data.tags.map((tag: string) => (
-                <span class="text-xs px-2 py-0.5 rounded" style="background-color: var(--bg-tertiary); color: var(--text-tertiary);">{tag}</span>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
-    </header>
+    <article class="max-w-2xl px-6 py-12 md:py-16">
+      <header class="mb-10">
+        <a href="/writing" class="transition-colors text-sm inline-flex items-center gap-1 group hover:opacity-80" style="color: var(--text-tertiary);">
+          <span class="group-hover:-translate-x-0.5 transition-transform">&larr;</span> Back to writing
+        </a>
+        <h1 class="text-3xl md:text-4xl font-bold mt-6 leading-tight" style="color: var(--text-primary);">{item.data.title}</h1>
+        <div class="flex flex-wrap items-center gap-3 mt-4 text-sm" style="color: var(--text-tertiary);">
+          <time>
+            {item.data.date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+          </time>
+          {item.data.type === 'post' && item.data.tags && (
+            <>
+              <span style="color: var(--border-primary);">·</span>
+              <div class="flex flex-wrap gap-2">
+                {item.data.tags.map((tag: string) => (
+                  <span class="text-xs px-2 py-0.5 rounded" style="background-color: var(--bg-tertiary); color: var(--text-tertiary);">{tag}</span>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </header>
 
-    <div class="prose">
-      <Content />
-    </div>
-  </article>
-</BaseLayout>
+      <div class="prose">
+        <Content />
+      </div>
+    </article>
+  </BaseLayout>
