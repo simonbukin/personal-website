@@ -313,6 +313,34 @@ const MOBILE_CONFIG: MapConfig = {
   hoverHitRadius: 14, // stationRadius + 8
 };
 
+// Bright saturated neon colors for chaos mode
+const NEON_COLORS = [
+  "#ff00ff", // Magenta
+  "#00ff00", // Pure green
+  "#00ffff", // Cyan
+  "#ffff00", // Yellow
+  "#ff0000", // Red
+  "#0000ff", // Blue
+  "#ff00aa", // Hot pink
+  "#00ff88", // Spring green
+  "#ff8800", // Orange
+  "#aa00ff", // Purple
+];
+
+// Silly line names for chaos mode (just 4 favorites)
+interface ChaosLineInfo {
+  name: string;
+  location: string;
+  wiki: string;
+}
+
+const CHAOS_LINE_NAMES: ChaosLineInfo[] = [
+  { name: "Rainbow Road", location: "Mario Kart", wiki: "https://en.wikipedia.org/wiki/Mario_Kart" },
+  { name: "Line 404", location: "Not Found", wiki: "https://en.wikipedia.org/wiki/HTTP_404" },
+  { name: "Konami Code", location: "↑↑↓↓←→←→BA", wiki: "https://en.wikipedia.org/wiki/Konami_Code" },
+  { name: "???", location: "Unknown", wiki: "https://en.wikipedia.org/wiki/Chaos_theory" },
+];
+
 interface RGB {
   r: number;
   g: number;
@@ -1234,12 +1262,13 @@ function calculateCoverage(
   };
 }
 
-// Find the best simulation that hits all 4 quadrants
+// Find the best simulation that hits all 4 quadrants (or unconstrained for chaos mode)
 function findBestSimulation(
   _count: number, // Unused - we run until we find 4/4 quadrants
   config: MapConfig,
   bounds: DrawBounds,
-  variant: string = "unknown"
+  variant: string = "unknown",
+  unconstrained: boolean = false // Skip quadrant check for chaos mode
 ): PrecomputedGeometry {
   // Guard against invalid bounds - return empty geometry with fallback seed
   const boundsWidth = bounds.right - bounds.left;
@@ -1248,6 +1277,14 @@ function findBestSimulation(
     console.warn(`[MetroMap:${variant}] Skipping precompute - invalid bounds`);
     const fallbackSeed = Date.now();
     return { lines: [], stations: [], seed: fallbackSeed };
+  }
+
+  // Chaos mode: just run one simulation, no constraints
+  if (unconstrained) {
+    const seed = Date.now() + Math.floor(Math.random() * 100000);
+    const { lines, stations } = runHeadlessSimulation(seed, config, bounds);
+    console.log(`[MetroMap:${variant}] CHAOS MODE - unconstrained simulation, seed=${seed}`);
+    return { lines, stations, seed };
   }
 
   const startTime = performance.now();
@@ -1384,6 +1421,15 @@ export default function MetroMap({ variant = "full" }: Props) {
     }
     let legendItems: LegendItem[] = [];
     let hoveredLegendIndex = -1;
+
+    // Chaos mode state - continuous "snake" animation
+    let chaosMode = false;
+    let chaosColorCycleOffset = 0;
+    let chaosTrainSpeedMultiplier = 1;
+    // Per-line snake positions (head = front of visible segment, tail = back)
+    let chaosHeadPositions: Map<number, number> = new Map();
+    // Window length in pixels (roughly 5 stations worth)
+    const CHAOS_WINDOW_LENGTH = 250;
 
     const getNextColor = (): string => {
       if (availableColors.length === 0) {
@@ -1599,6 +1645,7 @@ export default function MetroMap({ variant = "full" }: Props) {
         // Reveal animation fields (unused in legacy mode)
         targetPoints: [],
         targetStations: [],
+        targetStationDistances: [],
         revealedLength: 0,
         totalTargetLength: 0,
         stationDistances: [],
@@ -1606,6 +1653,7 @@ export default function MetroMap({ variant = "full" }: Props) {
         segmentStartTime: 0,
         pausingAtStation: false,
         pauseEndTime: 0,
+        processedStationIndices: new Set<number>(),
       };
     };
 
@@ -1644,6 +1692,7 @@ export default function MetroMap({ variant = "full" }: Props) {
         // Reveal animation fields (unused in legacy mode)
         targetPoints: [],
         targetStations: [],
+        targetStationDistances: [],
         revealedLength: 0,
         totalTargetLength: 0,
         stationDistances: [],
@@ -1651,6 +1700,7 @@ export default function MetroMap({ variant = "full" }: Props) {
         segmentStartTime: 0,
         pausingAtStation: false,
         pauseEndTime: 0,
+        processedStationIndices: new Set<number>(),
       };
     };
 
@@ -1690,32 +1740,44 @@ export default function MetroMap({ variant = "full" }: Props) {
       legendItems = [];
       hoveredLegendIndex = -1;
 
-      // Pre-select transit lines (one per location) and colors using seeded RNG
-      plannedLines = selectLinesOnePerLocation(config.maxLines, currentRng);
-      plannedColors = [];
-
-      // First: identify lines with color names and reserve those colors
-      const reservedColors = new Map<number, number>(); // lineIndex -> paletteIndex
-      for (let i = 0; i < plannedLines.length; i++) {
-        const colorIdx = getColorIndexFromLineName(plannedLines[i].name);
-        if (colorIdx !== null) {
-          reservedColors.set(i, colorIdx);
+      // Pre-select transit lines and colors - use chaos mode names/colors if active
+      if (chaosMode) {
+        // Use chaos line names (shuffle them for variety)
+        const shuffledChaosNames = currentRng.shuffle([...CHAOS_LINE_NAMES]);
+        plannedLines = shuffledChaosNames.slice(0, config.maxLines);
+        // Use neon colors for chaos mode
+        plannedColors = [];
+        const shuffledNeonColors = currentRng.shuffle([...NEON_COLORS]);
+        for (let i = 0; i < config.maxLines; i++) {
+          plannedColors.push(shuffledNeonColors[i % shuffledNeonColors.length]);
         }
-      }
+      } else {
+        plannedLines = selectLinesOnePerLocation(config.maxLines, currentRng);
+        plannedColors = [];
 
-      // Shuffle remaining colors (excluding reserved ones)
-      const reservedIndices = new Set(reservedColors.values());
-      const unassignedColors = palette.filter((_, idx) => !reservedIndices.has(idx));
-      const shuffledAvailable = currentRng.shuffle([...unassignedColors]);
+        // First: identify lines with color names and reserve those colors
+        const reservedColors = new Map<number, number>(); // lineIndex -> paletteIndex
+        for (let i = 0; i < plannedLines.length; i++) {
+          const colorIdx = getColorIndexFromLineName(plannedLines[i].name);
+          if (colorIdx !== null) {
+            reservedColors.set(i, colorIdx);
+          }
+        }
 
-      // Assign colors
-      let availIdx = 0;
-      for (let i = 0; i < plannedLines.length; i++) {
-        if (reservedColors.has(i)) {
-          plannedColors.push(palette[reservedColors.get(i)!]);
-        } else {
-          plannedColors.push(shuffledAvailable[availIdx % shuffledAvailable.length]);
-          availIdx++;
+        // Shuffle remaining colors (excluding reserved ones)
+        const reservedIndices = new Set(reservedColors.values());
+        const unassignedColors = palette.filter((_, idx) => !reservedIndices.has(idx));
+        const shuffledAvailable = currentRng.shuffle([...unassignedColors]);
+
+        // Assign colors
+        let availIdx = 0;
+        for (let i = 0; i < plannedLines.length; i++) {
+          if (reservedColors.has(i)) {
+            plannedColors.push(palette[reservedColors.get(i)!]);
+          } else {
+            plannedColors.push(shuffledAvailable[availIdx % shuffledAvailable.length]);
+            availIdx++;
+          }
         }
       }
 
@@ -2069,18 +2131,28 @@ export default function MetroMap({ variant = "full" }: Props) {
     // Check if we should spawn trains for lines that have enough stations
     const checkTrainSpawning = () => {
       const now = performance.now();
-      if (now - lastTrainSpawnCheck < 500) return; // Check every 500ms
+      // In chaos mode, check more frequently and allow multiple trains per line
+      const checkInterval = chaosMode ? 200 : 500;
+      if (now - lastTrainSpawnCheck < checkInterval) return;
       lastTrainSpawnCheck = now;
 
+      // In chaos mode, allow up to 2 trains per line
+      const maxTrainsPerLine = chaosMode ? 2 : 1;
+
       for (const line of lines) {
-        // Check if this line already has a train
-        const hasTrain = trains.some((t) => t.line === line);
-        if (hasTrain) continue;
+        // Count trains on this line
+        const trainCount = trains.filter((t) => t.line === line).length;
+        if (trainCount >= maxTrainsPerLine) continue;
 
         // Line must be done growing and have enough stations
         if (!line.growing && line.stations.length >= MIN_STATIONS_FOR_TRAIN) {
           const train = createTrain(line);
           if (train) {
+            // In chaos mode, start second train from different position
+            if (trainCount === 1 && chaosMode) {
+              train.distanceAlongLine = train.lineLength * 0.6;
+              train.direction = -1;
+            }
             trains.push(train);
           }
         }
@@ -2090,8 +2162,10 @@ export default function MetroMap({ variant = "full" }: Props) {
     // Update all trains with smooth movement
     const updateTrains = () => {
       const now = performance.now();
-      const ACCELERATION = 0.015; // Speed increase per frame
-      const DECELERATION = 0.025; // Speed decrease per frame (faster braking)
+      // Apply chaos speed multiplier to train speed
+      const effectiveMaxSpeed = TRAIN_MAX_SPEED * chaosTrainSpeedMultiplier;
+      const ACCELERATION = 0.015 * chaosTrainSpeedMultiplier; // Speed increase per frame
+      const DECELERATION = 0.025 * chaosTrainSpeedMultiplier; // Speed decrease per frame (faster braking)
       const APPROACH_DISTANCE = 40; // Start slowing down this far from station
       const POSITION_LERP = 0.15; // Smooth position interpolation
 
@@ -2135,14 +2209,14 @@ export default function MetroMap({ variant = "full" }: Props) {
         if (nearestStationDist < APPROACH_DISTANCE && nearestStation) {
           // Slow down approaching station
           const slowdownFactor = nearestStationDist / APPROACH_DISTANCE;
-          const targetSpeed = TRAIN_MAX_SPEED * slowdownFactor * 0.5;
+          const targetSpeed = effectiveMaxSpeed * slowdownFactor * 0.5;
           if (train.speed > targetSpeed) {
             train.speed = Math.max(targetSpeed, train.speed - DECELERATION);
           }
         } else {
           // Accelerate towards max speed
-          if (train.speed < TRAIN_MAX_SPEED) {
-            train.speed = Math.min(TRAIN_MAX_SPEED, train.speed + ACCELERATION);
+          if (train.speed < effectiveMaxSpeed) {
+            train.speed = Math.min(effectiveMaxSpeed, train.speed + ACCELERATION);
           }
         }
 
@@ -2170,7 +2244,11 @@ export default function MetroMap({ variant = "full" }: Props) {
             // Don't stop at the same station we just left
             if (station !== train.lastStoppedAt) {
               train.waiting = true;
-              train.waitEndTime = now + randomWaitTime();
+              // In chaos mode, much shorter wait times
+              const waitTime = chaosMode
+                ? 100 + Math.random() * 300  // 100-400ms in chaos
+                : randomWaitTime();           // normal 800-2500ms
+              train.waitEndTime = now + waitTime;
               train.lastStoppedAt = station;
               train.speed = 0;
               break;
@@ -3200,25 +3278,196 @@ export default function MetroMap({ variant = "full" }: Props) {
         drawLinePath(line, globalOpacity);
       }
 
-      // Layer 2: Click wave rings
-      drawClickWaveRings(globalOpacity);
+      // Layer 2: Click wave rings (skip in chaos mode)
+      if (!chaosMode) {
+        drawClickWaveRings(globalOpacity);
+      }
 
-      // Layer 3: Trains (between lines and stations)
-      drawTrains(globalOpacity);
+      // Layer 3: Trains (skip in chaos mode - lines constantly changing)
+      if (!chaosMode) {
+        drawTrains(globalOpacity);
+      }
 
-      // Layer 4: All stations (on top of everything)
-      for (const line of lines) {
-        drawLineStations(line, globalOpacity);
+      // Layer 4: All stations (skip in chaos mode)
+      if (!chaosMode) {
+        for (const line of lines) {
+          drawLineStations(line, globalOpacity);
+        }
       }
 
       // Layer 5: Legend
       drawLegend(globalOpacity);
 
-      // Layer 6: Station tooltip (on top of everything)
-      drawStationTooltip(globalOpacity);
+      // Layer 6: Station tooltip (skip in chaos mode)
+      if (!chaosMode) {
+        drawStationTooltip(globalOpacity);
+      }
 
       // Layer 7: Debug overlay (dev mode only)
       drawDebugOverlay(globalOpacity);
+    };
+
+    // Chaos mode: continuous "snake" animation
+    // Each line shows only a sliding window that moves along the path
+    const CHAOS_SPEED = 1.5; // Pixels per frame
+
+    const updateChaosSnake = () => {
+      if (!chaosMode) return;
+
+      // Cycle colors
+      chaosColorCycleOffset += 0.003;
+      if (chaosColorCycleOffset > 1) chaosColorCycleOffset -= 1;
+
+      // Update each line's color and snake position
+      lines.forEach((line, index) => {
+        // Cycle colors through neon palette
+        const colorIndex = Math.floor((chaosColorCycleOffset * NEON_COLORS.length + index) % NEON_COLORS.length);
+        const nextColorIndex = (colorIndex + 1) % NEON_COLORS.length;
+        const t = (chaosColorCycleOffset * NEON_COLORS.length + index) % 1;
+        const currentColor = parseColor(NEON_COLORS[colorIndex]);
+        const nextColor = parseColor(NEON_COLORS[nextColorIndex]);
+        line.targetColor = lerpColor(currentColor, nextColor, t);
+
+        // Update snake head position
+        let headPos = chaosHeadPositions.get(line.id) || 0;
+        headPos += CHAOS_SPEED;
+
+        // Loop back when reaching end
+        if (headPos > line.totalTargetLength + CHAOS_WINDOW_LENGTH) {
+          headPos = 0;
+        }
+
+        chaosHeadPositions.set(line.id, headPos);
+
+        // Calculate tail position (follows head by window length)
+        const tailPos = Math.max(0, headPos - CHAOS_WINDOW_LENGTH);
+
+        // Update the visible portion of the line
+        // We need to extract just the window from targetPoints
+        if (line.targetPoints.length >= 2) {
+          const windowStart = tailPos;
+          const windowEnd = Math.min(headPos, line.totalTargetLength);
+
+          if (windowEnd > windowStart) {
+            // Get points within the window
+            line.points = getPointsInWindow(line.targetPoints, windowStart, windowEnd);
+            line.revealedLength = windowEnd - windowStart;
+          } else {
+            line.points = [];
+            line.revealedLength = 0;
+          }
+        }
+      });
+    };
+
+    // Get points from a path within a distance window
+    const getPointsInWindow = (points: Point[], startDist: number, endDist: number): Point[] => {
+      if (points.length < 2 || endDist <= startDist) return [];
+
+      const result: Point[] = [];
+      let accumulated = 0;
+      let started = false;
+
+      for (let i = 0; i < points.length - 1; i++) {
+        const segLength = distance(points[i], points[i + 1]);
+        const segEnd = accumulated + segLength;
+
+        // Check if this segment contains our start point
+        if (!started && segEnd >= startDist) {
+          started = true;
+          if (accumulated < startDist) {
+            // Interpolate start point within segment
+            const t = (startDist - accumulated) / segLength;
+            result.push({
+              x: points[i].x + (points[i + 1].x - points[i].x) * t,
+              y: points[i].y + (points[i + 1].y - points[i].y) * t,
+            });
+          } else {
+            result.push({ ...points[i] });
+          }
+        }
+
+        // Add intermediate points
+        if (started && accumulated >= startDist && accumulated <= endDist) {
+          if (result.length === 0 || result[result.length - 1].x !== points[i].x || result[result.length - 1].y !== points[i].y) {
+            result.push({ ...points[i] });
+          }
+        }
+
+        // Check if this segment contains our end point
+        if (started && segEnd >= endDist) {
+          if (accumulated < endDist) {
+            // Interpolate end point within segment
+            const t = (endDist - accumulated) / segLength;
+            result.push({
+              x: points[i].x + (points[i + 1].x - points[i].x) * t,
+              y: points[i].y + (points[i + 1].y - points[i].y) * t,
+            });
+          }
+          break;
+        }
+
+        // Add end of segment if we've started and haven't ended
+        if (started && segEnd < endDist) {
+          result.push({ ...points[i + 1] });
+        }
+
+        accumulated = segEnd;
+      }
+
+      return result;
+    };
+
+    // Handle Konami code activation
+    const handleKonamiCode = () => {
+      if (chaosMode) return; // Already in chaos mode
+
+      console.log('[MetroMap] KONAMI CODE ACTIVATED - CHAOS MODE ENGAGED!');
+      chaosMode = true;
+      chaosColorCycleOffset = 0;
+      chaosTrainSpeedMultiplier = 2.5;
+      canvas.classList.add('chaos-mode');
+
+      // Initialize snake positions - stagger each line's starting position
+      chaosHeadPositions.clear();
+      lines.forEach((line, index) => {
+        // Stagger starts so lines don't all begin at 0
+        const staggeredStart = (index * CHAOS_WINDOW_LENGTH * 0.7) % (line.totalTargetLength + CHAOS_WINDOW_LENGTH);
+        chaosHeadPositions.set(line.id, staggeredStart);
+      });
+
+      // Assign neon colors
+      lines.forEach((line, index) => {
+        const color = NEON_COLORS[index % NEON_COLORS.length];
+        line.baseColor = color;
+        const rgb = parseColor(color);
+        line.currentColor = { ...rgb };
+        line.targetColor = { ...rgb };
+      });
+
+      // Use chaos line names
+      const shuffledNames = [...CHAOS_LINE_NAMES].sort(() => Math.random() - 0.5);
+      lines.forEach((line, index) => {
+        const chaosInfo = shuffledNames[index % shuffledNames.length];
+        line.name = chaosInfo.name;
+        line.location = chaosInfo.location;
+        line.wiki = chaosInfo.wiki;
+      });
+    };
+
+    // Handle chaos mode exit (Escape key)
+    const handleKonamiExit = () => {
+      if (!chaosMode) return;
+
+      console.log('[MetroMap] Exiting chaos mode...');
+      chaosMode = false;
+      chaosTrainSpeedMultiplier = 1;
+      canvas.classList.remove('chaos-mode');
+      chaosHeadPositions.clear();
+
+      // Regenerate with normal constrained parameters
+      precomputedGeometry = findBestSimulation(50, config, drawBounds, variant, false);
+      initializeMap(precomputedGeometry);
     };
 
     const animate = () => {
@@ -3236,25 +3485,34 @@ export default function MetroMap({ variant = "full" }: Props) {
         if (globalOpacity > 1) globalOpacity = 1;
       }
 
-      // Reveal pre-computed lines (no new branches created - all lines are pre-computed)
-      for (const line of lines) {
-        revealLine(line);
+      // In chaos mode, run the snake animation; otherwise reveal normally
+      if (chaosMode) {
+        updateChaosSnake();
+      } else {
+        // Reveal pre-computed lines (no new branches created - all lines are pre-computed)
+        for (const line of lines) {
+          revealLine(line);
+        }
       }
 
       // Update colors (lerp towards targets)
       updateColors();
 
-      // Update station animations
-      updateStations();
+      // Update station animations (skip in chaos mode)
+      if (!chaosMode) {
+        updateStations();
+      }
 
       // Update hover effects and click waves
       updateHoverEffects();
       updateLegendHover();
       updateClickWaves();
 
-      // Update trains
-      checkTrainSpawning();
-      updateTrains();
+      // Update trains (skip in chaos mode - lines are constantly changing)
+      if (!chaosMode) {
+        checkTrainSpawning();
+        updateTrains();
+      }
 
       // Draw the frame
       drawFrame();
@@ -3323,6 +3581,9 @@ export default function MetroMap({ variant = "full" }: Props) {
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseleave", handleMouseLeave);
     window.addEventListener("click", handleClick);
+    // Konami code chaos mode events
+    window.addEventListener("konamiCode", handleKonamiCode);
+    window.addEventListener("konamiCodeExit", handleKonamiExit);
 
     resize();
 
@@ -3357,6 +3618,8 @@ export default function MetroMap({ variant = "full" }: Props) {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseleave", handleMouseLeave);
       window.removeEventListener("click", handleClick);
+      window.removeEventListener("konamiCode", handleKonamiCode);
+      window.removeEventListener("konamiCodeExit", handleKonamiExit);
       cancelAnimationFrame(animationId);
     };
   }, [isFullVariant]);

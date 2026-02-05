@@ -1,6 +1,7 @@
 ---
 import { ClientRouter } from 'astro:transitions';
 import '../styles/global.css';
+import '../styles/goofy.css';
 import Visualization from '../components/islands/Visualization';
 import ThemeToggle from '../components/ThemeToggle.astro';
 import PostHog from '../components/posthog.astro';
@@ -426,6 +427,69 @@ const socialLinks = [
         attachPreviews();
         document.addEventListener('astro:after-swap', attachPreviews);
         document.addEventListener('astro:page-load', attachPreviews);
+      })();
+
+      // Konami Code: ↑↑↓↓←→←→BA
+      (function() {
+        if (window.__konamiInit) return;
+        window.__konamiInit = true;
+
+        const KONAMI_SEQUENCE = [
+          'ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown',
+          'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight',
+          'KeyB', 'KeyA'
+        ];
+
+        let inputBuffer = [];
+        let chaosActive = false;
+
+        function checkKonamiSequence() {
+          if (inputBuffer.length < KONAMI_SEQUENCE.length) return false;
+          const recentInput = inputBuffer.slice(-KONAMI_SEQUENCE.length);
+          return recentInput.every((key, i) => key === KONAMI_SEQUENCE[i]);
+        }
+
+        document.addEventListener('keydown', function(e) {
+          // Escape exits chaos mode
+          if (e.code === 'Escape' && chaosActive) {
+            chaosActive = false;
+            window.dispatchEvent(new CustomEvent('konamiCodeExit'));
+            inputBuffer = [];
+            return;
+          }
+
+          // Don't capture if user is typing in an input
+          if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+            return;
+          }
+
+          inputBuffer.push(e.code);
+
+          // Keep buffer from growing too large
+          if (inputBuffer.length > KONAMI_SEQUENCE.length * 2) {
+            inputBuffer = inputBuffer.slice(-KONAMI_SEQUENCE.length);
+          }
+
+          if (checkKonamiSequence()) {
+            if (!chaosActive) {
+              chaosActive = true;
+              window.dispatchEvent(new CustomEvent('konamiCode'));
+              inputBuffer = [];
+            }
+          }
+        });
+
+        // Debug helpers (dev mode)
+        if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+          window.triggerKonami = () => {
+            chaosActive = true;
+            window.dispatchEvent(new CustomEvent('konamiCode'));
+          };
+          window.exitKonami = () => {
+            chaosActive = false;
+            window.dispatchEvent(new CustomEvent('konamiCodeExit'));
+          };
+        }
       })();
     </script>
   </body>

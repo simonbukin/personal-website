@@ -12,4 +12,6 @@
 .goofy-shake{animation:goofy-shake .15s ease-in-out}
 #goofy-scanlines{position:fixed;inset:0;pointer-events:none;z-index:99998;background:repeating-linear-gradient(0deg,rgba(0,0,0,.1) 0 1px,transparent 1px 3px);opacity:0;transition:opacity .1s}
 #goofy-scanlines.active{opacity:1}
-@media(prefers-reduced-motion:reduce){.goofy-overlay,.goofy-shake,#goofy-scanlines{animation:none!important}}
+/* Chaos mode - minimal, the animation is in JS */
+.chaos-mode{}
+@media(prefers-reduced-motion:reduce){.goofy-overlay,.goofy-shake,#goofy-scanlines,.chaos-shake,.chaos-glitch,.chaos-dissolve,.chaos-static,.chaos-mode{animation:none!important}}
