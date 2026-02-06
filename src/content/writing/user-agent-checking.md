@@ -3,7 +3,7 @@ type: post
 date: 2024-01-19
 title: 'Checking your User Agent'
 slug: 'user-agent-checking'
-description: 'A quick guide to checking your user agent string.'
+description: 'Checking your user agent string.'
 published: true
 ---
 

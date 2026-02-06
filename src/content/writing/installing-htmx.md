@@ -3,7 +3,7 @@ type: post
 date: 2024-01-21
 title: 'Installing HTMX'
 slug: 'installing-htmx'
-description: 'My preferred HTMX install method, prioritizing simplicity'
+description: 'My preferred HTMX install method'
 published: true
 ---
 

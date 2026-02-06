@@ -3,7 +3,7 @@ type: post
 date: 2023-12-19
 title: '"Scrollability" in Svelte'
 slug: 'svelte-scrollable'
-description: 'A blog post covering how to conditionally render a "back to top" button on a page based on its height'
+description: 'Conditionally rendering a "back to top" button'
 published: true
 tags: ['svelte', 'sveltekit', 'front-end', 'javascript']
 ---

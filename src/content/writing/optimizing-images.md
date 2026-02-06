@@ -3,7 +3,7 @@ type: post
 date: 2024-01-03
 title: '3 days for 3 seconds'
 slug: 'optimizing-images'
-description: 'A blog post covering various methods of optimizing images in a Next.js app. Cloudinary, next/image, unpic, and CldImage are all covered.'
+description: 'An odyssey covering image optimization in a Next.js app'
 published: true
 tags: ['javascript', 'react', 'nextjs']
 ---

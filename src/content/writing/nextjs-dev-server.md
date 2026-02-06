@@ -3,7 +3,7 @@ type: post
 date: 2024-01-23
 title: 'Local Dev with Next'
 slug: 'nextjs-dev-server'
-description: 'A quick guide to getting the NextJS dev server up and running'
+description: 'Getting the NextJS dev server up and running'
 published: true
 ---
 

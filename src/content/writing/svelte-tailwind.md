@@ -3,7 +3,7 @@ type: post
 date: 2023-12-31
 title: 'Tailwind Class Sorting in Svelte'
 slug: 'svelte-tailwind'
-description: 'A blog post covering how to set up automatic class sorting with Tailwind, Prettier, and Svelte'
+description: 'Setting up automatic class sorting with Tailwind, Prettier, and Svelte'
 published: true
 tags: ['svelte', 'sveltekit', 'front-end', 'tailwind']
 ---

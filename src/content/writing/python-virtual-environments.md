@@ -3,7 +3,7 @@ type: post
 date: 2019-10-25
 title: 'Python Virtual Environments'
 slug: 'python-virtual-environments'
-description: 'A blog post covering how to properly set up virtual environments in Python and venv'
+description: 'How to properly set up virtual environments in Python and venv'
 published: true
 tags: ['python']
 ---

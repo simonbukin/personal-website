@@ -3,7 +3,7 @@ type: post
 date: 2024-01-21
 title: 'Using HTMX with Astro'
 slug: 'htmx-and-astro'
-description: 'A guide to using HTMX and Astro together in a productive fashion'
+description: 'Using HTMX and Astro together in a productive fashion'
 tags: ['astro', 'htmx', 'frontend']
 published: true
 ---

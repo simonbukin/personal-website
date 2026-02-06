@@ -3,7 +3,7 @@ type: post
 date: 2019-11-03
 title: 'Python Tips'
 slug: 'python-tips'
-description: 'A collection of smaller Python tips, including usage of enumerate, swapping, and defaultdict'
+description: 'A collection of smaller Python tips'
 published: true
 tags: ['python']
 ---

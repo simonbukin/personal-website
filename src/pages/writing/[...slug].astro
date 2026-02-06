@@ -4,16 +4,20 @@ import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
   const writing = await getCollection('writing', ({ data }) =>
-    data.type === 'post'
+    data.type === 'post' && data.published
   );
   return writing.map((item) => ({
     params: { slug: item.slug },
-    props: { item },
+    props: { item, allPosts: writing },
   }));
 }
 
-const { item } = Astro.props;
+const { item, allPosts } = Astro.props;
 const { Content } = await item.render();
+
+const otherPosts = allPosts.filter((p: any) => p.slug !== item.slug);
+const shuffled = otherPosts.sort(() => Math.random() - 0.5);
+const suggestions = shuffled.slice(0, 3);
 ---
 
 <BaseLayout title={`${item.data.title} - Simon Bukin`} description={item.data.description}>
@@ -43,5 +47,19 @@ const { Content } = await item.render();
       <div class="prose">
         <Content />
       </div>
+
+      <nav class="mt-16 pt-8" style="border-top: 1px solid var(--border-secondary);">
+        <p class="text-sm mb-5" style="color: var(--text-tertiary);">If you liked this, I've written other things too</p>
+        <ul class="space-y-5">
+          {suggestions.map((post: any) => (
+            <li>
+              <a href={`/writing/${post.data.slug || post.slug}`} class="group block">
+                <span class="text-sm font-medium transition-colors group-hover:opacity-80" style="color: var(--text-secondary);">{post.data.title}</span>
+                <p class="mt-0.5 text-xs" style="color: var(--text-tertiary);">{post.data.description}</p>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
     </article>
   </BaseLayout>

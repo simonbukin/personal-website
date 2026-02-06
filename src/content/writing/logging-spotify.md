@@ -3,7 +3,7 @@ type: post
 date: 2019-10-02
 title: 'Logging Spotify'
 slug: 'logging-spotify'
-description: 'A blog post covering a workflow for saving Spotify listening history by hand, using Python, Redis, the Spotify API, and a Raspberry Pi'
+description: 'Saving Spotify listening history by hand using Python, Redis and a Raspberry Pi'
 published: true
 tags: ['python', 'spotify']
 ---

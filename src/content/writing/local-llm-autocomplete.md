@@ -3,7 +3,7 @@ type: post
 date: 2024-02-07
 title: 'Local LLM Autocomplete'
 slug: 'local-llm-autocomplete'
-description: 'A simple guide to getting up and running with Continue'
+description: 'Getting up and running with Continue Autocomplete'
 published: true
 ---
 
