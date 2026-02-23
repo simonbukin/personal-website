@@ -11,6 +11,13 @@ const writing = await getCollection('writing', ({ data }) =>
 const recentWriting = writing
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
   .slice(0, 3);
+
+// Favorites - pinned pieces
+const favoriteSlugs = ['morf-flo', 'optimizing-images', 'htmx-and-astro'];
+const allWriting = await getCollection('writing');
+const favorites = favoriteSlugs
+  .map(slug => allWriting.find(item => item.slug === slug))
+  .filter(Boolean);
 ---
 
 <BaseLayout isHome={true}>
@@ -87,6 +94,32 @@ const recentWriting = writing
           </li>
         </ul>
       </nav>
+
+      <!-- Favorites -->
+      {favorites.length > 0 && (
+        <section class="mb-12">
+          <div class="flex items-center gap-2 mb-4">
+            <svg class="w-4 h-4" style="color: var(--text-tertiary);" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+            <h2 class="text-lg font-semibold" style="color: var(--text-primary);">Favorites</h2>
+          </div>
+          <ul class="space-y-3">
+            {favorites.map((item) => {
+              const href = item.data.type === 'portfolio'
+                ? `/portfolio/${item.slug}`
+                : `/writing/${item.slug}`;
+              return (
+                <li>
+                  <a href={href} class="group block">
+                    <span class="font-medium transition-colors" style="color: var(--text-secondary);">{item.data.title}</span>
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
 
       <!-- Recent Writing -->
       {recentWriting.length > 0 && (
