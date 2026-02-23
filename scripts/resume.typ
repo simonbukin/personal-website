@@ -96,6 +96,7 @@
     [Design and frontend development with *Figma*, *React* and *TypeScript*, interfacing with a *Go* and *protobuf* backend.],
     [Handled full migration from legacy NextJS project to a Vite-based React app, *4xing* percieved performance and initial load times.],
   ),
+  caseStudy: "https://simonbukin.com/portfolio/morf-flo",
 )
 
 #entry(
