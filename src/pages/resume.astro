@@ -63,7 +63,12 @@ const volunteerContent = await Promise.all(volunteer.map(e => render(e)));
                 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-3">
                   <h3 class="text-xl font-semibold" style="color: var(--text-primary);">
                     {data.companyUrl ? (
-                      <a href={data.companyUrl} target="_blank" rel="noopener" class="resume-link">{data.company}</a>
+                      <a href={data.companyUrl} target="_blank" rel="noopener" class="resume-link">
+                        {data.company}
+                        <svg class="external-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M7 17L17 7M17 7H7M17 7V17"/>
+                        </svg>
+                      </a>
                     ) : (
                       data.company
                     )}
@@ -96,7 +101,12 @@ const volunteerContent = await Promise.all(volunteer.map(e => render(e)));
                 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-3">
                   <h3 class="text-xl font-semibold" style="color: var(--text-primary);">
                     {data.companyUrl ? (
-                      <a href={data.companyUrl} target="_blank" rel="noopener" class="resume-link">{data.company}</a>
+                      <a href={data.companyUrl} target="_blank" rel="noopener" class="resume-link">
+                        {data.company}
+                        <svg class="external-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M7 17L17 7M17 7H7M17 7V17"/>
+                        </svg>
+                      </a>
                     ) : (
                       data.company
                     )}
@@ -150,6 +160,21 @@ const volunteerContent = await Promise.all(volunteer.map(e => render(e)));
     .resume-link:hover {
       color: var(--text-primary);
       background-size: 100% 2px;
+    }
+
+    .external-link-icon {
+      display: inline-block;
+      width: 0.9em;
+      height: 0.9em;
+      margin-left: 0.15em;
+      vertical-align: -0.05em;
+      opacity: 0.6;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .resume-link:hover .external-link-icon {
+      opacity: 1;
+      transform: translate(1px, -1px);
     }
 
     .resume-link.case-study {
