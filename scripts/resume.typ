@@ -92,9 +92,10 @@
   "Founding Product Engineer",
   "San Francisco, CA",
   (
-    [Building *AI-powered healthcare automation* tools to help small practices streamline tricky patient-facing workflows.],
-    [Design and frontend development with *Figma*, *React* and *TypeScript*, interfacing with a *Go* and *protobuf* backend.],
-    [Handled full migration from legacy NextJS project to a Vite-based React app, *4xing* percieved performance and initial load times.],
+    [Built robust *AI-powered healthcare automation* tools to help small practices streamline tricky patient-facing workflows.],
+    [Owned product from prototypes and designs to production deployments and monitoring with tools like *Figma*, *PostHog* and *Vite*.],
+    [Overhauled existing AI chat agent via clever prompting and excellent AI UX to increase adoption by *250%* over 3 weeks.],
+    [Handled full migration from legacy NextJS project to a Vite-based React app, *4xing* page load and increasing feature velocity by at least *2x*.],
   ),
   caseStudy: "https://simonbukin.com/portfolio/morf-flo",
 )
