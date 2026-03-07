@@ -356,9 +356,9 @@ const socialLinks = [
         document.addEventListener('astro:page-load', attachLightbox);
       })();
 
-      // Image link hover preview
+      // Image link hover preview + rich link preview
       (function() {
-        function ensurePreview() {
+        function ensureImagePreview() {
           let preview = document.getElementById('image-preview');
           if (!preview) {
             preview = document.createElement('div');
@@ -370,55 +370,204 @@ const socialLinks = [
           return preview;
         }
 
-        const imageExtensions = /\.(png|jpg|jpeg|gif|webp|svg)$/i;
-
-        function showPreview(e, src) {
-          const preview = ensurePreview();
-          const previewImg = preview.querySelector('img');
-          previewImg.src = src;
-          preview.classList.add('active');
-          updatePosition(e);
+        function ensureLinkPreview() {
+          let card = document.getElementById('link-preview');
+          if (!card) {
+            card = document.createElement('div');
+            card.id = 'link-preview';
+            card.className = 'link-preview';
+            const inner = document.createElement('div');
+            inner.className = 'link-preview-inner';
+            card.appendChild(inner);
+            document.body.appendChild(card);
+          }
+          return card;
         }
 
-        function hidePreview() {
+        const imageExtensions = /\.(png|jpg|jpeg|gif|webp|svg)$/i;
+        const ogCache = new Map();
+        let currentAbortController = null;
+        let lastMouseEvt = null;
+
+        function showImagePreview(e, src) {
+          const preview = ensureImagePreview();
+          preview.querySelector('img').src = src;
+          preview.classList.add('active');
+          updatePosition(e, 'image-preview');
+        }
+
+        function hideImagePreview() {
           const preview = document.getElementById('image-preview');
           if (preview) preview.classList.remove('active');
         }
 
-        function updatePosition(e) {
-          const preview = document.getElementById('image-preview');
-          if (!preview) return;
+        function buildContentHTML(data) {
+          let html = '';
+          if (data.ogImage) {
+            html += `<img class="link-preview-image" src="${data.ogImage}" alt="" onerror="this.style.display='none'" />`;
+          }
+          html += '<div class="link-preview-body">';
+          if (data.ogTitle) html += `<div class="link-preview-title">${data.ogTitle}</div>`;
+          if (data.domain) html += `<div class="link-preview-domain">${data.domain}</div>`;
+          html += '</div>';
+          return html;
+        }
 
+        const SHIMMER_HTML = '<div class="link-preview-shimmer"><div class="link-preview-shimmer-line"></div><div class="link-preview-shimmer-line"></div></div>';
+        const BASE_TRANSITION = 'opacity 0.15s ease, visibility 0.15s ease';
+
+        // Set content with optional morph animation (height + opacity crossfade)
+        function setContent(html, morph) {
+          const card = ensureLinkPreview();
+          const inner = card.querySelector('.link-preview-inner');
+
+          if (!morph || !card.classList.contains('active')) {
+            card.style.transition = BASE_TRANSITION;
+            card.style.height = '';
+            inner.innerHTML = html;
+            inner.style.opacity = '1';
+            return;
+          }
+
+          const fromH = card.offsetHeight;
+          inner.style.opacity = '0';
+
+          setTimeout(() => {
+            inner.innerHTML = html;
+
+            // Measure natural height with transition disabled
+            card.style.transition = BASE_TRANSITION;
+            card.style.height = 'auto';
+            const toH = card.offsetHeight;
+
+            // Snap to fromH without animation, then animate to toH
+            card.style.height = fromH + 'px';
+            card.offsetHeight; // force reflow
+            card.style.transition = BASE_TRANSITION + ', height 0.22s ease';
+            card.style.height = toH + 'px';
+            inner.style.opacity = '1';
+
+            // After animation settles, reset to auto so card reflows on position updates
+            setTimeout(() => {
+              card.style.transition = BASE_TRANSITION;
+              card.style.height = '';
+              if (lastMouseEvt) updatePosition(lastMouseEvt, 'link-preview');
+            }, 230);
+          }, 100);
+        }
+
+        function showShimmer(e) {
+          lastMouseEvt = e;
+          const card = ensureLinkPreview();
+          setContent(SHIMMER_HTML, card.classList.contains('active'));
+          card.classList.add('active');
+          updatePosition(e, 'link-preview');
+        }
+
+        function showContent(data) {
+          if (!data || (!data.ogTitle && !data.ogImage)) {
+            hideLinkPreview();
+            return;
+          }
+          setContent(buildContentHTML(data), true);
+        }
+
+        function hideLinkPreview() {
+          if (currentAbortController) { currentAbortController.abort(); currentAbortController = null; }
+          const card = document.getElementById('link-preview');
+          if (card) {
+            card.classList.remove('active');
+            card.style.height = '';
+          }
+          lastMouseEvt = null;
+        }
+
+        function updatePosition(e, id) {
+          const el = document.getElementById(id);
+          if (!el) return;
           const padding = 16;
           let x = e.clientX + padding;
           let y = e.clientY + padding;
+          const rect = el.getBoundingClientRect();
+          if (x + rect.width > window.innerWidth) x = e.clientX - rect.width - padding;
+          if (y + rect.height > window.innerHeight) y = e.clientY - rect.height - padding;
+          el.style.left = x + 'px';
+          el.style.top = y + 'px';
+        }
 
-          // Keep preview in viewport
-          const previewRect = preview.getBoundingClientRect();
-          if (x + previewRect.width > window.innerWidth) {
-            x = e.clientX - previewRect.width - padding;
-          }
-          if (y + previewRect.height > window.innerHeight) {
-            y = e.clientY - previewRect.height - padding;
+        // Returns an absolute URL for the preview API (handles internal + external links)
+        function getPreviewUrl(href) {
+          if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) return null;
+          if (href.startsWith('/')) return window.location.origin + href;
+          if (href.startsWith('http://') || href.startsWith('https://')) return href;
+          return null;
+        }
+
+        async function fetchOgData(href, e) {
+          const url = getPreviewUrl(href);
+          if (!url) return;
+
+          if (ogCache.has(url)) {
+            const cached = ogCache.get(url);
+            if (cached) {
+              // Show cached content directly — no shimmer needed
+              const card = ensureLinkPreview();
+              setContent(buildContentHTML(cached), false);
+              card.classList.add('active');
+              updatePosition(e, 'link-preview');
+            }
+            return;
           }
 
-          preview.style.left = x + 'px';
-          preview.style.top = y + 'px';
+          showShimmer(e);
+
+          if (currentAbortController) currentAbortController.abort();
+          currentAbortController = new AbortController();
+
+          try {
+            const res = await fetch(`/api/link-preview.json?url=${encodeURIComponent(url)}`, {
+              signal: currentAbortController.signal,
+            });
+            const data = await res.json();
+            const hasContent = data && (data.ogTitle || data.ogImage);
+            ogCache.set(url, hasContent ? data : null);
+            showContent(data);
+          } catch (err) {
+            if (err.name !== 'AbortError') {
+              ogCache.set(url, null);
+              hideLinkPreview();
+            }
+          }
         }
 
         function attachPreviews() {
-          ensurePreview();
+          ensureImagePreview();
+          ensureLinkPreview();
           document.querySelectorAll('.prose a').forEach(link => {
             if (link.dataset.previewAttached) return;
             link.dataset.previewAttached = 'true';
 
+            // Seed cache from inline data-og-* attributes (for sites that block scraping)
             const href = link.getAttribute('href') || '';
+            const fullUrl = getPreviewUrl(href);
+            if (fullUrl && (link.dataset.ogTitle || link.dataset.ogImage) && !ogCache.has(fullUrl)) {
+              ogCache.set(fullUrl, {
+                ogTitle: link.dataset.ogTitle || '',
+                ogImage: link.dataset.ogImage || '',
+                domain: link.dataset.ogDomain || new URL(fullUrl).hostname.replace(/^www\./, ''),
+              });
+            }
+
             const previewUrl = link.dataset.preview || (imageExtensions.test(href) ? href : null);
 
             if (previewUrl) {
-              link.addEventListener('mouseenter', (e) => showPreview(e, previewUrl));
-              link.addEventListener('mousemove', updatePosition);
-              link.addEventListener('mouseleave', hidePreview);
+              link.addEventListener('mouseenter', (e) => showImagePreview(e, previewUrl));
+              link.addEventListener('mousemove', (e) => updatePosition(e, 'image-preview'));
+              link.addEventListener('mouseleave', hideImagePreview);
+            } else if (getPreviewUrl(href)) {
+              link.addEventListener('mouseenter', (e) => fetchOgData(href, e));
+              link.addEventListener('mousemove', (e) => { lastMouseEvt = e; updatePosition(e, 'link-preview'); });
+              link.addEventListener('mouseleave', hideLinkPreview);
             }
           });
         }
