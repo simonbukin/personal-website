@@ -358,9 +358,10 @@ interface AlbumArt3DOverlayProps {
   onClose: () => void;
   youtubeUrl: string;
   onAnimationComplete: () => void;
+  gyroGranted: boolean;
 }
 
-function AlbumArt3DOverlay({ track, phase, originRect, onClose, youtubeUrl, onAnimationComplete }: AlbumArt3DOverlayProps) {
+function AlbumArt3DOverlay({ track, phase, originRect, onClose, youtubeUrl, onAnimationComplete, gyroGranted }: AlbumArt3DOverlayProps) {
   const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 });
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
@@ -370,10 +371,40 @@ function AlbumArt3DOverlay({ track, phase, originRect, onClose, youtubeUrl, onAn
     });
   }, []);
 
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    if (e.touches.length === 0) return;
+    e.preventDefault();
+    setMousePos({
+      x: e.touches[0].clientX / window.innerWidth,
+      y: e.touches[0].clientY / window.innerHeight,
+    });
+  }, []);
+
+  const handleDeviceOrientation = useCallback((e: DeviceOrientationEvent) => {
+    // gamma: left/right tilt (-90 to 90), beta: front/back tilt (-180 to 180)
+    // Normal portrait hold: beta ≈ 90, gamma ≈ 0
+    const gamma = e.gamma ?? 0;
+    const beta = e.beta ?? 90;
+    setMousePos({
+      x: Math.max(0, Math.min(1, (gamma + 30) / 60)),   // ±30° left/right → 0..1
+      y: Math.max(0, Math.min(1, (beta - 60) / 60)),    // 60°–120° front/back → 0..1
+    });
+  }, []);
+
   useEffect(() => {
     window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [handleMouseMove]);
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("touchmove", handleTouchMove);
+    };
+  }, [handleMouseMove, handleTouchMove]);
+
+  useEffect(() => {
+    if (!gyroGranted) return;
+    window.addEventListener("deviceorientation", handleDeviceOrientation);
+    return () => window.removeEventListener("deviceorientation", handleDeviceOrientation);
+  }, [gyroGranted, handleDeviceOrientation]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -394,13 +425,15 @@ function AlbumArt3DOverlay({ track, phase, originRect, onClose, youtubeUrl, onAn
 
   useEffect(() => {
     if (phase !== "interactive") return;
-    const handleClick = () => onClose();
+    const handleClose = () => onClose();
     const timer = setTimeout(() => {
-      window.addEventListener("click", handleClick);
+      window.addEventListener("click", handleClose);
+      window.addEventListener("touchend", handleClose);
     }, 100);
     return () => {
       clearTimeout(timer);
-      window.removeEventListener("click", handleClick);
+      window.removeEventListener("click", handleClose);
+      window.removeEventListener("touchend", handleClose);
     };
   }, [phase, onClose]);
 
@@ -409,7 +442,7 @@ function AlbumArt3DOverlay({ track, phase, originRect, onClose, youtubeUrl, onAn
   return createPortal(
     <div
       className={`album-3d-container ${isVisible ? "active" : ""}`}
-      style={{ pointerEvents: phase === "interactive" ? "auto" : "none" }}
+      style={{ pointerEvents: phase === "interactive" ? "auto" : "none", touchAction: "none" }}
     >
       <Canvas
         camera={{ position: [0, 0, 10], fov: 45 }}
@@ -429,6 +462,7 @@ function AlbumArt3DOverlay({ track, phase, originRect, onClose, youtubeUrl, onAn
           rel="noopener noreferrer"
           className="listen-cta-3d"
           onClick={(e) => e.stopPropagation()}
+          onTouchEnd={(e) => e.stopPropagation()}
         >
           <svg viewBox="0 0 24 24" fill="currentColor">
             <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
@@ -506,6 +540,7 @@ export default function LastFMPlayer() {
   const [imageError, setImageError] = useState(false);
   const [animPhase, setAnimPhase] = useState<AnimPhase>("closed");
   const [originRect, setOriginRect] = useState<DOMRect | null>(null);
+  const [gyroGranted, setGyroGranted] = useState(false);
   const lastArtUrl = useRef<string | null>(null);
   const colorIndex = useRef(0);
   const albumArtRef = useRef<HTMLDivElement>(null);
@@ -523,11 +558,22 @@ export default function LastFMPlayer() {
     }
   }, [animPhase]);
 
-  const handleAlbumArtClick = useCallback((e: React.MouseEvent) => {
+  const handleAlbumArtClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
     // Don't open if no track or already animating
     if (!track || animPhase !== "closed") return;
+
+    // Request gyroscope permission — must be called synchronously in a user gesture handler (iOS 13+)
+    const DOE = DeviceOrientationEvent as unknown as { requestPermission?: () => Promise<string> };
+    if (typeof DOE.requestPermission === "function") {
+      DOE.requestPermission()
+        .then((result) => setGyroGranted(result === "granted"))
+        .catch(() => {});
+    } else if (typeof DeviceOrientationEvent !== "undefined") {
+      // Android / desktop — no permission needed
+      setGyroGranted(true);
+    }
 
     if (albumArtRef.current) {
       setOriginRect(albumArtRef.current.getBoundingClientRect());
@@ -658,6 +704,7 @@ export default function LastFMPlayer() {
           loading ? 'opacity-0' : 'opacity-100'
         }`}
         onClick={handleAlbumArtClick}
+        onTouchEnd={handleAlbumArtClick}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
@@ -746,6 +793,7 @@ export default function LastFMPlayer() {
           onClose={handleCloseModal}
           youtubeUrl={youtubeSearchUrl}
           onAnimationComplete={handleAnimationComplete}
+          gyroGranted={gyroGranted}
         />
       )}
     </div>
