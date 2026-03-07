@@ -116,15 +116,15 @@ function getThemeLineColors(): string[] {
 
 // Map color keywords in line names to palette indices
 const COLOR_NAME_TO_INDEX: Record<string, number> = {
-  'red': 0,      // Coral red / Brick red
-  'blue': 1,     // Sky blue / Denim blue
-  'green': 2,    // Mint green / Forest green
-  'gold': 3,     // Amber gold
-  'yellow': 3,   // Map to gold
-  'orange': 6,   // Peach orange / Terracotta
-  'purple': 4,   // Soft lavender / Deep lavender
-  'pink': 7,     // Dusty rose / Berry rose
-  'teal': 5,     // Aqua teal / Deep teal
+  red: 0, // Coral red / Brick red
+  blue: 1, // Sky blue / Denim blue
+  green: 2, // Mint green / Forest green
+  gold: 3, // Amber gold
+  yellow: 3, // Map to gold
+  orange: 6, // Peach orange / Terracotta
+  purple: 4, // Soft lavender / Deep lavender
+  pink: 7, // Dusty rose / Berry rose
+  teal: 5, // Aqua teal / Deep teal
 };
 
 function getColorIndexFromLineName(name: string): number | null {
@@ -210,8 +210,24 @@ const TRANSIT_LINES: TransitLineInfo[] = [
   },
 ];
 
+const LOCATION_NOTES: Record<string, string> = {
+  Tokyo:
+    "Visited for two weeks and fell in love (like literally everyone else who visits Japan)",
+  Berlin: "Explored the city's U-Bahn during my honeymoon.",
+  "Salt Lake City":
+    "Visited Utah for a music festival and loved taking the transit.",
+  "San Francisco": "As a Bayview resident, the T line is my daily driver.",
+  Seattle:
+    "Lived here when I worked at Amazon and took the 1 Line to the airport all the time.",
+  "Santa Cruz": "Relied on Santa Cruz Metro during my years at UCSC.",
+  "Bay Area": "Commuted on Caltrain between SF and the South Bay for years.",
+};
+
 // Select one random line per unique location
-const selectLinesOnePerLocation = (maxLines: number, rng: SeededRandom): TransitLineInfo[] => {
+const selectLinesOnePerLocation = (
+  maxLines: number,
+  rng: SeededRandom,
+): TransitLineInfo[] => {
   // Group by location
   const byLocation = new Map<string, TransitLineInfo[]>();
   for (const line of TRANSIT_LINES) {
@@ -335,10 +351,26 @@ interface ChaosLineInfo {
 }
 
 const CHAOS_LINE_NAMES: ChaosLineInfo[] = [
-  { name: "Rainbow Road", location: "Mario Kart", wiki: "https://en.wikipedia.org/wiki/Mario_Kart" },
-  { name: "Line 404", location: "Not Found", wiki: "https://en.wikipedia.org/wiki/HTTP_404" },
-  { name: "Konami Code", location: "↑↑↓↓←→←→BA", wiki: "https://en.wikipedia.org/wiki/Konami_Code" },
-  { name: "???", location: "Unknown", wiki: "https://en.wikipedia.org/wiki/Chaos_theory" },
+  {
+    name: "Rainbow Road",
+    location: "Mario Kart",
+    wiki: "https://en.wikipedia.org/wiki/Mario_Kart",
+  },
+  {
+    name: "Line 404",
+    location: "Not Found",
+    wiki: "https://en.wikipedia.org/wiki/HTTP_404",
+  },
+  {
+    name: "Konami Code",
+    location: "↑↑↓↓←→←→BA",
+    wiki: "https://en.wikipedia.org/wiki/Konami_Code",
+  },
+  {
+    name: "???",
+    location: "Unknown",
+    wiki: "https://en.wikipedia.org/wiki/Chaos_theory",
+  },
 ];
 
 interface RGB {
@@ -507,8 +539,14 @@ function getPointsUpToLength(points: Point[], targetLength: number): Point[] {
       const remaining = targetLength - accumulated;
       const t = segLength > 0 ? remaining / segLength : 0;
       result.push({
-        x: Math.round((points[i - 1].x + (points[i].x - points[i - 1].x) * t) * 2) / 2,
-        y: Math.round((points[i - 1].y + (points[i].y - points[i - 1].y) * t) * 2) / 2,
+        x:
+          Math.round(
+            (points[i - 1].x + (points[i].x - points[i - 1].x) * t) * 2,
+          ) / 2,
+        y:
+          Math.round(
+            (points[i - 1].y + (points[i].y - points[i - 1].y) * t) * 2,
+          ) / 2,
       });
       break;
     }
@@ -519,7 +557,7 @@ function getPointsUpToLength(points: Point[], targetLength: number): Point[] {
 // Get position and angle along a polyline at a given distance from start
 function getPositionAtDistance(
   points: Point[],
-  targetDist: number
+  targetDist: number,
 ): { x: number; y: number; angle: number } {
   if (points.length < 2) {
     return { x: points[0]?.x || 0, y: points[0]?.y || 0, angle: 0 };
@@ -539,14 +577,14 @@ function getPositionAtDistance(
         segmentLength > 0
           ? Math.min(
               1,
-              Math.max(0, (targetDist - accumulatedDist) / segmentLength)
+              Math.max(0, (targetDist - accumulatedDist) / segmentLength),
             )
           : 0;
       const x = points[i].x + (points[i + 1].x - points[i].x) * segmentProgress;
       const y = points[i].y + (points[i + 1].y - points[i].y) * segmentProgress;
       const angle = Math.atan2(
         points[i + 1].y - points[i].y,
-        points[i + 1].x - points[i].x
+        points[i + 1].x - points[i].x,
       );
       return { x, y, angle };
     }
@@ -558,7 +596,7 @@ function getPositionAtDistance(
   const lastIdx = points.length - 1;
   const angle = Math.atan2(
     points[lastIdx].y - points[lastIdx - 1].y,
-    points[lastIdx].x - points[lastIdx - 1].x
+    points[lastIdx].x - points[lastIdx - 1].x,
   );
   return { x: points[lastIdx].x, y: points[lastIdx].y, angle };
 }
@@ -600,7 +638,11 @@ function findDistanceAlongLine(points: Point[], target: Point): number {
 }
 
 // Check if a point is close to any segment of a polyline (within threshold)
-function isPointOnLine(points: Point[], target: Point, threshold: number): boolean {
+function isPointOnLine(
+  points: Point[],
+  target: Point,
+  threshold: number,
+): boolean {
   for (let i = 0; i < points.length - 1; i++) {
     const segmentLength = distance(points[i], points[i + 1]);
     if (segmentLength === 0) continue;
@@ -608,8 +650,9 @@ function isPointOnLine(points: Point[], target: Point, threshold: number): boole
     const dx = points[i + 1].x - points[i].x;
     const dy = points[i + 1].y - points[i].y;
 
-    let t = ((target.x - points[i].x) * dx + (target.y - points[i].y) * dy) /
-            (segmentLength * segmentLength);
+    let t =
+      ((target.x - points[i].x) * dx + (target.y - points[i].y) * dy) /
+      (segmentLength * segmentLength);
     t = Math.max(0, Math.min(1, t));
 
     const projX = points[i].x + t * dx;
@@ -635,7 +678,7 @@ function getCenterWeightScore(
   position: Point,
   direction: number,
   canvasCenter: Point,
-  segmentLength: number
+  segmentLength: number,
 ): number {
   const dir = DIRECTIONS[direction];
   const newPos = {
@@ -655,7 +698,7 @@ function getCenterWeightScore(
   // Calculate how far outside the cluster we are (0 = inside/at edge, 1 = one radius outside)
   const outsideRatio = Math.max(
     0,
-    (currentDistFromCenter - CLUSTER_RADIUS) / CLUSTER_RADIUS
+    (currentDistFromCenter - CLUSTER_RADIUS) / CLUSTER_RADIUS,
   );
 
   // Smoothly transition from converging (inside cluster) to spreading (outside cluster)
@@ -673,20 +716,20 @@ function selectWeightedDirection(
   position: Point,
   canvasCenter: Point,
   segmentLength: number,
-  rng: SeededRandom
+  rng: SeededRandom,
 ): number {
   if (availableDirs.length === 0) return 0;
   if (availableDirs.length === 1) return availableDirs[0];
 
   // Calculate scores for each direction
   const scores = availableDirs.map((dir) =>
-    getCenterWeightScore(position, dir, canvasCenter, segmentLength)
+    getCenterWeightScore(position, dir, canvasCenter, segmentLength),
   );
 
   // Convert scores to exponential weights (higher score = higher probability)
   // Add a baseline so all directions have some chance
   const weights = scores.map((score) =>
-    Math.exp(score * CENTER_WEIGHT_STRENGTH)
+    Math.exp(score * CENTER_WEIGHT_STRENGTH),
   );
 
   // Calculate total weight
@@ -728,7 +771,7 @@ function getValidContinueDirections(currentDir: number): number[] {
 function isInBounds(
   x: number,
   y: number,
-  bounds: { left: number; right: number; top: number; bottom: number }
+  bounds: { left: number; right: number; top: number; bottom: number },
 ): boolean {
   return (
     x > bounds.left && x < bounds.right && y > bounds.top && y < bounds.bottom
@@ -777,7 +820,7 @@ interface CoverageScore {
 function runHeadlessSimulation(
   seed: number,
   config: MapConfig,
-  bounds: DrawBounds
+  bounds: DrawBounds,
 ): { lines: HeadlessLine[]; stations: Point[] } {
   const rng = new SeededRandom(seed);
 
@@ -802,7 +845,9 @@ function runHeadlessSimulation(
   }
   const reservedIndices = new Set(reservedColors.values());
   const dummyPalette = [0, 1, 2, 3, 4, 5, 6, 7]; // Just need to consume same RNG calls
-  const unassignedColors = dummyPalette.filter((_, idx) => !reservedIndices.has(idx));
+  const unassignedColors = dummyPalette.filter(
+    (_, idx) => !reservedIndices.has(idx),
+  );
   rng.shuffle([...unassignedColors]); // Consume RNG to stay synchronized
 
   const lines: HeadlessLine[] = [];
@@ -832,7 +877,7 @@ function runHeadlessSimulation(
   const isDirectionParallelToNearby = (
     currentLine: HeadlessLine,
     position: Point,
-    direction: number
+    direction: number,
   ): boolean => {
     const parallelDirs = [direction, (direction + 4) % 8];
 
@@ -863,10 +908,7 @@ function runHeadlessSimulation(
   };
 
   // Check if a proposed segment would cross any existing line (simplified)
-  const wouldCross = (
-    start: Point,
-    direction: number
-  ): boolean => {
+  const wouldCross = (start: Point, direction: number): boolean => {
     const dir = DIRECTIONS[direction];
     const end = {
       x: start.x + dir.dx * config.segmentLength,
@@ -886,20 +928,31 @@ function runHeadlessSimulation(
 
         // Skip segments that share our start point
         if (
-          (Math.abs(segStart.x - start.x) < 5 && Math.abs(segStart.y - start.y) < 5) ||
+          (Math.abs(segStart.x - start.x) < 5 &&
+            Math.abs(segStart.y - start.y) < 5) ||
           (Math.abs(segEnd.x - start.x) < 5 && Math.abs(segEnd.y - start.y) < 5)
         ) {
           continue;
         }
 
         // Simple line intersection test
-        const d1 = (end.x - start.x) * (segStart.y - start.y) - (end.y - start.y) * (segStart.x - start.x);
-        const d2 = (end.x - start.x) * (segEnd.y - start.y) - (end.y - start.y) * (segEnd.x - start.x);
-        const d3 = (segEnd.x - segStart.x) * (start.y - segStart.y) - (segEnd.y - segStart.y) * (start.x - segStart.x);
-        const d4 = (segEnd.x - segStart.x) * (end.y - segStart.y) - (segEnd.y - segStart.y) * (end.x - segStart.x);
+        const d1 =
+          (end.x - start.x) * (segStart.y - start.y) -
+          (end.y - start.y) * (segStart.x - start.x);
+        const d2 =
+          (end.x - start.x) * (segEnd.y - start.y) -
+          (end.y - start.y) * (segEnd.x - start.x);
+        const d3 =
+          (segEnd.x - segStart.x) * (start.y - segStart.y) -
+          (segEnd.y - segStart.y) * (start.x - segStart.x);
+        const d4 =
+          (segEnd.x - segStart.x) * (end.y - segStart.y) -
+          (segEnd.y - segStart.y) * (end.x - segStart.x);
 
-        if (((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) &&
-            ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))) {
+        if (
+          ((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) &&
+          ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))
+        ) {
           return true;
         }
       }
@@ -930,15 +983,17 @@ function runHeadlessSimulation(
   // Headless direction selection using seeded RNG
   const selectDirection = (
     availableDirs: number[],
-    position: Point
+    position: Point,
   ): number => {
     if (availableDirs.length === 0) return 0;
     if (availableDirs.length === 1) return availableDirs[0];
 
     const scores = availableDirs.map((dir) =>
-      getCenterWeightScore(position, dir, canvasCenter, config.segmentLength)
+      getCenterWeightScore(position, dir, canvasCenter, config.segmentLength),
     );
-    const weights = scores.map((score) => Math.exp(score * CENTER_WEIGHT_STRENGTH));
+    const weights = scores.map((score) =>
+      Math.exp(score * CENTER_WEIGHT_STRENGTH),
+    );
     const totalWeight = weights.reduce((sum, w) => sum + w, 0);
 
     let random = rng.next() * totalWeight;
@@ -989,10 +1044,10 @@ function runHeadlessSimulation(
       const continueDirs = getValidContinueDirections(line.currentDirection);
 
       const nonParallelDirs = continueDirs.filter(
-        (d) => !isDirectionParallelToNearby(line, position, d)
+        (d) => !isDirectionParallelToNearby(line, position, d),
       );
       const nonCrossingDirs = nonParallelDirs.filter(
-        (d) => !wouldCross(position, d)
+        (d) => !wouldCross(position, d),
       );
 
       const availableDirs =
@@ -1017,10 +1072,10 @@ function runHeadlessSimulation(
       ) {
         const branchDirs = getValidBranchDirections(line.currentDirection);
         const nonParallelBranchDirs = branchDirs.filter(
-          (d) => !isDirectionParallelToNearby(line, position, d)
+          (d) => !isDirectionParallelToNearby(line, position, d),
         );
         const nonCrossingBranchDirs = nonParallelBranchDirs.filter(
-          (d) => !wouldCross(position, d)
+          (d) => !wouldCross(position, d),
         );
         const candidateBranchDirs =
           nonCrossingBranchDirs.length > 0
@@ -1030,8 +1085,18 @@ function runHeadlessSimulation(
               : branchDirs;
 
         const sortedByWeight = [...candidateBranchDirs].sort((a, b) => {
-          const scoreA = getCenterWeightScore(position, a, canvasCenter, config.segmentLength);
-          const scoreB = getCenterWeightScore(position, b, canvasCenter, config.segmentLength);
+          const scoreA = getCenterWeightScore(
+            position,
+            a,
+            canvasCenter,
+            config.segmentLength,
+          );
+          const scoreB = getCenterWeightScore(
+            position,
+            b,
+            canvasCenter,
+            config.segmentLength,
+          );
           return scoreB - scoreA;
         });
 
@@ -1049,8 +1114,12 @@ function runHeadlessSimulation(
       }
 
       // Add station periodically
-      const stationChance = line.lastStationDistance > config.segmentLength * 1.5 ? 0.4 : 0.15;
-      if (rng.next() < stationChance && line.totalLength > config.segmentLength) {
+      const stationChance =
+        line.lastStationDistance > config.segmentLength * 1.5 ? 0.4 : 0.15;
+      if (
+        rng.next() < stationChance &&
+        line.totalLength > config.segmentLength
+      ) {
         addStation(line, { x: newX, y: newY });
       }
     }
@@ -1088,7 +1157,7 @@ function runHeadlessSimulation(
 function calculateCoverage(
   lines: HeadlessLine[],
   stations: Point[],
-  bounds: DrawBounds
+  bounds: DrawBounds,
 ): CoverageScore {
   const boundsWidth = bounds.right - bounds.left;
   const boundsHeight = bounds.bottom - bounds.top;
@@ -1106,7 +1175,10 @@ function calculateCoverage(
 
       // Sample points along segment
       const segDist = distance(p1, p2);
-      const steps = Math.max(1, Math.ceil(segDist / Math.min(cellWidth, cellHeight)));
+      const steps = Math.max(
+        1,
+        Math.ceil(segDist / Math.min(cellWidth, cellHeight)),
+      );
       for (let s = 0; s <= steps; s++) {
         const t = s / steps;
         const x = p1.x + (p2.x - p1.x) * t;
@@ -1135,17 +1207,33 @@ function calculateCoverage(
   // Each quadrant's center is at quadrantWidth/2, quadrantHeight/2 from its origin
   const quadrantCenters = [
     // TL quadrant center: (bounds.left + quadrantWidth/2, bounds.top + quadrantHeight/2)
-    { left: bounds.left + quadrantWidth / 2 - halfZone, right: bounds.left + quadrantWidth / 2 + halfZone,
-      top: bounds.top + quadrantHeight / 2 - halfZone, bottom: bounds.top + quadrantHeight / 2 + halfZone },
+    {
+      left: bounds.left + quadrantWidth / 2 - halfZone,
+      right: bounds.left + quadrantWidth / 2 + halfZone,
+      top: bounds.top + quadrantHeight / 2 - halfZone,
+      bottom: bounds.top + quadrantHeight / 2 + halfZone,
+    },
     // TR quadrant center: (centerX + quadrantWidth/2, bounds.top + quadrantHeight/2)
-    { left: centerX + quadrantWidth / 2 - halfZone, right: centerX + quadrantWidth / 2 + halfZone,
-      top: bounds.top + quadrantHeight / 2 - halfZone, bottom: bounds.top + quadrantHeight / 2 + halfZone },
+    {
+      left: centerX + quadrantWidth / 2 - halfZone,
+      right: centerX + quadrantWidth / 2 + halfZone,
+      top: bounds.top + quadrantHeight / 2 - halfZone,
+      bottom: bounds.top + quadrantHeight / 2 + halfZone,
+    },
     // BL quadrant center: (bounds.left + quadrantWidth/2, centerY + quadrantHeight/2)
-    { left: bounds.left + quadrantWidth / 2 - halfZone, right: bounds.left + quadrantWidth / 2 + halfZone,
-      top: centerY + quadrantHeight / 2 - halfZone, bottom: centerY + quadrantHeight / 2 + halfZone },
+    {
+      left: bounds.left + quadrantWidth / 2 - halfZone,
+      right: bounds.left + quadrantWidth / 2 + halfZone,
+      top: centerY + quadrantHeight / 2 - halfZone,
+      bottom: centerY + quadrantHeight / 2 + halfZone,
+    },
     // BR quadrant center: (centerX + quadrantWidth/2, centerY + quadrantHeight/2)
-    { left: centerX + quadrantWidth / 2 - halfZone, right: centerX + quadrantWidth / 2 + halfZone,
-      top: centerY + quadrantHeight / 2 - halfZone, bottom: centerY + quadrantHeight / 2 + halfZone },
+    {
+      left: centerX + quadrantWidth / 2 - halfZone,
+      right: centerX + quadrantWidth / 2 + halfZone,
+      top: centerY + quadrantHeight / 2 - halfZone,
+      bottom: centerY + quadrantHeight / 2 + halfZone,
+    },
   ];
 
   const quadrantsTouched = [false, false, false, false];
@@ -1166,7 +1254,12 @@ function calculateCoverage(
         // Check each quadrant center zone
         for (let q = 0; q < 4; q++) {
           const zone = quadrantCenters[q];
-          if (x >= zone.left && x <= zone.right && y >= zone.top && y <= zone.bottom) {
+          if (
+            x >= zone.left &&
+            x <= zone.right &&
+            y >= zone.top &&
+            y <= zone.bottom
+          ) {
             quadrantsTouched[q] = true;
           }
         }
@@ -1175,10 +1268,12 @@ function calculateCoverage(
   }
 
   // Score: how many quadrant centers are touched (0-4 -> 0-1)
-  const quadrantBalance = quadrantsTouched.filter(t => t).length / 4;
+  const quadrantBalance = quadrantsTouched.filter((t) => t).length / 4;
 
   // 3. Line spread (20%): average distance of line endpoints from center / diagonal
-  const diagonal = Math.sqrt(boundsWidth * boundsWidth + boundsHeight * boundsHeight);
+  const diagonal = Math.sqrt(
+    boundsWidth * boundsWidth + boundsHeight * boundsHeight,
+  );
   let totalEndpointDist = 0;
   let endpointCount = 0;
 
@@ -1190,7 +1285,8 @@ function calculateCoverage(
     }
   }
 
-  const avgEndpointDist = endpointCount > 0 ? totalEndpointDist / endpointCount : 0;
+  const avgEndpointDist =
+    endpointCount > 0 ? totalEndpointDist / endpointCount : 0;
   // Normalize by half diagonal (ideal spread)
   const lineSpread = Math.min(1, avgEndpointDist / (diagonal * 0.4));
 
@@ -1215,7 +1311,10 @@ function calculateCoverage(
   // Ideal NN distance would be around minStationDistance
   const idealNNDist = DESKTOP_CONFIG.minStationDistance * 1.5;
   // Score higher when NN distance is close to ideal (not too clustered, not too sparse)
-  const stationDistribution = avgNNDist > 0 ? Math.exp(-Math.pow((avgNNDist - idealNNDist) / idealNNDist, 2)) : 0;
+  const stationDistribution =
+    avgNNDist > 0
+      ? Math.exp(-Math.pow((avgNNDist - idealNNDist) / idealNNDist, 2))
+      : 0;
 
   // 5. Windiness: penalize straight lines, reward lines with turns
   // Tortuosity = path length / straight-line distance (1.0 = perfectly straight, higher = more winding)
@@ -1245,12 +1344,13 @@ function calculateCoverage(
 
   // Average tortuosity, normalized: 1.0 = straight, 2.0+ = very winding
   // Convert to 0-1 score where higher tortuosity = higher score
-  const avgTortuosity = tortuosityCount > 0 ? totalTortuosity / tortuosityCount : 1;
+  const avgTortuosity =
+    tortuosityCount > 0 ? totalTortuosity / tortuosityCount : 1;
   // Score: tortuosity of 1.0 -> 0, tortuosity of 2.0+ -> 1.0
   const windiness = Math.min(1, Math.max(0, (avgTortuosity - 1) / 1.0));
 
   // Weights for scoring (quadrant coverage is now a hard requirement, not weighted)
-  const total = 0.50 * gridCoverage + 0.30 * windiness + 0.20 * lineSpread;
+  const total = 0.5 * gridCoverage + 0.3 * windiness + 0.2 * lineSpread;
 
   return {
     gridCoverage,
@@ -1268,7 +1368,7 @@ function findBestSimulation(
   config: MapConfig,
   bounds: DrawBounds,
   variant: string = "unknown",
-  unconstrained: boolean = false // Skip quadrant check for chaos mode
+  unconstrained: boolean = false, // Skip quadrant check for chaos mode
 ): PrecomputedGeometry {
   // Guard against invalid bounds - return empty geometry with fallback seed
   const boundsWidth = bounds.right - bounds.left;
@@ -1283,7 +1383,9 @@ function findBestSimulation(
   if (unconstrained) {
     const seed = Date.now() + Math.floor(Math.random() * 100000);
     const { lines, stations } = runHeadlessSimulation(seed, config, bounds);
-    console.log(`[MetroMap:${variant}] CHAOS MODE - unconstrained simulation, seed=${seed}`);
+    console.log(
+      `[MetroMap:${variant}] CHAOS MODE - unconstrained simulation, seed=${seed}`,
+    );
     return { lines, stations, seed };
   }
 
@@ -1297,7 +1399,8 @@ function findBestSimulation(
 
   // Keep running until we find a simulation that hits all 4 quadrants
   while (totalSims < maxAttempts) {
-    const seed = Date.now() + totalSims * 12345 + Math.floor(Math.random() * 10000);
+    const seed =
+      Date.now() + totalSims * 12345 + Math.floor(Math.random() * 10000);
     const { lines, stations } = runHeadlessSimulation(seed, config, bounds);
     const score = calculateCoverage(lines, stations, bounds);
     const quads = Math.round(score.quadrantBalance * 4);
@@ -1321,11 +1424,17 @@ function findBestSimulation(
   // Fallback: if we never found 4/4, use the last simulation
   if (bestLines.length === 0) {
     const fallbackSeed = Date.now();
-    const { lines, stations } = runHeadlessSimulation(fallbackSeed, config, bounds);
+    const { lines, stations } = runHeadlessSimulation(
+      fallbackSeed,
+      config,
+      bounds,
+    );
     bestLines = lines;
     bestStations = stations;
     bestSeed = fallbackSeed;
-    console.warn(`[MetroMap:${variant}] Could not find 4/4 quadrant coverage after ${totalSims} attempts`);
+    console.warn(
+      `[MetroMap:${variant}] Could not find 4/4 quadrant coverage after ${totalSims} attempts`,
+    );
   }
 
   const bestBreakdown = calculateCoverage(bestLines, bestStations, bounds);
@@ -1333,9 +1442,9 @@ function findBestSimulation(
   const quadsHit = Math.round(bestBreakdown.quadrantBalance * 4);
   console.log(
     `[MetroMap:${variant}] Precompute: ${totalSims} sims in ${elapsed.toFixed(0)}ms | ` +
-    `score:${bestScore.toFixed(2)} seed=${bestSeed} | ` +
-    `quads:${quadsHit}/4 grid:${bestBreakdown.gridCoverage.toFixed(2)} ` +
-    `wind:${bestBreakdown.windiness.toFixed(2)}`
+      `score:${bestScore.toFixed(2)} seed=${bestSeed} | ` +
+      `quads:${quadsHit}/4 grid:${bestBreakdown.gridCoverage.toFixed(2)} ` +
+      `wind:${bestBreakdown.windiness.toFixed(2)}`,
   );
 
   return { lines: bestLines, stations: bestStations, seed: bestSeed };
@@ -1359,7 +1468,7 @@ export default function MetroMap({ variant = "full" }: Props) {
     if (!ctx) return;
 
     const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
+      "(prefers-reduced-motion: reduce)",
     ).matches;
 
     let canvasWidth = 0;
@@ -1392,6 +1501,10 @@ export default function MetroMap({ variant = "full" }: Props) {
     // Mouse tracking for hover effects (works with pointer-events-none via window events)
     let mousePosition: Point | null = null;
     let hoveredStation: Station | null = null;
+    let tooltipFadeProgress = 0; // 0 to 1 for fade animation
+    let tooltipTargetOpacity = 0; // Target: 1 when hovering, 0 when not
+    let tooltipDisplayStation: Station | null = null; // Station to show in tooltip
+    const TOOLTIP_FADE_SPEED = 1 / 250; // Fade over 250ms (progress per ms)
     let clickWaves: ClickWave[] = [];
 
     // Train simulation
@@ -1451,7 +1564,7 @@ export default function MetroMap({ variant = "full" }: Props) {
     const addStation = (
       line: MetroLine,
       pos: Point,
-      isJunction: boolean
+      isJunction: boolean,
     ): boolean => {
       if (canPlaceStation(pos)) {
         const station: Station = {
@@ -1511,7 +1624,7 @@ export default function MetroMap({ variant = "full" }: Props) {
     const perpendicularDistance = (
       testStart: Point,
       testEnd: Point,
-      seg: CorridorSegment
+      seg: CorridorSegment,
     ): number => {
       // Calculate midpoint of test segment
       const testMid = {
@@ -1542,7 +1655,7 @@ export default function MetroMap({ variant = "full" }: Props) {
     const getOffsetPoint = (
       point: Point,
       direction: number,
-      offsetMultiplier: number
+      offsetMultiplier: number,
     ): Point => {
       const perpDir = (direction + 2) % 8; // 90 degrees clockwise
       const perp = DIRECTIONS[perpDir];
@@ -1558,7 +1671,7 @@ export default function MetroMap({ variant = "full" }: Props) {
       line: MetroLine,
       start: Point,
       end: Point,
-      direction: number
+      direction: number,
     ) => {
       const parallelDirs = [direction, (direction + 4) % 8]; // Same or opposite direction
       const threshold = config.segmentLength * 0.8; // Close enough to be parallel
@@ -1600,7 +1713,7 @@ export default function MetroMap({ variant = "full" }: Props) {
     // Get offset for a line at a specific segment position
     const getCorridorOffsetForSegment = (
       line: MetroLine,
-      segmentIndex: number
+      segmentIndex: number,
     ): number => {
       // Find corridor segment that contains this segment
       const corridorIdx = line.corridorSegmentIndices[segmentIndex];
@@ -1660,7 +1773,7 @@ export default function MetroMap({ variant = "full" }: Props) {
     // Note: This function is kept for potential future use but is not used in reveal-based animation
     const createBranchLine = (
       branchPoint: Point,
-      direction: number
+      direction: number,
     ): MetroLine => {
       const id = lineIdCounter++;
       const transitInfo = plannedLines[id % plannedLines.length];
@@ -1705,11 +1818,17 @@ export default function MetroMap({ variant = "full" }: Props) {
     };
 
     const initializeMap = (geometry: PrecomputedGeometry) => {
-      const { lines: headlessLines, stations: headlessStations, seed } = geometry;
+      const {
+        lines: headlessLines,
+        stations: headlessStations,
+        seed,
+      } = geometry;
 
       // DEBUG: Log seed and bounds
       if (import.meta.env.DEV) {
-        console.log(`[DEBUG initializeMap] seed=${seed} bounds=${JSON.stringify(drawBounds)} headlessLines=${headlessLines.length}`);
+        console.log(
+          `[DEBUG initializeMap] seed=${seed} bounds=${JSON.stringify(drawBounds)} headlessLines=${headlessLines.length}`,
+        );
       }
 
       // Use seed for transit line selection and colors (visual only, not geometry)
@@ -1766,7 +1885,9 @@ export default function MetroMap({ variant = "full" }: Props) {
 
         // Shuffle remaining colors (excluding reserved ones)
         const reservedIndices = new Set(reservedColors.values());
-        const unassignedColors = palette.filter((_, idx) => !reservedIndices.has(idx));
+        const unassignedColors = palette.filter(
+          (_, idx) => !reservedIndices.has(idx),
+        );
         const shuffledAvailable = currentRng.shuffle([...unassignedColors]);
 
         // Assign colors
@@ -1775,7 +1896,9 @@ export default function MetroMap({ variant = "full" }: Props) {
           if (reservedColors.has(i)) {
             plannedColors.push(palette[reservedColors.get(i)!]);
           } else {
-            plannedColors.push(shuffledAvailable[availIdx % shuffledAvailable.length]);
+            plannedColors.push(
+              shuffledAvailable[availIdx % shuffledAvailable.length],
+            );
             availIdx++;
           }
         }
@@ -1804,13 +1927,15 @@ export default function MetroMap({ variant = "full" }: Props) {
         const totalLength = calculateLineLength(hl.points);
 
         // Pre-compute distances for all target stations (used during reveal)
-        const targetStationDistances = hl.stations.map(pos => findDistanceAlongLine(hl.points, pos));
+        const targetStationDistances = hl.stations.map((pos) =>
+          findDistanceAlongLine(hl.points, pos),
+        );
 
         // Calculate station distances along the path and sort them
         // Filter out stations too close to the start (they'd appear orphaned)
         const minStationDistance = config.segmentLength * 0.5;
         const stationDistances = targetStationDistances
-          .filter(d => d >= minStationDistance) // Only include stations with meaningful distance
+          .filter((d) => d >= minStationDistance) // Only include stations with meaningful distance
           .sort((a, b) => a - b);
 
         // Add the end of the line as a final "checkpoint"
@@ -1866,7 +1991,10 @@ export default function MetroMap({ variant = "full" }: Props) {
     // Reveal line station-to-station with pauses
     const revealLine = (line: MetroLine): void => {
       if (!line.growing) return;
-      if (line.targetPoints.length === 0 || line.stationDistances.length === 0) {
+      if (
+        line.targetPoints.length === 0 ||
+        line.stationDistances.length === 0
+      ) {
         line.growing = false;
         return;
       }
@@ -1903,22 +2031,27 @@ export default function MetroMap({ variant = "full" }: Props) {
       }
 
       // Calculate current segment bounds
-      const segmentStart = line.currentSegmentIndex === 0
-        ? 0
-        : line.stationDistances[line.currentSegmentIndex - 1];
+      const segmentStart =
+        line.currentSegmentIndex === 0
+          ? 0
+          : line.stationDistances[line.currentSegmentIndex - 1];
       const segmentEnd = line.stationDistances[line.currentSegmentIndex];
       const segmentLength = segmentEnd - segmentStart;
 
       // Calculate progress within current segment
       const segmentElapsed = now - line.segmentStartTime;
       // Ensure minimum duration to prevent very short segments from "jumping"
-      const segmentDuration = Math.max(MIN_SEGMENT_DURATION_MS, segmentLength / PIXELS_PER_MS);
+      const segmentDuration = Math.max(
+        MIN_SEGMENT_DURATION_MS,
+        segmentLength / PIXELS_PER_MS,
+      );
       const segmentProgress = Math.min(1, segmentElapsed / segmentDuration);
 
       // Easing for smooth acceleration/deceleration within segment
-      const easedProgress = segmentProgress < 0.5
-        ? 2 * segmentProgress * segmentProgress
-        : 1 - Math.pow(-2 * segmentProgress + 2, 2) / 2;
+      const easedProgress =
+        segmentProgress < 0.5
+          ? 2 * segmentProgress * segmentProgress
+          : 1 - Math.pow(-2 * segmentProgress + 2, 2) / 2;
 
       // Update revealed length
       line.revealedLength = segmentStart + easedProgress * segmentLength;
@@ -1928,10 +2061,15 @@ export default function MetroMap({ variant = "full" }: Props) {
       line.points = getPointsUpToLength(line.targetPoints, line.revealedLength);
 
       // Add hub station to first line once it has visible length
-      if (line.id === 0 && line.points.length >= 2 && line.stations.length === 0) {
+      if (
+        line.id === 0 &&
+        line.points.length >= 2 &&
+        line.stations.length === 0
+      ) {
         // Find the hub station in allStations and add it to this line's stations
-        const hubStation = allStations.find(s =>
-          Math.abs(s.x - hubCenter.x) < 3 && Math.abs(s.y - hubCenter.y) < 3
+        const hubStation = allStations.find(
+          (s) =>
+            Math.abs(s.x - hubCenter.x) < 3 && Math.abs(s.y - hubCenter.y) < 3,
         );
         if (hubStation) {
           line.stations.push(hubStation);
@@ -1940,7 +2078,10 @@ export default function MetroMap({ variant = "full" }: Props) {
 
       // Reveal stations as line passes them (only if line has visible length)
       // Performance optimization: only check unprocessed stations, use pre-computed distances
-      if (line.revealedLength > config.segmentLength * 0.3 && line.points.length >= 2) {
+      if (
+        line.revealedLength > config.segmentLength * 0.3 &&
+        line.points.length >= 2
+      ) {
         for (let i = 0; i < line.targetStations.length; i++) {
           // Skip already processed stations
           if (line.processedStationIndices.has(i)) continue;
@@ -1952,12 +2093,16 @@ export default function MetroMap({ variant = "full" }: Props) {
           // 1. Line has reached this distance
           // 2. Station is far enough from start
           // 3. Station is actually ON the visible line path (within 5 pixels)
-          if (stationDistance <= line.revealedLength &&
-              stationDistance > 0 &&
-              isPointOnLine(line.points, stationPos, 5)) {
+          if (
+            stationDistance <= line.revealedLength &&
+            stationDistance > 0 &&
+            isPointOnLine(line.points, stationPos, 5)
+          ) {
             // Check if station already exists at this position
             const exists = allStations.some(
-              (s) => Math.abs(s.x - stationPos.x) < 3 && Math.abs(s.y - stationPos.y) < 3
+              (s) =>
+                Math.abs(s.x - stationPos.x) < 3 &&
+                Math.abs(s.y - stationPos.y) < 3,
             );
             if (!exists) {
               addStation(line, stationPos, false);
@@ -1987,7 +2132,7 @@ export default function MetroMap({ variant = "full" }: Props) {
         line.currentColor = lerpColor(
           line.currentColor,
           line.targetColor,
-          COLOR_LERP_SPEED
+          COLOR_LERP_SPEED,
         );
       }
 
@@ -2025,8 +2170,40 @@ export default function MetroMap({ variant = "full" }: Props) {
     };
 
     // Update hover effects and animations
+    let lastTooltipUpdateTime = performance.now();
     const updateHoverEffects = () => {
       hoveredStation = findHoveredStation();
+
+      // Update which station to display in tooltip
+      if (hoveredStation) {
+        tooltipDisplayStation = hoveredStation;
+        tooltipTargetOpacity = 1;
+      } else {
+        tooltipTargetOpacity = 0;
+        // Keep displaying the last station while fading out
+      }
+
+      // Animate tooltip fade with easing
+      const now = performance.now();
+      const deltaMs = now - lastTooltipUpdateTime;
+      lastTooltipUpdateTime = now;
+
+      const fadeStep = TOOLTIP_FADE_SPEED * deltaMs;
+      if (tooltipFadeProgress < tooltipTargetOpacity) {
+        // Fading in - ease out (fast start, slow end)
+        const remaining = tooltipTargetOpacity - tooltipFadeProgress;
+        tooltipFadeProgress += Math.min(fadeStep * 1.5, remaining);
+      } else if (tooltipFadeProgress > tooltipTargetOpacity) {
+        // Fading out - ease in (slow start, fast end)
+        const remaining = tooltipFadeProgress - tooltipTargetOpacity;
+        tooltipFadeProgress -= Math.min(fadeStep * 1.5, remaining);
+      }
+
+      // Clear display station when fully faded out
+      if (tooltipFadeProgress <= 0.001 && tooltipTargetOpacity === 0) {
+        tooltipFadeProgress = 0;
+        tooltipDisplayStation = null;
+      }
 
       for (const station of allStations) {
         // Update idle breathing animation
@@ -2059,7 +2236,7 @@ export default function MetroMap({ variant = "full" }: Props) {
             const waveIntensity = 1 - Math.abs(dist - waveFront) / waveWidth;
             station.glowIntensity = Math.max(
               station.glowIntensity,
-              waveIntensity * 0.8
+              waveIntensity * 0.8,
             );
           }
         }
@@ -2102,7 +2279,7 @@ export default function MetroMap({ variant = "full" }: Props) {
 
       // Calculate distance along line for each station
       const stationDistances = line.stations.map((station) =>
-        findDistanceAlongLine(line.points, station)
+        findDistanceAlongLine(line.points, station),
       );
 
       // Start at the first station
@@ -2216,7 +2393,10 @@ export default function MetroMap({ variant = "full" }: Props) {
         } else {
           // Accelerate towards max speed
           if (train.speed < effectiveMaxSpeed) {
-            train.speed = Math.min(effectiveMaxSpeed, train.speed + ACCELERATION);
+            train.speed = Math.min(
+              effectiveMaxSpeed,
+              train.speed + ACCELERATION,
+            );
           }
         }
 
@@ -2246,8 +2426,8 @@ export default function MetroMap({ variant = "full" }: Props) {
               train.waiting = true;
               // In chaos mode, much shorter wait times
               const waitTime = chaosMode
-                ? 100 + Math.random() * 300  // 100-400ms in chaos
-                : randomWaitTime();           // normal 800-2500ms
+                ? 100 + Math.random() * 300 // 100-400ms in chaos
+                : randomWaitTime(); // normal 800-2500ms
               train.waitEndTime = now + waitTime;
               train.lastStoppedAt = station;
               train.speed = 0;
@@ -2333,7 +2513,7 @@ export default function MetroMap({ variant = "full" }: Props) {
         displayColor = shiftColorTowards(
           line.currentColor,
           globalColorShift,
-          colorShiftIntensity * 0.4
+          colorShiftIntensity * 0.4,
         );
       }
       return displayColor;
@@ -2354,7 +2534,7 @@ export default function MetroMap({ variant = "full" }: Props) {
     const isDirectionParallelToNearbyLines = (
       currentLine: MetroLine,
       position: Point,
-      direction: number
+      direction: number,
     ): boolean => {
       const parallelDirs = [direction, (direction + 4) % 8]; // Same or opposite
 
@@ -2389,7 +2569,7 @@ export default function MetroMap({ variant = "full" }: Props) {
       p1: Point,
       p2: Point, // First segment
       p3: Point,
-      p4: Point // Second segment
+      p4: Point, // Second segment
     ): boolean => {
       // Using cross product method
       const d1 = (p4.x - p3.x) * (p1.y - p3.y) - (p4.y - p3.y) * (p1.x - p3.x);
@@ -2411,7 +2591,7 @@ export default function MetroMap({ variant = "full" }: Props) {
     const wouldCrossExistingLine = (
       currentLine: MetroLine,
       start: Point,
-      direction: number
+      direction: number,
     ): boolean => {
       const dir = DIRECTIONS[direction];
       const end = {
@@ -2484,7 +2664,7 @@ export default function MetroMap({ variant = "full" }: Props) {
           // Use theme-aware wave color
           const waveBase = themeColors.waveColor.replace(
             /[\d.]+\)$/,
-            `${opacity * waveOpacity})`
+            `${opacity * waveOpacity})`,
           );
           ctx.strokeStyle = waveBase;
           ctx.lineWidth = 3;
@@ -2521,15 +2701,15 @@ export default function MetroMap({ variant = "full" }: Props) {
             radius * 0.5,
             station.x,
             station.y,
-            glowRadius
+            glowRadius,
           );
           gradient.addColorStop(
             0,
-            `rgba(${r}, ${g}, ${b}, ${opacity * station.glowIntensity * 0.5})`
+            `rgba(${r}, ${g}, ${b}, ${opacity * station.glowIntensity * 0.5})`,
           );
           gradient.addColorStop(
             0.5,
-            `rgba(${r}, ${g}, ${b}, ${opacity * station.glowIntensity * 0.2})`
+            `rgba(${r}, ${g}, ${b}, ${opacity * station.glowIntensity * 0.2})`,
           );
           gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
 
@@ -2552,7 +2732,7 @@ export default function MetroMap({ variant = "full" }: Props) {
           // Parse theme color to RGB for opacity support
           const innerColor = themeColors.stationInner;
           const match = innerColor.match(
-            /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i
+            /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i,
           );
           if (match) {
             const ir = parseInt(match[1], 16);
@@ -2591,7 +2771,7 @@ export default function MetroMap({ variant = "full" }: Props) {
       // Theme-aware interior color
       const innerColor = themeColors.stationInner;
       const innerMatch = innerColor.match(
-        /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i
+        /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i,
       );
       if (innerMatch) {
         const ir = parseInt(innerMatch[1], 16);
@@ -2605,7 +2785,7 @@ export default function MetroMap({ variant = "full" }: Props) {
         -halfWidth,
         -halfHeight,
         config.trainWidth,
-        config.trainHeight
+        config.trainHeight,
       );
 
       // Colored outline
@@ -2615,7 +2795,7 @@ export default function MetroMap({ variant = "full" }: Props) {
         -halfWidth,
         -halfHeight,
         config.trainWidth,
-        config.trainHeight
+        config.trainHeight,
       );
 
       ctx.restore();
@@ -2638,49 +2818,98 @@ export default function MetroMap({ variant = "full" }: Props) {
       return null;
     };
 
-    // Draw tooltip for hovered station
-    const drawStationTooltip = (opacity: number) => {
-      if (!hoveredStation) return;
+    // Helper to wrap text to multiple lines
+    const wrapText = (
+      text: string,
+      maxWidth: number,
+      font: string,
+    ): string[] => {
+      ctx.font = font;
+      const words = text.split(" ");
+      const lines: string[] = [];
+      let currentLine = "";
 
-      const line = findLineForStation(hoveredStation);
+      for (const word of words) {
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        if (ctx.measureText(testLine).width <= maxWidth) {
+          currentLine = testLine;
+        } else {
+          if (currentLine) lines.push(currentLine);
+          currentLine = word;
+        }
+      }
+      if (currentLine) lines.push(currentLine);
+      return lines;
+    };
+
+    // Draw tooltip for hovered station
+    const drawStationTooltip = (globalOpacity: number) => {
+      // Use fade-out station when fading out, otherwise use hovered station
+      if (!tooltipDisplayStation || tooltipFadeProgress === 0) return;
+      const stationToShow = tooltipDisplayStation;
+
+      const line = findLineForStation(stationToShow);
       if (!line) return;
+
+      // Combine global opacity with fade animation
+      const opacity = globalOpacity * tooltipFadeProgress;
 
       const { r, g, b } = getLineDisplayColor(line);
       const tooltipText = line.name;
       const locationText = line.location;
+      const noteText = LOCATION_NOTES[line.location] || "";
+
+      const padding = 10;
+      const maxTooltipWidth = 280;
+      const noteFont = `500 13px "Helvetica Neue", "Arial", system-ui, sans-serif`;
 
       // Measure text
       ctx.font = `600 15px "Helvetica Neue", "Arial", system-ui, sans-serif`;
       const nameWidth = ctx.measureText(tooltipText).width;
-      ctx.font = `12px "Helvetica Neue", "Arial", system-ui, sans-serif`;
+      ctx.font = `500 13px "Helvetica Neue", "Arial", system-ui, sans-serif`;
       const locationWidth = ctx.measureText(locationText).width;
 
-      const padding = 10;
-      const tooltipWidth = Math.max(nameWidth, locationWidth) + padding * 2;
-      const tooltipHeight = 42;
+      // Calculate tooltip width - use fixed width when note is present for consistent wrapping
+      const contentWidth =
+        Math.max(nameWidth, locationWidth) + padding * 2 + 12;
+      const tooltipWidth = noteText
+        ? maxTooltipWidth
+        : Math.min(contentWidth, maxTooltipWidth);
+
+      // Wrap the note text to fit within the tooltip
+      const noteLines = noteText
+        ? wrapText(noteText, tooltipWidth - padding * 2 - 12, noteFont)
+        : [];
+      const noteLineHeight = 18;
+
+      const baseHeight = 44;
+      const notePaddingTop = 10; // Space between location and note
+      const noteHeight =
+        noteLines.length > 0 ? noteLines.length * noteLineHeight + notePaddingTop + 6 : 0;
+      const tooltipHeight = baseHeight + noteHeight;
 
       // Position tooltip above station
-      let tooltipX = hoveredStation.x - tooltipWidth / 2;
+      let tooltipX = stationToShow.x - tooltipWidth / 2;
       let tooltipY =
-        hoveredStation.y - config.stationRadius - tooltipHeight - 8;
+        stationToShow.y - config.stationRadius - tooltipHeight - 8;
 
       // Keep tooltip in bounds
       tooltipX = Math.max(
         8,
-        Math.min(canvasWidth - tooltipWidth - 8, tooltipX)
+        Math.min(canvasWidth - tooltipWidth - 8, tooltipX),
       );
       if (tooltipY < 8) {
-        tooltipY = hoveredStation.y + config.stationRadius + 8; // Show below if no room above
+        tooltipY = stationToShow.y + config.stationRadius + 8; // Show below if no room above
       }
 
-      // Draw tooltip background - parse the rgba color for opacity
+      // Draw tooltip background - solid opaque background for readability
       const tooltipBgBase = themeColors.tooltipBg.replace(
         /[\d.]+\)$/,
-        `${opacity * 0.95})`
+        `${opacity})`,
       );
       ctx.fillStyle = tooltipBgBase;
       ctx.beginPath();
-      ctx.roundRect(tooltipX, tooltipY, tooltipWidth, tooltipHeight, 6);
+      ctx.roundRect(tooltipX, tooltipY, tooltipWidth, tooltipHeight, 8);
       ctx.fill();
 
       // Draw colored accent line on left
@@ -2690,9 +2919,9 @@ export default function MetroMap({ variant = "full" }: Props) {
       ctx.fill();
 
       // Draw line name - use theme text color
-      ctx.font = `600 15px "Helvetica Neue", "Arial", system-ui, sans-serif`;
+      ctx.font = `600 16px "Helvetica Neue", "Arial", system-ui, sans-serif`;
       const textMatch = themeColors.tooltipText.match(
-        /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i
+        /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i,
       );
       if (textMatch) {
         ctx.fillStyle = `rgba(${parseInt(textMatch[1], 16)}, ${parseInt(textMatch[2], 16)}, ${parseInt(textMatch[3], 16)}, ${opacity})`;
@@ -2700,19 +2929,36 @@ export default function MetroMap({ variant = "full" }: Props) {
         ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
       }
       ctx.textBaseline = "top";
-      ctx.fillText(tooltipText, tooltipX + padding + 4, tooltipY + 8);
+      ctx.fillText(tooltipText, tooltipX + padding + 4, tooltipY + 12);
 
-      // Draw location - use theme muted color
-      ctx.font = `12px "Helvetica Neue", "Arial", system-ui, sans-serif`;
+      // Draw location - use theme text color (higher contrast)
+      ctx.font = `500 13px "Helvetica Neue", "Arial", system-ui, sans-serif`;
       const mutedMatch = themeColors.tooltipMuted.match(
-        /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i
+        /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i,
       );
-      if (mutedMatch) {
-        ctx.fillStyle = `rgba(${parseInt(mutedMatch[1], 16)}, ${parseInt(mutedMatch[2], 16)}, ${parseInt(mutedMatch[3], 16)}, ${opacity})`;
+      if (textMatch) {
+        // Use primary text color with slight reduction for location
+        ctx.fillStyle = `rgba(${parseInt(textMatch[1], 16)}, ${parseInt(textMatch[2], 16)}, ${parseInt(textMatch[3], 16)}, ${opacity * 0.8})`;
       } else {
-        ctx.fillStyle = `rgba(163, 163, 163, ${opacity})`;
+        ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 0.8})`;
       }
-      ctx.fillText(locationText, tooltipX + padding + 4, tooltipY + 26);
+      ctx.fillText(locationText, tooltipX + padding + 4, tooltipY + 32);
+
+      // Draw personal note if available
+      if (noteLines.length > 0) {
+        ctx.font = noteFont;
+        // Use muted color but with full opacity for readability
+        if (mutedMatch) {
+          ctx.fillStyle = `rgba(${parseInt(mutedMatch[1], 16)}, ${parseInt(mutedMatch[2], 16)}, ${parseInt(mutedMatch[3], 16)}, ${opacity})`;
+        } else {
+          ctx.fillStyle = `rgba(180, 180, 180, ${opacity})`;
+        }
+        let noteY = tooltipY + baseHeight + notePaddingTop;
+        for (const noteLine of noteLines) {
+          ctx.fillText(noteLine, tooltipX + padding + 4, noteY);
+          noteY += noteLineHeight;
+        }
+      }
     };
 
     // Check if mouse is over a legend item
@@ -2772,7 +3018,7 @@ export default function MetroMap({ variant = "full" }: Props) {
       // Draw board background - parse the rgba color for opacity
       const legendBgBase = themeColors.legendBg.replace(
         /[\d.]+\)$/,
-        `${opacity * 0.85})`
+        `${opacity * 0.85})`,
       );
       ctx.fillStyle = legendBgBase;
       ctx.beginPath();
@@ -2782,7 +3028,7 @@ export default function MetroMap({ variant = "full" }: Props) {
       // Draw board border
       const legendBorderBase = themeColors.legendBorder.replace(
         /[\d.]+\)$/,
-        `${opacity * 0.6})`
+        `${opacity * 0.6})`,
       );
       ctx.strokeStyle = legendBorderBase;
       ctx.lineWidth = 1;
@@ -2791,7 +3037,7 @@ export default function MetroMap({ variant = "full" }: Props) {
       // Draw header - use muted color
       ctx.font = `600 12px "Helvetica Neue", "Arial", system-ui, sans-serif`;
       const mutedMatch = themeColors.tooltipMuted.match(
-        /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i
+        /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i,
       );
       if (mutedMatch) {
         ctx.fillStyle = `rgba(${parseInt(mutedMatch[1], 16)}, ${parseInt(mutedMatch[2], 16)}, ${parseInt(mutedMatch[3], 16)}, ${opacity * 0.9})`;
@@ -2847,7 +3093,7 @@ export default function MetroMap({ variant = "full" }: Props) {
             y - lineHeight / 2 + 4,
             itemWidth + 8,
             lineHeight - 4,
-            4
+            4,
           );
           ctx.fill();
         }
@@ -2862,7 +3108,7 @@ export default function MetroMap({ variant = "full" }: Props) {
         ctx.font = `600 14px "Helvetica Neue", "Arial", system-ui, sans-serif`;
         ctx.textBaseline = "middle";
         const textMatch = themeColors.tooltipText.match(
-          /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i
+          /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i,
         );
         if (textMatch) {
           ctx.fillStyle = `rgba(${parseInt(textMatch[1], 16)}, ${parseInt(textMatch[2], 16)}, ${parseInt(textMatch[3], 16)}, ${itemOpacity})`;
@@ -2875,7 +3121,7 @@ export default function MetroMap({ variant = "full" }: Props) {
         const nameWidth = ctx.measureText(planned.name).width;
         ctx.font = `11px "Helvetica Neue", "Arial", system-ui, sans-serif`;
         const locMutedMatch = themeColors.tooltipMuted.match(
-          /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i
+          /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i,
         );
         if (locMutedMatch) {
           ctx.fillStyle = `rgba(${parseInt(locMutedMatch[1], 16)}, ${parseInt(locMutedMatch[2], 16)}, ${parseInt(locMutedMatch[3], 16)}, ${itemOpacity * 0.8})`;
@@ -2960,17 +3206,37 @@ export default function MetroMap({ variant = "full" }: Props) {
 
       const quadrantCenters = [
         // TL quadrant center
-        { left: drawBounds.left + quadrantWidth / 2 - halfZone, right: drawBounds.left + quadrantWidth / 2 + halfZone,
-          top: drawBounds.top + quadrantHeight / 2 - halfZone, bottom: drawBounds.top + quadrantHeight / 2 + halfZone, label: "TL" },
+        {
+          left: drawBounds.left + quadrantWidth / 2 - halfZone,
+          right: drawBounds.left + quadrantWidth / 2 + halfZone,
+          top: drawBounds.top + quadrantHeight / 2 - halfZone,
+          bottom: drawBounds.top + quadrantHeight / 2 + halfZone,
+          label: "TL",
+        },
         // TR quadrant center
-        { left: centerX + quadrantWidth / 2 - halfZone, right: centerX + quadrantWidth / 2 + halfZone,
-          top: drawBounds.top + quadrantHeight / 2 - halfZone, bottom: drawBounds.top + quadrantHeight / 2 + halfZone, label: "TR" },
+        {
+          left: centerX + quadrantWidth / 2 - halfZone,
+          right: centerX + quadrantWidth / 2 + halfZone,
+          top: drawBounds.top + quadrantHeight / 2 - halfZone,
+          bottom: drawBounds.top + quadrantHeight / 2 + halfZone,
+          label: "TR",
+        },
         // BL quadrant center
-        { left: drawBounds.left + quadrantWidth / 2 - halfZone, right: drawBounds.left + quadrantWidth / 2 + halfZone,
-          top: centerY + quadrantHeight / 2 - halfZone, bottom: centerY + quadrantHeight / 2 + halfZone, label: "BL" },
+        {
+          left: drawBounds.left + quadrantWidth / 2 - halfZone,
+          right: drawBounds.left + quadrantWidth / 2 + halfZone,
+          top: centerY + quadrantHeight / 2 - halfZone,
+          bottom: centerY + quadrantHeight / 2 + halfZone,
+          label: "BL",
+        },
         // BR quadrant center
-        { left: centerX + quadrantWidth / 2 - halfZone, right: centerX + quadrantWidth / 2 + halfZone,
-          top: centerY + quadrantHeight / 2 - halfZone, bottom: centerY + quadrantHeight / 2 + halfZone, label: "BR" },
+        {
+          left: centerX + quadrantWidth / 2 - halfZone,
+          right: centerX + quadrantWidth / 2 + halfZone,
+          top: centerY + quadrantHeight / 2 - halfZone,
+          bottom: centerY + quadrantHeight / 2 + halfZone,
+          label: "BR",
+        },
       ];
 
       // Calculate which quadrants are touched by current lines
@@ -2987,7 +3253,12 @@ export default function MetroMap({ variant = "full" }: Props) {
             const y = p1.y + (p2.y - p1.y) * t;
             for (let q = 0; q < 4; q++) {
               const zone = quadrantCenters[q];
-              if (x >= zone.left && x <= zone.right && y >= zone.top && y <= zone.bottom) {
+              if (
+                x >= zone.left &&
+                x <= zone.right &&
+                y >= zone.top &&
+                y <= zone.bottom
+              ) {
                 quadrantsTouched[q] = true;
               }
             }
@@ -3002,14 +3273,22 @@ export default function MetroMap({ variant = "full" }: Props) {
           const p1 = line.points[i];
           const p2 = line.points[i + 1];
           const segDist = Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2);
-          const steps = Math.max(1, Math.ceil(segDist / Math.min(cellWidth, cellHeight)));
+          const steps = Math.max(
+            1,
+            Math.ceil(segDist / Math.min(cellWidth, cellHeight)),
+          );
           for (let s = 0; s <= steps; s++) {
             const t = s / steps;
             const x = p1.x + (p2.x - p1.x) * t;
             const y = p1.y + (p2.y - p1.y) * t;
             const cellX = Math.floor((x - drawBounds.left) / cellWidth);
             const cellY = Math.floor((y - drawBounds.top) / cellHeight);
-            if (cellX >= 0 && cellX < gridSize && cellY >= 0 && cellY < gridSize) {
+            if (
+              cellX >= 0 &&
+              cellX < gridSize &&
+              cellY >= 0 &&
+              cellY < gridSize
+            ) {
               coveredCells.add(`${cellX},${cellY}`);
             }
           }
@@ -3025,13 +3304,23 @@ export default function MetroMap({ variant = "full" }: Props) {
         ctx.fillStyle = touched
           ? `rgba(0, 255, 0, ${opacity * 0.1})`
           : `rgba(255, 0, 0, ${opacity * 0.1})`;
-        ctx.fillRect(zone.left, zone.top, zone.right - zone.left, zone.bottom - zone.top);
+        ctx.fillRect(
+          zone.left,
+          zone.top,
+          zone.right - zone.left,
+          zone.bottom - zone.top,
+        );
 
         ctx.strokeStyle = touched
           ? `rgba(0, 255, 0, ${opacity * 0.5})`
           : `rgba(255, 0, 0, ${opacity * 0.5})`;
         ctx.lineWidth = 1;
-        ctx.strokeRect(zone.left, zone.top, zone.right - zone.left, zone.bottom - zone.top);
+        ctx.strokeRect(
+          zone.left,
+          zone.top,
+          zone.right - zone.left,
+          zone.bottom - zone.top,
+        );
 
         // Label
         ctx.font = "bold 12px monospace";
@@ -3043,18 +3332,18 @@ export default function MetroMap({ variant = "full" }: Props) {
         ctx.fillText(
           `${zone.label} ${touched ? "✓" : "✗"}`,
           (zone.left + zone.right) / 2,
-          (zone.top + zone.bottom) / 2
+          (zone.top + zone.bottom) / 2,
         );
       }
 
       // Draw debug stats panel (top-left)
-      const quadsHit = quadrantsTouched.filter(t => t).length;
+      const quadsHit = quadrantsTouched.filter((t) => t).length;
       const stats = [
         `Quadrants: ${quadsHit}/4`,
         `Grid: ${(gridCoverage * 100).toFixed(1)}%`,
         `Lines: ${lines.length}`,
         `Stations: ${allStations.length}`,
-        `Growing: ${lines.filter(l => l.growing).length}`,
+        `Growing: ${lines.filter((l) => l.growing).length}`,
       ];
 
       const panelX = drawBounds.left + 10;
@@ -3079,7 +3368,11 @@ export default function MetroMap({ variant = "full" }: Props) {
         ctx.fillStyle = isWarning
           ? `rgba(255, 100, 100, ${opacity})`
           : `rgba(255, 255, 255, ${opacity * 0.9})`;
-        ctx.fillText(stats[i], panelX + panelPadding, panelY + panelPadding + i * lineHeight);
+        ctx.fillText(
+          stats[i],
+          panelX + panelPadding,
+          panelY + panelPadding + i * lineHeight,
+        );
       }
 
       ctx.restore();
@@ -3094,7 +3387,12 @@ export default function MetroMap({ variant = "full" }: Props) {
     const drawStaticMap = () => {
       // Use existing geometry or compute new one
       if (!precomputedGeometry) {
-        precomputedGeometry = findBestSimulation(50, config, drawBounds, variant);
+        precomputedGeometry = findBestSimulation(
+          50,
+          config,
+          drawBounds,
+          variant,
+        );
       }
       initializeMap(precomputedGeometry);
 
@@ -3108,8 +3406,10 @@ export default function MetroMap({ variant = "full" }: Props) {
 
         // Add hub station to first line
         if (i === 0) {
-          const hubStation = allStations.find(s =>
-            Math.abs(s.x - hubCenter.x) < 3 && Math.abs(s.y - hubCenter.y) < 3
+          const hubStation = allStations.find(
+            (s) =>
+              Math.abs(s.x - hubCenter.x) < 3 &&
+              Math.abs(s.y - hubCenter.y) < 3,
           );
           if (hubStation && !line.stations.includes(hubStation)) {
             line.stations.push(hubStation);
@@ -3120,7 +3420,9 @@ export default function MetroMap({ variant = "full" }: Props) {
         for (const stationPos of line.targetStations) {
           if (!isPointOnLine(line.points, stationPos, 5)) continue;
           const exists = allStations.some(
-            (s) => Math.abs(s.x - stationPos.x) < 3 && Math.abs(s.y - stationPos.y) < 3
+            (s) =>
+              Math.abs(s.x - stationPos.x) < 3 &&
+              Math.abs(s.y - stationPos.y) < 3,
           );
           if (!exists) {
             addStation(line, stationPos, false);
@@ -3253,7 +3555,12 @@ export default function MetroMap({ variant = "full" }: Props) {
         // Preserve opacity to prevent flickering during resize
         const preservedOpacity = globalOpacity;
         // Run precompute to find best geometry for new config
-        precomputedGeometry = findBestSimulation(50, config, drawBounds, variant);
+        precomputedGeometry = findBestSimulation(
+          50,
+          config,
+          drawBounds,
+          variant,
+        );
         initializeMap(precomputedGeometry);
         // Restore opacity so we don't fade in again
         globalOpacity = preservedOpacity;
@@ -3321,7 +3628,10 @@ export default function MetroMap({ variant = "full" }: Props) {
       // Update each line's color and snake position
       lines.forEach((line, index) => {
         // Cycle colors through neon palette
-        const colorIndex = Math.floor((chaosColorCycleOffset * NEON_COLORS.length + index) % NEON_COLORS.length);
+        const colorIndex = Math.floor(
+          (chaosColorCycleOffset * NEON_COLORS.length + index) %
+            NEON_COLORS.length,
+        );
         const nextColorIndex = (colorIndex + 1) % NEON_COLORS.length;
         const t = (chaosColorCycleOffset * NEON_COLORS.length + index) % 1;
         const currentColor = parseColor(NEON_COLORS[colorIndex]);
@@ -3350,7 +3660,11 @@ export default function MetroMap({ variant = "full" }: Props) {
 
           if (windowEnd > windowStart) {
             // Get points within the window
-            line.points = getPointsInWindow(line.targetPoints, windowStart, windowEnd);
+            line.points = getPointsInWindow(
+              line.targetPoints,
+              windowStart,
+              windowEnd,
+            );
             line.revealedLength = windowEnd - windowStart;
           } else {
             line.points = [];
@@ -3361,7 +3675,11 @@ export default function MetroMap({ variant = "full" }: Props) {
     };
 
     // Get points from a path within a distance window
-    const getPointsInWindow = (points: Point[], startDist: number, endDist: number): Point[] => {
+    const getPointsInWindow = (
+      points: Point[],
+      startDist: number,
+      endDist: number,
+    ): Point[] => {
       if (points.length < 2 || endDist <= startDist) return [];
 
       const result: Point[] = [];
@@ -3389,7 +3707,11 @@ export default function MetroMap({ variant = "full" }: Props) {
 
         // Add intermediate points
         if (started && accumulated >= startDist && accumulated <= endDist) {
-          if (result.length === 0 || result[result.length - 1].x !== points[i].x || result[result.length - 1].y !== points[i].y) {
+          if (
+            result.length === 0 ||
+            result[result.length - 1].x !== points[i].x ||
+            result[result.length - 1].y !== points[i].y
+          ) {
             result.push({ ...points[i] });
           }
         }
@@ -3422,17 +3744,19 @@ export default function MetroMap({ variant = "full" }: Props) {
     const handleKonamiCode = () => {
       if (chaosMode) return; // Already in chaos mode
 
-      console.log('[MetroMap] KONAMI CODE ACTIVATED - CHAOS MODE ENGAGED!');
+      console.log("[MetroMap] KONAMI CODE ACTIVATED - CHAOS MODE ENGAGED!");
       chaosMode = true;
       chaosColorCycleOffset = 0;
       chaosTrainSpeedMultiplier = 2.5;
-      canvas.classList.add('chaos-mode');
+      canvas.classList.add("chaos-mode");
 
       // Initialize snake positions - stagger each line's starting position
       chaosHeadPositions.clear();
       lines.forEach((line, index) => {
         // Stagger starts so lines don't all begin at 0
-        const staggeredStart = (index * CHAOS_WINDOW_LENGTH * 0.7) % (line.totalTargetLength + CHAOS_WINDOW_LENGTH);
+        const staggeredStart =
+          (index * CHAOS_WINDOW_LENGTH * 0.7) %
+          (line.totalTargetLength + CHAOS_WINDOW_LENGTH);
         chaosHeadPositions.set(line.id, staggeredStart);
       });
 
@@ -3446,7 +3770,9 @@ export default function MetroMap({ variant = "full" }: Props) {
       });
 
       // Use chaos line names
-      const shuffledNames = [...CHAOS_LINE_NAMES].sort(() => Math.random() - 0.5);
+      const shuffledNames = [...CHAOS_LINE_NAMES].sort(
+        () => Math.random() - 0.5,
+      );
       lines.forEach((line, index) => {
         const chaosInfo = shuffledNames[index % shuffledNames.length];
         line.name = chaosInfo.name;
@@ -3459,14 +3785,20 @@ export default function MetroMap({ variant = "full" }: Props) {
     const handleKonamiExit = () => {
       if (!chaosMode) return;
 
-      console.log('[MetroMap] Exiting chaos mode...');
+      console.log("[MetroMap] Exiting chaos mode...");
       chaosMode = false;
       chaosTrainSpeedMultiplier = 1;
-      canvas.classList.remove('chaos-mode');
+      canvas.classList.remove("chaos-mode");
       chaosHeadPositions.clear();
 
       // Regenerate with normal constrained parameters
-      precomputedGeometry = findBestSimulation(50, config, drawBounds, variant, false);
+      precomputedGeometry = findBestSimulation(
+        50,
+        config,
+        drawBounds,
+        variant,
+        false,
+      );
       initializeMap(precomputedGeometry);
     };
 
@@ -3609,7 +3941,7 @@ export default function MetroMap({ variant = "full" }: Props) {
       window.removeEventListener("resize", debouncedResize);
       window.removeEventListener(
         "viz-color",
-        handleColorChange as EventListener
+        handleColorChange as EventListener,
       );
       window.removeEventListener("viz-palette", handlePalette as EventListener);
       window.removeEventListener("viz-color-reset", handleColorReset);

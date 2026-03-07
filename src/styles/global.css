@@ -39,7 +39,7 @@
 
   /* Canvas/MetroMap specific */
   --canvas-station-inner: #ffffff;
-  --canvas-tooltip-bg: rgba(26, 22, 37, 0.95);
+  --canvas-tooltip-bg: rgba(26, 22, 37, 1);
   --canvas-tooltip-text: #f0edf5;
   --canvas-tooltip-muted: #8b829e;
   --canvas-legend-bg: rgba(26, 22, 37, 0.85);
@@ -69,7 +69,7 @@
   --selection-text: #ffffff;
 
   --canvas-station-inner: #ffffff;
-  --canvas-tooltip-bg: rgba(26, 22, 37, 0.95);
+  --canvas-tooltip-bg: rgba(26, 22, 37, 1);
   --canvas-tooltip-text: #f0edf5;
   --canvas-tooltip-muted: #8b829e;
   --canvas-legend-bg: rgba(26, 22, 37, 0.85);
@@ -99,7 +99,7 @@
   --selection-text: #2c241d;
 
   --canvas-station-inner: #faf8f5;
-  --canvas-tooltip-bg: rgba(250, 248, 245, 0.95);
+  --canvas-tooltip-bg: rgba(250, 248, 245, 1);
   --canvas-tooltip-text: #2c241d;
   --canvas-tooltip-muted: #8c7b6b;
   --canvas-legend-bg: rgba(250, 248, 245, 0.9);
