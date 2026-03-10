@@ -602,19 +602,54 @@ html *::after {
 
 .entry-links {
   display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
+  flex-wrap: nowrap;
+  gap: 0;
   margin-top: 1rem;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
 }
 
 .entry-links a {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 12px;
   color: var(--text-tertiary);
-  transition: color 0.15s;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  cursor: pointer;
+  transition: color 0.15s, background-color 0.15s;
+  text-decoration: none;
+  white-space: nowrap;
+  position: relative;
+}
+
+/* Collapse shared border between adjacent cars */
+.entry-links a + a {
+  margin-left: -1px;
 }
 
 .entry-links a:hover {
   color: var(--text-primary);
+  background-color: var(--bg-tertiary);
+  z-index: 1;
+}
+
+/* Front cap — rounded left end */
+.entry-links a:first-child {
+  border-radius: 9999px 0 0 9999px;
+  padding-left: 14px;
+}
+
+/* Back cap — rounded right end */
+.entry-links a:last-child {
+  border-radius: 0 9999px 9999px 0;
+  padding-right: 14px;
+}
+
+/* Single car — full pill */
+.entry-links a:only-child {
+  border-radius: 9999px;
+  padding-left: 14px;
+  padding-right: 14px;
 }
 
 /* Details/Summary styling */
@@ -736,4 +771,32 @@ details summary::before {
   .track-info-overlay {
     transition: opacity 0.2s ease;
   }
+}
+
+/* Tippy theme: metro-train */
+.tippy-box[data-theme~="metro-train"] {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color, rgba(128, 128, 128, 0.2));
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: 13px;
+  padding: 2px;
+}
+
+.tippy-box[data-theme~="metro-train"] .tippy-content {
+  padding: 8px 12px;
+}
+
+.tippy-box[data-theme~="metro-train"] .tippy-arrow {
+  color: var(--bg-secondary);
+}
+
+.tippy-box[data-theme~="metro-train"] a {
+  color: var(--text-secondary);
+}
+
+.tippy-box[data-theme~="metro-train"] a:hover {
+  color: var(--text-primary);
 }

@@ -1,4 +1,7 @@
 import { useEffect, useRef, useCallback } from "react";
+import tippy from "tippy.js";
+import type { Instance as TippyInstance } from "tippy.js";
+import "tippy.js/dist/tippy.css";
 
 // Seeded PRNG for deterministic replay
 class SeededRandom {
@@ -141,10 +144,18 @@ function getColorIndexFromLineName(name: string): number | null {
 const DEFAULT_COLORS = DARK_MODE_COLORS;
 
 // Real transit lines from cities I've used
+interface RollingStock {
+  model: string;
+  manufacturer: string;
+  introduced: number;
+  specUrl: string;
+}
+
 interface TransitLineInfo {
   name: string;
   location: string;
   wiki: string;
+  rollingStock?: RollingStock;
 }
 
 const TRANSIT_LINES: TransitLineInfo[] = [
@@ -152,61 +163,133 @@ const TRANSIT_LINES: TransitLineInfo[] = [
     name: "山手線 Yamanote",
     location: "Tokyo",
     wiki: "https://en.wikipedia.org/wiki/Yamanote_Line",
+    rollingStock: {
+      model: "E235 series",
+      manufacturer: "J-TREC",
+      introduced: 2020,
+      specUrl: "https://en.wikipedia.org/wiki/E235_series",
+    },
   },
   {
     name: "銀座線 Ginza",
     location: "Tokyo",
     wiki: "https://en.wikipedia.org/wiki/Tokyo_Metro_Ginza_Line",
+    rollingStock: {
+      model: "1000 series",
+      manufacturer: "Nippon Sharyo",
+      introduced: 2012,
+      specUrl: "https://en.wikipedia.org/wiki/Tokyo_Metro_1000_series",
+    },
   },
   {
     name: "中央線 Chūō",
     location: "Tokyo",
     wiki: "https://en.wikipedia.org/wiki/Ch%C5%AB%C5%8D_Line_(Rapid)",
+    rollingStock: {
+      model: "E233 series",
+      manufacturer: "Kawasaki Heavy Industries",
+      introduced: 2006,
+      specUrl: "https://en.wikipedia.org/wiki/E233_series",
+    },
   },
   {
     name: "U2",
     location: "Berlin",
     wiki: "https://en.wikipedia.org/wiki/U2_(Berlin_U-Bahn)",
+    rollingStock: {
+      model: "HK-type (Baureihe HK)",
+      manufacturer: "LEW Hennigsdorf",
+      introduced: 1997,
+      specUrl: "https://en.wikipedia.org/wiki/Berlin_U-Bahn_rolling_stock",
+    },
   },
   {
     name: "U6",
     location: "Berlin",
     wiki: "https://en.wikipedia.org/wiki/U6_(Berlin_U-Bahn)",
+    rollingStock: {
+      model: "H-series (Baureihe H)",
+      manufacturer: "Bombardier Transportation",
+      introduced: 1998,
+      specUrl: "https://en.wikipedia.org/wiki/Berlin_U-Bahn_rolling_stock",
+    },
   },
   {
     name: "Red Line",
     location: "Salt Lake City",
     wiki: "https://en.wikipedia.org/wiki/Red_Line_(TRAX)",
+    rollingStock: {
+      model: "SD-160",
+      manufacturer: "Siemens",
+      introduced: 1999,
+      specUrl: "https://en.wikipedia.org/wiki/Siemens_SD-160",
+    },
   },
   {
     name: "Blue Line",
     location: "Salt Lake City",
     wiki: "https://en.wikipedia.org/wiki/Blue_Line_(TRAX)",
+    rollingStock: {
+      model: "SD-100",
+      manufacturer: "Siemens",
+      introduced: 1999,
+      specUrl: "https://en.wikipedia.org/wiki/Siemens_SD-100",
+    },
   },
   {
     name: "T Third",
     location: "San Francisco",
     wiki: "https://en.wikipedia.org/wiki/T_Third_Street",
+    rollingStock: {
+      model: "S200 SF",
+      manufacturer: "Siemens",
+      introduced: 2017,
+      specUrl: "https://en.wikipedia.org/wiki/Siemens_S200",
+    },
   },
   {
     name: "1 Line",
     location: "Seattle",
     wiki: "https://en.wikipedia.org/wiki/1_Line_(Link_light_rail)",
+    rollingStock: {
+      model: "Series 1 LRV",
+      manufacturer: "Kinkisharyo",
+      introduced: 2009,
+      specUrl: "https://en.wikipedia.org/wiki/1_Line_(Sound_Transit)",
+    },
   },
   {
     name: "Route 3",
     location: "Santa Cruz",
     wiki: "https://en.wikipedia.org/wiki/Santa_Cruz_Metropolitan_Transit_District",
+    rollingStock: {
+      model: "XN40 Xcelsior",
+      manufacturer: "New Flyer",
+      introduced: 2018,
+      specUrl: "https://en.wikipedia.org/wiki/New_Flyer_Xcelsior",
+    },
   },
   {
     name: "Route 10",
     location: "Santa Cruz",
     wiki: "https://en.wikipedia.org/wiki/Santa_Cruz_Metropolitan_Transit_District",
+    rollingStock: {
+      model: "XN40 Xcelsior",
+      manufacturer: "New Flyer",
+      introduced: 2018,
+      specUrl: "https://en.wikipedia.org/wiki/New_Flyer_Xcelsior",
+    },
   },
   {
     name: "Caltrain",
     location: "Bay Area",
     wiki: "https://en.wikipedia.org/wiki/Caltrain",
+    rollingStock: {
+      model: "KISS EMU",
+      manufacturer: "Stadler Rail",
+      introduced: 2024,
+      specUrl: "https://en.wikipedia.org/wiki/Stadler_KISS",
+    },
   },
 ];
 
@@ -400,6 +483,7 @@ interface MetroLine {
   name: string; // Transit line name for legend
   location: string; // City/region for legend
   wiki: string; // Wikipedia URL
+  rollingStock?: RollingStock; // Rolling stock info for train hover tooltip
   baseColor: string; // Original assigned color
   currentColor: RGB; // Current display color (for lerping)
   targetColor: RGB; // Target color to lerp towards
@@ -464,6 +548,9 @@ interface Train {
   lineLength: number; // cached total length of line.points
   stationDistances: number[]; // distance along line for each station
   speed: number; // Current speed (for acceleration/deceleration)
+  numCars: number; // 1–3 cars per train
+  carAngles: number[]; // per-car smoothed angle (radians)
+  distanceTraveled: number; // total distance traveled since spawn (for car reveal)
 }
 
 function parseColor(color: string): RGB {
@@ -1456,13 +1543,59 @@ interface Props {
 
 export default function MetroMap({ variant = "full" }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const tippyAnchorRef = useRef<HTMLDivElement>(null);
+  const tippyInstanceRef = useRef<TippyInstance | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const isFullVariant = variant === "full";
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
+    const anchor = tippyAnchorRef.current;
     if (!canvas) return;
+
+    // Set up Tippy on the invisible anchor div
+    if (anchor && !tippyInstanceRef.current) {
+      tippyInstanceRef.current = tippy(anchor, {
+        content: "",
+        allowHTML: true,
+        placement: "top",
+        animation: "fade",
+        duration: [120, 80],
+        arrow: true,
+        interactive: true,
+        appendTo: document.body,
+        theme: "metro-train",
+        hideOnClick: false,
+        trigger: "manual",
+      });
+    }
+    const tip = tippyInstanceRef.current;
+
+    // Track whether the mouse is inside the Tippy popup so we don't hide it
+    // while the user is moving toward the "view spec" link.
+    let mouseInTooltip = false;
+    let hideTooltipTimeout: ReturnType<typeof setTimeout> | null = null;
+
+    const scheduleTooltipHide = () => {
+      if (hideTooltipTimeout) clearTimeout(hideTooltipTimeout);
+      hideTooltipTimeout = setTimeout(() => {
+        if (!mouseInTooltip) tip?.hide();
+        hideTooltipTimeout = null;
+      }, 120); // 120ms grace — enough for mouseenter on popup to fire
+    };
+
+    if (tip) {
+      tip.popper.addEventListener("mouseenter", () => {
+        mouseInTooltip = true;
+        if (hideTooltipTimeout) { clearTimeout(hideTooltipTimeout); hideTooltipTimeout = null; }
+      });
+      tip.popper.addEventListener("mouseleave", () => {
+        mouseInTooltip = false;
+        tip.hide();
+        prevHoveredTrain = null; // allow re-detection next frame
+      });
+    }
 
     const ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx) return;
@@ -1505,6 +1638,8 @@ export default function MetroMap({ variant = "full" }: Props) {
     let tooltipTargetOpacity = 0; // Target: 1 when hovering, 0 when not
     let tooltipDisplayStation: Station | null = null; // Station to show in tooltip
     const TOOLTIP_FADE_SPEED = 1 / 250; // Fade over 250ms (progress per ms)
+    let hoveredTrain: Train | null = null;
+    let prevHoveredTrain: Train | null = null;
     let clickWaves: ClickWave[] = [];
 
     // Train simulation
@@ -1738,6 +1873,7 @@ export default function MetroMap({ variant = "full" }: Props) {
         name: transitInfo.name,
         location: transitInfo.location,
         wiki: transitInfo.wiki,
+        rollingStock: transitInfo.rollingStock,
         baseColor: color,
         currentColor: { ...rgb },
         targetColor: { ...rgb },
@@ -1850,6 +1986,8 @@ export default function MetroMap({ variant = "full" }: Props) {
       targetColorShiftIntensity = 0;
       clickWaves = [];
       hoveredStation = null;
+      hoveredTrain = null;
+      prevHoveredTrain = null;
       trains = [];
       lastTrainSpawnCheck = 0;
       // Reset corridor tracking
@@ -1946,6 +2084,7 @@ export default function MetroMap({ variant = "full" }: Props) {
           name: transitInfo.name,
           location: transitInfo.location,
           wiki: transitInfo.wiki,
+          rollingStock: transitInfo.rollingStock,
           baseColor: color,
           currentColor: { ...rgb },
           targetColor: { ...rgb },
@@ -2169,10 +2308,41 @@ export default function MetroMap({ variant = "full" }: Props) {
       return null;
     };
 
+    // Find train under a given point (checks all car positions)
+    const findTrainAtPoint = (pt: Point): Train | null => {
+      const hitRadius = config.trainHeight * 1.5;
+      for (const train of trains) {
+        if (train.line.points.length < 2) continue;
+        const carW = config.trainWidth;
+        const CAR_GAP = Math.max(2, config.lineWidth);
+        const hasFullySpawned = train.distanceTraveled >= (train.numCars - 1) * (carW + CAR_GAP);
+        for (let i = 0; i < train.numCars; i++) {
+          if (!hasFullySpawned && train.distanceTraveled < i * (carW + CAR_GAP)) continue;
+          let carDist = train.distanceAlongLine - i * (carW + CAR_GAP);
+          if (hasFullySpawned) {
+            carDist = Math.max(0, Math.min(train.lineLength, carDist));
+          } else {
+            if (carDist < 0 || carDist > train.lineLength) continue;
+          }
+          const pos = getPositionAtDistance(train.line.points, carDist);
+          if (distance(pt, pos) < hitRadius) return train;
+        }
+      }
+      return null;
+    };
+
+    // Find train under mouse cursor
+    const findHoveredTrain = (): Train | null => {
+      if (!mousePosition || isMobile) return null;
+      return findTrainAtPoint(mousePosition);
+    };
+
     // Update hover effects and animations
     let lastTooltipUpdateTime = performance.now();
     const updateHoverEffects = () => {
-      hoveredStation = findHoveredStation();
+      hoveredTrain = findHoveredTrain();
+      // Suppress station hover while train tooltip is showing
+      hoveredStation = (hoveredTrain !== null || mouseInTooltip) ? null : findHoveredStation();
 
       // Update which station to display in tooltip
       if (hoveredStation) {
@@ -2203,6 +2373,43 @@ export default function MetroMap({ variant = "full" }: Props) {
       if (tooltipFadeProgress <= 0.001 && tooltipTargetOpacity === 0) {
         tooltipFadeProgress = 0;
         tooltipDisplayStation = null;
+      }
+
+      // Train tooltip via Tippy
+      // Don't touch show/hide state while mouse is inside the popup itself
+      if (!mouseInTooltip) {
+        if (hoveredTrain !== prevHoveredTrain) {
+          prevHoveredTrain = hoveredTrain;
+          if (tip) {
+            if (hoveredTrain && hoveredTrain.line.rollingStock) {
+              const rs = hoveredTrain.line.rollingStock;
+              const lineColor = rgbToHex(getLineDisplayColor(hoveredTrain.line));
+              tip.setContent(
+                `<div style="display:flex;gap:8px;align-items:flex-start">` +
+                `<div style="width:3px;align-self:stretch;border-radius:2px;background:${lineColor};flex-shrink:0"></div>` +
+                `<div>` +
+                `<div style="font-weight:600;font-size:13px;line-height:1.3">${rs.model}</div>` +
+                `<div style="font-size:11px;opacity:0.65;margin-top:2px">${rs.manufacturer} &middot; ${rs.introduced}</div>` +
+                `<a href="${rs.specUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;font-size:11px;margin-top:6px;opacity:0.8;text-decoration:none;color:inherit">↗ view spec</a>` +
+                `</div></div>`
+              );
+              const rect = canvas.getBoundingClientRect();
+              if (anchor) {
+                anchor.style.left = `${rect.left + hoveredTrain.x}px`;
+                anchor.style.top = `${rect.top + hoveredTrain.y}px`;
+              }
+              if (hideTooltipTimeout) { clearTimeout(hideTooltipTimeout); hideTooltipTimeout = null; }
+              tip.show();
+            } else {
+              scheduleTooltipHide();
+            }
+          }
+        } else if (hoveredTrain && anchor) {
+          // Keep anchor tracking the moving train
+          const rect = canvas.getBoundingClientRect();
+          anchor.style.left = `${rect.left + hoveredTrain.x}px`;
+          anchor.style.top = `${rect.top + hoveredTrain.y}px`;
+        }
       }
 
       for (const station of allStations) {
@@ -2302,6 +2509,9 @@ export default function MetroMap({ variant = "full" }: Props) {
         lineLength,
         stationDistances,
         speed: 0, // Start stationary
+        numCars: (() => { const r = Math.random(); return r < 0.6 ? 1 : r < 0.9 ? 2 : 3; })(),
+        carAngles: Array(3).fill(pos.angle), // pre-filled for max cars; only [0..numCars-1] used
+        distanceTraveled: 0,
       };
     };
 
@@ -2454,6 +2664,73 @@ export default function MetroMap({ variant = "full" }: Props) {
         while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
         while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
         train.angle += angleDiff * POSITION_LERP;
+
+        // Sync leading car angle with the already-smoothed train.angle
+        train.carAngles[0] = train.angle;
+
+        // Smooth angles for trailing cars independently
+        const CAR_GAP_U = Math.max(2, config.lineWidth);
+        for (let ci = 1; ci < train.numCars; ci++) {
+          const carDist = train.distanceAlongLine - ci * (config.trainWidth + CAR_GAP_U);
+          if (carDist < 0 || carDist > train.lineLength) continue;
+          const carPos = getPositionAtDistance(line.points, carDist);
+          let diff = carPos.angle - train.carAngles[ci];
+          while (diff > Math.PI) diff -= Math.PI * 2;
+          while (diff < -Math.PI) diff += Math.PI * 2;
+          train.carAngles[ci] += diff * POSITION_LERP;
+        }
+
+        // Track total distance traveled for progressive car reveal
+        train.distanceTraveled += train.speed;
+      }
+
+      // Collision avoidance — CBTC moving-block style post-pass
+      // Accounts for actual train length when computing safe following distance
+      const carW = config.trainWidth;
+      const CAR_GAP_COL = Math.max(2, config.lineWidth);
+      const trainLen = (n: number) => n * (carW + CAR_GAP_COL); // physical length on track
+      const SAFETY_BUFFER = 30; // minimum clear buffer beyond train length
+      const CROSS_AVOIDANCE_RADIUS = 52; // canvas px for cross-line proximity check
+
+      for (let i = 0; i < trains.length; i++) {
+        for (let j = i + 1; j < trains.length; j++) {
+          const a = trains[i];
+          const b = trains[j];
+          if (a.waiting || b.waiting) continue;
+
+          if (a.line === b.line) {
+            // Same-line moving block: trailing train must stay clear of leading train's tail
+            const gap = Math.abs(a.distanceAlongLine - b.distanceAlongLine);
+            const aAhead = a.distanceAlongLine > b.distanceAlongLine;
+            const leadingTrain = aAhead ? a : b;
+            const trailingTrain = aAhead ? b : a;
+            // Required gap = leading train length + safety buffer
+            const requiredGap = trainLen(leadingTrain.numCars) + SAFETY_BUFFER;
+            if (gap < requiredGap) {
+              const factor = gap / requiredGap;
+              if (a.direction === b.direction) {
+                // Same direction: trailing train yields
+                trailingTrain.speed = Math.min(trailingTrain.speed, effectiveMaxSpeed * factor * 0.6);
+              } else {
+                // Head-on: both yield
+                a.speed = Math.min(a.speed, effectiveMaxSpeed * factor * 0.5);
+                b.speed = Math.min(b.speed, effectiveMaxSpeed * factor * 0.5);
+              }
+            }
+          } else {
+            // Cross-line: yield based on canvas proximity (lower line id yields)
+            const dx = a.x - b.x;
+            const dy = a.y - b.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            // Scale avoidance radius by combined train half-lengths
+            const effectiveRadius = CROSS_AVOIDANCE_RADIUS + (trainLen(a.numCars) + trainLen(b.numCars)) * 0.15;
+            if (dist < effectiveRadius) {
+              const factor = dist / effectiveRadius;
+              const yieldTrain = a.line.id < b.line.id ? a : b;
+              yieldTrain.speed = Math.min(yieldTrain.speed, effectiveMaxSpeed * factor * 0.5);
+            }
+          }
+        }
       }
     };
 
@@ -2469,6 +2746,7 @@ export default function MetroMap({ variant = "full" }: Props) {
     // Handle mouse leave
     const handleMouseLeave = () => {
       mousePosition = null;
+      document.body.style.cursor = "";
     };
 
     // Handle click for color wave or legend item
@@ -2491,6 +2769,14 @@ export default function MetroMap({ variant = "full" }: Props) {
           window.open(item.wiki, "_blank", "noopener,noreferrer");
           return;
         }
+      }
+
+      // Check if click is on a train (open spec URL)
+      const clickedTrain = findTrainAtPoint(clickPos);
+      if (clickedTrain) {
+        const rs = clickedTrain.line.rollingStock;
+        if (rs) window.open(rs.specUrl, "_blank", "noopener,noreferrer");
+        return;
       }
 
       // Check if click is on a station
@@ -2755,50 +3041,78 @@ export default function MetroMap({ variant = "full" }: Props) {
       }
     };
 
-    // Draw a train
+    // Draw a train (1 or 2 cars) — each car is positioned independently along the line
     const drawTrain = (train: Train, opacity: number) => {
+      const { line } = train;
+      if (line.points.length < 2) return;
+
       const color = getLineDisplayColor(train.line);
       const { r, g, b } = color;
 
-      ctx.save();
-      ctx.translate(train.x, train.y);
-      ctx.rotate(train.angle);
+      const carW = config.trainWidth;
+      const carH = config.trainHeight;
+      const halfH = carH / 2;
+      const cornerR = halfH; // Capsule-shaped end caps
+      const numCars = train.numCars;
+      const CAR_GAP = Math.max(2, config.lineWidth); // Coupling gap
 
-      // Draw train body (theme-aware fill with colored outline)
-      const halfWidth = config.trainWidth / 2;
-      const halfHeight = config.trainHeight / 2;
-
-      // Theme-aware interior color
+      // Parse interior color once
       const innerColor = themeColors.stationInner;
-      const innerMatch = innerColor.match(
-        /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i,
-      );
-      if (innerMatch) {
-        const ir = parseInt(innerMatch[1], 16);
-        const ig = parseInt(innerMatch[2], 16);
-        const ib = parseInt(innerMatch[3], 16);
+      const innerMatch = innerColor.match(/^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+      const ir = innerMatch ? parseInt(innerMatch[1], 16) : 255;
+      const ig = innerMatch ? parseInt(innerMatch[2], 16) : 255;
+      const ib = innerMatch ? parseInt(innerMatch[3], 16) : 255;
+
+      // After all cars have emerged once, stop gating on distanceTraveled
+      const hasFullySpawned = train.distanceTraveled >= (numCars - 1) * (carW + CAR_GAP);
+
+      for (let i = 0; i < numCars; i++) {
+        // Initial spawn only: reveal cars one by one as train pulls away from station
+        if (!hasFullySpawned && train.distanceTraveled < i * (carW + CAR_GAP)) continue;
+
+        let carDist = train.distanceAlongLine - i * (carW + CAR_GAP);
+
+        if (hasFullySpawned) {
+          // Clamp to line bounds so cars don't vanish near endpoints after full spawn
+          carDist = Math.max(0, Math.min(train.lineLength, carDist));
+        } else {
+          if (carDist < 0 || carDist > train.lineLength) continue;
+        }
+
+        // Position from track geometry; angle from per-car smoothed value
+        const pos = getPositionAtDistance(line.points, carDist);
+        const angle = train.carAngles[i] ?? pos.angle;
+
+        // Rounded caps — [topLeft, topRight, bottomRight, bottomLeft], +x = forward
+        let radii: number[];
+        if (numCars === 1) {
+          radii = [cornerR, cornerR, cornerR, cornerR];
+        } else if (i === 0) {
+          radii = [0, cornerR, cornerR, 0]; // Leading: rounded nose, flat coupling
+        } else if (i === numCars - 1) {
+          radii = [cornerR, 0, 0, cornerR]; // Trailing: flat coupling, rounded tail
+        } else {
+          radii = [0, 0, 0, 0]; // Middle car
+        }
+
+        ctx.save();
+        ctx.translate(pos.x, pos.y);
+        ctx.rotate(angle);
+
         ctx.fillStyle = `rgba(${ir}, ${ig}, ${ib}, ${opacity * 0.95})`;
-      } else {
-        ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 0.95})`;
+        ctx.beginPath();
+        ctx.roundRect(-carW / 2, -halfH, carW, carH, radii);
+        ctx.fill();
+
+        ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${opacity})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(-carW / 2, -halfH, carW, carH, radii);
+        ctx.stroke();
+
+        ctx.restore();
       }
-      ctx.fillRect(
-        -halfWidth,
-        -halfHeight,
-        config.trainWidth,
-        config.trainHeight,
-      );
 
-      // Colored outline
-      ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${opacity})`;
-      ctx.lineWidth = 2;
-      ctx.strokeRect(
-        -halfWidth,
-        -halfHeight,
-        config.trainWidth,
-        config.trainHeight,
-      );
-
-      ctx.restore();
     };
 
     // Draw all trains
@@ -2964,7 +3278,10 @@ export default function MetroMap({ variant = "full" }: Props) {
     // Check if mouse is over a legend item
     const updateLegendHover = () => {
       hoveredLegendIndex = -1;
-      if (!mousePosition || isMobile) return;
+      if (!mousePosition || isMobile) {
+        document.body.style.cursor = "";
+        return;
+      }
 
       for (let i = 0; i < legendItems.length; i++) {
         const item = legendItems[i];
@@ -2978,6 +3295,8 @@ export default function MetroMap({ variant = "full" }: Props) {
           break;
         }
       }
+
+      document.body.style.cursor = hoveredLegendIndex >= 0 ? "pointer" : "";
     };
 
     // Draw legend as metro board (bottom right, shows all planned lines)
@@ -3442,7 +3761,6 @@ export default function MetroMap({ variant = "full" }: Props) {
         drawLine(line, 0.75);
       }
       drawLegend(0.75);
-      drawDebugOverlay(0.75);
     };
 
     const handleColorChange = (e: CustomEvent<string>) => {
@@ -3610,8 +3928,8 @@ export default function MetroMap({ variant = "full" }: Props) {
         drawStationTooltip(globalOpacity);
       }
 
-      // Layer 7: Debug overlay (dev mode only)
-      drawDebugOverlay(globalOpacity);
+      // Layer 7: Debug overlay (disabled)
+      // drawDebugOverlay(globalOpacity);
     };
 
     // Chaos mode: continuous "snake" animation
@@ -3953,15 +4271,30 @@ export default function MetroMap({ variant = "full" }: Props) {
       window.removeEventListener("konamiCode", handleKonamiCode);
       window.removeEventListener("konamiCodeExit", handleKonamiExit);
       cancelAnimationFrame(animationId);
+      document.body.style.cursor = "";
+      if (hideTooltipTimeout) clearTimeout(hideTooltipTimeout);
+      tippyInstanceRef.current?.destroy();
+      tippyInstanceRef.current = null;
     };
   }, [isFullVariant]);
 
+  // Invisible fixed-position anchor that Tippy attaches to — repositioned over train each frame
+  const tippyAnchor = (
+    <div
+      ref={tippyAnchorRef}
+      style={{ position: "fixed", width: 1, height: 1, pointerEvents: "none", zIndex: 0 }}
+    />
+  );
+
   if (isFullVariant) {
     return (
-      <canvas
-        ref={canvasRef}
-        className="fixed top-0 right-0 w-1/2 h-full pointer-events-none -z-10"
-      />
+      <>
+        <canvas
+          ref={canvasRef}
+          className="fixed top-0 right-0 w-1/2 h-full pointer-events-none -z-10"
+        />
+        {tippyAnchor}
+      </>
     );
   }
 
@@ -3971,6 +4304,7 @@ export default function MetroMap({ variant = "full" }: Props) {
         ref={canvasRef}
         className="absolute inset-0 pointer-events-none"
       />
+      {tippyAnchor}
     </div>
   );
 }

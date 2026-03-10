@@ -57,7 +57,7 @@ const years = Object.keys(byYear).sort((a, b) => Number(b) - Number(a));
                       <div class="entry-links">
                         {project.data.links.map(link => (
                           <a href={link.url} target="_blank" rel="noopener noreferrer">
-                            {link.label} <span class="text-xs opacity-60">↗</span>
+                            {link.label}
                           </a>
                         ))}
                       </div>
