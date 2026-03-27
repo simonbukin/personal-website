@@ -303,6 +303,12 @@ html *::after {
   @apply bg-transparent p-0 rounded-none;
 }
 
+[data-theme="light"] .astro-code,
+[data-theme="light"] .astro-code span {
+  color: var(--shiki-light) !important;
+  background-color: var(--shiki-light-bg) !important;
+}
+
 .prose img {
   @apply rounded-lg my-6 cursor-zoom-in;
   border: 1px solid var(--border-secondary);
