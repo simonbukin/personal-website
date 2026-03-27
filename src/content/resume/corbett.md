@@ -9,4 +9,4 @@ dates: "2023"
 order: 1
 ---
 
-Added geography features to [Taxonium.org](https://www.taxonium.org), a genomic visualization tool used by scientists to track COVID-19's genetic origins. Built with **React** and **Deck.gl**, optimized for datasets with **1M+ samples**.
+Added geography features to [Taxonium.org](https://www.taxonium.org), a genomic visualization tool for tracking COVID-19's genetic origins. Built with **React** and **Deck.gl**, optimized for **1M+ sample** datasets.

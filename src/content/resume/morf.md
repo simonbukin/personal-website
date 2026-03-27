@@ -10,4 +10,4 @@ order: 1
 caseStudy: /portfolio/morf-flo
 ---
 
-Built robust **AI-powered healthcare automation** tools to help small practices streamline tricky patient-facing workflows. Owned product from prototypes and designs to production deployments and monitoring with tools like **Figma**, **PostHog** and **Vite**. Overhauled existing AI chat agent via clever prompting and excellent AI UX to increase adoption by **250%** over 3 weeks. Handled full migration from legacy NextJS project to a Vite-based React app, **4xing** page load and increasing feature velocity by at least **2x**.
+Built **AI-powered healthcare automation** tools helping small practices streamline patient-facing workflows. Owned product end-to-end from **Figma** prototypes to production deployments and monitoring via **PostHog**. Overhauled AI chat agent UX and prompting to increase adoption by **250%** in 3 weeks. Migrated legacy Next.js app to **Vite + React**, cutting page load by **75%** and doubling feature velocity.

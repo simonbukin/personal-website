@@ -148,7 +148,7 @@ ${bullets.map(b => `    [${b}],`).join("\n")}
 
 #set page(
   paper: "us-letter",
-  margin: (top: 0.35in, bottom: 0.35in, left: 0.5in, right: 0.5in),
+  margin: (top: 0.25in, bottom: 0.25in, left: 0.5in, right: 0.5in),
 )
 
 #set text(
@@ -158,7 +158,7 @@ ${bullets.map(b => `    [${b}],`).join("\n")}
 )
 
 #set par(
-  leading: 0.45em,
+  leading: 0.35em,
   justify: false,
 )
 
@@ -168,43 +168,43 @@ ${bullets.map(b => `    [${b}],`).join("\n")}
 
 // Section header
 #let section(title) = {
-  v(0.35em)
+  v(0.15em)
   text(size: 8pt, weight: "bold", fill: subtle, upper(title))
   v(-0.3em)
   line(length: 100%, stroke: 0.4pt + subtle)
-  v(0.15em)
+  v(0.05em)
 }
 
 // Resume entry with bullets
 #let entry(company, dates, title, location, bullets, note: none, caseStudy: none) = {
   grid(
     columns: (1fr, auto),
-    gutter: 0.5em,
+    gutter: 0.4em,
     row-gutter: 0pt,
     [
       #text(weight: "bold")[#company]#if note != none [ #text(fill: subtle)[#note]]
     ],
     align(right, text(size: 8.5pt, fill: subtle)[#dates]),
   )
-  v(-0.4em)
+  v(-0.45em)
   if caseStudy != none {
     [#text(size: 8.5pt, fill: subtle)[#title · #location] #link(caseStudy)[#text(size: 8pt, fill: link-color)[Case study ↗]]]
   } else {
     text(size: 8.5pt, fill: subtle)[#title · #location]
   }
-  v(0.05em)
+  v(0.0em)
   for (i, bullet) in bullets.enumerate() {
     box[#text(size: 8.5pt, fill: subtle)[•] #text(size: 8.5pt)[#bullet]]
     if i < bullets.len() - 1 { linebreak() }
   }
-  v(0.3em)
+  v(0.1em)
 }
 
 // Education entry
 #let education-entry(institution, dates, degree) = {
   grid(
     columns: (1fr, auto),
-    gutter: 0.5em,
+    gutter: 0.4em,
     text(weight: "bold")[#institution],
     align(right, text(size: 8.5pt, fill: subtle)[#dates]),
   )
@@ -213,16 +213,17 @@ ${bullets.map(b => `    [${b}],`).join("\n")}
 
 // Header
 #align(center)[
-  #text(size: 18pt, weight: "bold", font: "SF Pro Display")[Simon Bukin]
-  #v(-0.35em)
+  #text(size: 16pt, weight: "bold", font: "SF Pro Display")[Simon Bukin]
+  #v(-0.4em)
   #text(size: 8.5pt, fill: subtle)[
     San Francisco, CA #h(0.4em) · #h(0.4em)
     #link("mailto:simonbukin@gmail.com")[#text(fill: link-color)[simonbukin\\@gmail.com]] #h(0.4em) · #h(0.4em)
-    #link("https://simonbukin.com")[#text(fill: link-color)[simonbukin.com]]
+    #link("https://simonbukin.com")[#text(fill: link-color)[simonbukin.com]] #h(0.4em) · #h(0.4em)
+    #link("https://linkedin.com/in/simonbukin")[#text(fill: link-color)[linkedin]]
   ]
 ]
 
-#v(0.2em)
+#v(0.1em)
 
 // Summary
 #text(size: 9.5pt)[${summaryText}]

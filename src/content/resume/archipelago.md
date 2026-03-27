@@ -9,4 +9,4 @@ dates: "2023 - 2024"
 order: 3
 ---
 
-Built the entire frontend from scratch in **Svelte**, including onboarding flows, chat interfaces, and the marketing site using **Astro** and **React**. Established the design system with **Figma** and **Tailwind**. Built custom refraction shader for use with **D3.js** in marketing materials
+Built the frontend from scratch in **Svelte** — onboarding flows, chat interfaces, and marketing site (**Astro** + **React**). Established the design system in **Figma** with **Tailwind** implementation. Created custom refraction shader with **D3.js** for marketing materials.
