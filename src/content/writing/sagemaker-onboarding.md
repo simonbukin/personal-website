@@ -51,13 +51,13 @@ Our team had planned to complete each phase of this project in sprints, followin
 
 The final flow is live now on AWS, and can be viewed when creating a new Sagemaker Domain in Studio. Some screens are included below.
 
-![Final screen 1](/sagemaker-onboarding-screen1.png)
+![Final screen 1](../../assets/images/sagemaker-onboarding-screen1.png)
 
-![Final screen 2](/sagemaker-onboarding-screen2.png)
+![Final screen 2](../../assets/images/sagemaker-onboarding-screen2.png)
 
-![Final screen 3](/sagemaker-onboarding-screen3.png)
+![Final screen 3](../../assets/images/sagemaker-onboarding-screen3.png)
 
-![Final screen 4](/sagemaker-onboarding-screen4.png)
+![Final screen 4](../../assets/images/sagemaker-onboarding-screen4.png)
 
 ## Learnings & Takeaways
 

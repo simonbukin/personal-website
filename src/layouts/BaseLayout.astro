@@ -23,6 +23,7 @@ const pathname = Astro.url.pathname;
 const navLinks = [
   { name: 'Writing', href: '/writing' },
   { name: 'Work', href: '/portfolio' },
+  { name: 'Now', href: '/now' },
   { name: 'About', href: '/about' },
 ];
 
@@ -41,6 +42,8 @@ const socialLinks = [
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href="/face.svg" />
+    <link rel="preload" as="font" href="/fonts/SpaceGrotesk-Variable.woff2" type="font/woff2" crossorigin />
+    <link rel="preload" as="font" href="/fonts/JetBrainsMono-Variable.woff2" type="font/woff2" crossorigin />
     <link rel="canonical" href={Astro.url} />
     <title>{title}</title>
 
@@ -151,129 +154,29 @@ const socialLinks = [
       </div>
     </footer>
     <script is:inline>
-      (function() {
-        if (window.__goofyInit) return;
-        window.__goofyInit = true;
-
-        const isGoofy = () => localStorage.getItem('goofy') === 'true';
-        const rand = (a,b) => Math.random()*(b-a)+a;
-        const pick = a => a[Math.floor(Math.random()*a.length)];
-        const shuffle = a => { for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
-
-        const COLORS = ['#fafafa','#fca5a5','#fdba74','#fcd34d','#bef264','#86efac','#5eead4','#7dd3fc','#a5b4fc','#c4b5fd','#f0abfc','#fda4af','#ff6b6b','#4ecdc4','#ffe66d'];
-        const ANIM_IN = ['goofy-left','goofy-right','goofy-glitch','goofy-slam','goofy-bounce'];
-        const ANIM_OUT = ['goofy-out-explode','goofy-out-dissolve','goofy-out-glitch'];
-
-        function getLines(el) {
-          const lines=[], range=document.createRange(), walker=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);
-          let node,lineTop=null,line=null;
-          while((node=walker.nextNode())){
-            if(!node.textContent?.trim())continue;
-            range.selectNodeContents(node);
-            for(const r of range.getClientRects()){
-              if(r.width<1||r.height<1)continue;
-              if(lineTop===null||Math.abs(r.top-lineTop)>3){
-                if(line)lines.push(line);
-                lineTop=r.top;
-                line={top:r.top,left:r.left,width:r.width,height:r.height};
-              }else if(line){
-                line.width=Math.max(line.left+line.width,r.left+r.width)-Math.min(line.left,r.left);
-                line.left=Math.min(line.left,r.left);
-                line.height=Math.max(line.height,r.height);
-              }
-            }
+      // Goofy mode - lazy loaded
+      document.addEventListener('keydown', function(e) {
+        if (e.shiftKey && e.key === 'G') {
+          var on = localStorage.getItem('goofy') !== 'true';
+          localStorage.setItem('goofy', on);
+          console.log('goofy mode:' + (on ? 'ON' : 'OFF'));
+          if (on && !window.__goofyInit) {
+            import('/scripts/goofy.js').then(function(m) { m.initGoofy(); });
           }
-          if(line)lines.push(line);
-          return lines;
         }
+      });
+      // If goofy is already on from a previous session, load immediately
+      if (localStorage.getItem('goofy') === 'true' && !window.__goofyInit) {
+        import('/scripts/goofy.js').then(function(m) { m.initGoofy(); });
+      }
 
-        function collectLines() {
-          const main=document.querySelector('main');
-          if(!main)return[];
-          let all=[];
-          main.querySelectorAll('h1,h2,h3,h4,h5,h6,p,li,span,a,blockquote,td,th,label,dt,dd').forEach(el=>{
-            if(el.closest('pre')||el.closest('code')||el.closest('astro-island'))return;
-            if(!el.textContent?.trim())return;
-            all.push(...getLines(el));
-          });
-          main.querySelectorAll('pre,img').forEach(el=>{
-            const r=el.getBoundingClientRect();
-            if(r.width>1&&r.height>1)all.push({top:r.top,left:r.left,width:r.width,height:r.height});
-          });
-          all=all.filter((l,i,arr)=>{for(let j=0;j<i;j++)if(Math.abs(arr[j].top-l.top)<3&&Math.abs(arr[j].left-l.left)<5)return false;return true;});
-          return shuffle(all).slice(0,80);
+      // ASCII mode toggle (Shift+A)
+      document.addEventListener('keydown', function(e) {
+        if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+        if (e.shiftKey && e.key === 'A') {
+          window.dispatchEvent(new CustomEvent('ascii-mode-toggle'));
         }
-
-        function getContainer() {
-          let c=document.getElementById('goofy-container');
-          if(!c||!document.body.contains(c)){c=document.createElement('div');c.id='goofy-container';document.body.appendChild(c);}
-          return c;
-        }
-
-        function clear() {
-          const c=document.getElementById('goofy-container');if(c)c.innerHTML='';
-          const s=document.getElementById('goofy-scanlines');if(s)s.classList.remove('active');
-          document.body.classList.remove('goofy-shake');
-        }
-
-        function createOverlays(lines,isOut) {
-          const c=getContainer();c.innerHTML='';
-          const sy=window.scrollY,sx=window.scrollX;
-          return lines.map((l,i)=>{
-            const div=document.createElement('div');
-            div.className='goofy-overlay';
-            const color=pick(COLORS),anim=pick(isOut?ANIM_OUT:ANIM_IN),dur=rand(60,150),delay=rand(0,lines.length*6),rot=rand(-3,3),thick=rand(.8,1.5),extra=rand(0,20);
-            div.style.cssText=`top:${l.top+sy}px;left:${l.left+sx-extra/2}px;width:${l.width+extra}px;height:${l.height*thick}px;background:${color};--r:${rot}deg;animation:${anim} ${dur}ms cubic-bezier(.34,1.56,.64,1) ${delay}ms forwards;${isOut?'transform:scaleX(1);':'transform:scaleX(0);'}`;
-            if(Math.random()>.7)div.style.boxShadow=`0 0 ${rand(5,15)}px ${color}`;
-            c.appendChild(div);
-            return {delay,dur};
-          });
-        }
-
-        function goofyEffects() {
-          document.body.classList.add('goofy-shake');
-          setTimeout(()=>document.body.classList.remove('goofy-shake'),150);
-          let s=document.getElementById('goofy-scanlines');
-          if(!s){s=document.createElement('div');s.id='goofy-scanlines';document.body.appendChild(s);}
-          s.classList.add('active');
-        }
-
-        document.addEventListener('astro:before-preparation',(e)=>{
-          if(!isGoofy()||window.matchMedia('(prefers-reduced-motion:reduce)').matches)return;
-          const orig=e.loader;
-          e.loader=async()=>{
-            clear();
-            const lines=collectLines();
-            if(lines.length){
-              goofyEffects();
-              const overlays=createOverlays(lines,false);
-              const max=Math.max(...overlays.map(o=>o.delay+o.dur))+50;
-              await new Promise(r=>setTimeout(r,max));
-            }
-            await orig();
-          };
-        });
-
-        document.addEventListener('astro:after-swap',()=>{
-          if(!isGoofy()||window.matchMedia('(prefers-reduced-motion:reduce)').matches){clear();return;}
-          requestAnimationFrame(()=>requestAnimationFrame(()=>{
-            const lines=collectLines();
-            if(!lines.length){clear();return;}
-            goofyEffects();
-            const overlays=createOverlays(lines,true);
-            const max=Math.max(...overlays.map(o=>o.delay+o.dur))+100;
-            setTimeout(clear,max);
-          }));
-        });
-
-        document.addEventListener('keydown',(e)=>{
-          if(e.shiftKey&&e.key==='G'){
-            const on=localStorage.getItem('goofy')!=='true';
-            localStorage.setItem('goofy',on);
-            console.log('goofy mode:'+(on?'ON':'OFF'));
-          }
-        });
-      })();
+      });
 
       // Pastel link colors
       const pastels = [
@@ -510,7 +413,6 @@ const socialLinks = [
           if (ogCache.has(url)) {
             const cached = ogCache.get(url);
             if (cached) {
-              // Show cached content directly — no shimmer needed
               const card = ensureLinkPreview();
               setContent(buildContentHTML(cached), false);
               card.classList.add('active');
@@ -519,10 +421,14 @@ const socialLinks = [
             return;
           }
 
-          showShimmer(e);
-
           if (currentAbortController) currentAbortController.abort();
           currentAbortController = new AbortController();
+
+          // Delay shimmer so fast responses (empty/error) never flash it
+          let resolved = false;
+          const shimmerTimer = setTimeout(() => {
+            if (!resolved) showShimmer(e);
+          }, 150);
 
           try {
             const res = await fetch(`/api/link-preview.json?url=${encodeURIComponent(url)}`, {
@@ -530,9 +436,17 @@ const socialLinks = [
             });
             const data = await res.json();
             const hasContent = data && (data.ogTitle || data.ogImage);
+            resolved = true;
+            clearTimeout(shimmerTimer);
             ogCache.set(url, hasContent ? data : null);
-            showContent(data);
+            if (hasContent) {
+              showContent(data);
+            } else {
+              hideLinkPreview();
+            }
           } catch (err) {
+            resolved = true;
+            clearTimeout(shimmerTimer);
             if (err.name !== 'AbortError') {
               ogCache.set(url, null);
               hideLinkPreview();
@@ -578,67 +492,21 @@ const socialLinks = [
         document.addEventListener('astro:page-load', attachPreviews);
       })();
 
-      // Konami Code: ↑↑↓↓←→←→BA
+      // Konami code - lazy loaded
       (function() {
         if (window.__konamiInit) return;
         window.__konamiInit = true;
-
-        const KONAMI_SEQUENCE = [
-          'ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown',
-          'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight',
-          'KeyB', 'KeyA'
-        ];
-
-        let inputBuffer = [];
-        let chaosActive = false;
-
-        function checkKonamiSequence() {
-          if (inputBuffer.length < KONAMI_SEQUENCE.length) return false;
-          const recentInput = inputBuffer.slice(-KONAMI_SEQUENCE.length);
-          return recentInput.every((key, i) => key === KONAMI_SEQUENCE[i]);
-        }
-
+        var SEQ = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','KeyB','KeyA'];
+        var buf = [];
         document.addEventListener('keydown', function(e) {
-          // Escape exits chaos mode
-          if (e.code === 'Escape' && chaosActive) {
-            chaosActive = false;
-            window.dispatchEvent(new CustomEvent('konamiCodeExit'));
-            inputBuffer = [];
-            return;
-          }
-
-          // Don't capture if user is typing in an input
-          if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-            return;
-          }
-
-          inputBuffer.push(e.code);
-
-          // Keep buffer from growing too large
-          if (inputBuffer.length > KONAMI_SEQUENCE.length * 2) {
-            inputBuffer = inputBuffer.slice(-KONAMI_SEQUENCE.length);
-          }
-
-          if (checkKonamiSequence()) {
-            if (!chaosActive) {
-              chaosActive = true;
-              window.dispatchEvent(new CustomEvent('konamiCode'));
-              inputBuffer = [];
-            }
+          if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+          buf.push(e.code);
+          if (buf.length > SEQ.length * 2) buf = buf.slice(-SEQ.length);
+          if (buf.length >= SEQ.length && buf.slice(-SEQ.length).every(function(k, i) { return k === SEQ[i]; })) {
+            buf = [];
+            import('/scripts/konami.js').then(function(m) { m.initKonami(); });
           }
         });
-
-        // Debug helpers (dev mode)
-        if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
-          window.triggerKonami = () => {
-            chaosActive = true;
-            window.dispatchEvent(new CustomEvent('konamiCode'));
-          };
-          window.exitKonami = () => {
-            chaosActive = false;
-            window.dispatchEvent(new CustomEvent('konamiCodeExit'));
-          };
-        }
       })();
     </script>
   </body>

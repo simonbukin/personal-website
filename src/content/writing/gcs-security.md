@@ -65,9 +65,9 @@ Since GCS was using the Google Material Design system, the specific look and fee
 
 ### Low Fidelity Mockups
 
-![Low fidelity mock 1](/low-fidelity.jpg)
+![Low fidelity mock 1](../../assets/images/low-fidelity.jpg)
 
-![Low fidelity mock 2](/low-fidelity2.jpg)
+![Low fidelity mock 2](../../assets/images/low-fidelity2.jpg)
 
 ## Restoration Functionality
 
@@ -85,13 +85,13 @@ Note: these high fidelity mocks are recreations made after leaving the company, 
 
 ### High Fidelity Mockups
 
-![High fidelity mock 1](/gcs-screen1.png)
+![High fidelity mock 1](../../assets/images/gcs-screen1.png)
 
-![High fidelity mock 2](/gcs-screen2.png)
+![High fidelity mock 2](../../assets/images/gcs-screen2.png)
 
-![High fidelity mock 3](/gcs-screen3.png)
+![High fidelity mock 3](../../assets/images/gcs-screen3.png)
 
-![High fidelity mock 4](/gcs-screen4.png)
+![High fidelity mock 4](../../assets/images/gcs-screen4.png)
 
 ## Learnings & Takeaways
 

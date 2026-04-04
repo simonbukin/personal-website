@@ -147,4 +147,11 @@ const timeline = defineCollection({
   ]),
 });
 
-export const collections = { writing, media, resume, about, timeline };
+const now = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string(),
+  }),
+});
+
+export const collections = { writing, media, resume, about, timeline, now };

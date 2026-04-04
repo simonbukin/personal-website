@@ -1,5 +1,7 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import tippy from "tippy.js";
+import { useSimulationWorker } from "./useSimulationWorker";
+import AsciiMetroMap from "./AsciiMetroMap";
 import type { Instance as TippyInstance } from "tippy.js";
 import "tippy.js/dist/tippy.css";
 
@@ -1537,6 +1539,137 @@ function findBestSimulation(
   return { lines: bestLines, stations: bestStations, seed: bestSeed };
 }
 
+interface LegendDataItem {
+  name: string;
+  location: string;
+  color: string;
+  wiki: string;
+  rendered: boolean;
+}
+
+interface LegendData {
+  items: LegendDataItem[];
+  opacity: number;
+}
+
+function MetroLegend({ dataRef }: { dataRef: React.MutableRefObject<LegendData | null> }) {
+  const [items, setItems] = useState<LegendDataItem[]>([]);
+  const [opacity, setOpacity] = useState(0);
+  const prevJsonRef = useRef("");
+
+  useEffect(() => {
+    let running = true;
+    function poll() {
+      if (!running) return;
+      const data = dataRef.current;
+      if (data) {
+        const json = JSON.stringify(data.items);
+        if (json !== prevJsonRef.current) {
+          prevJsonRef.current = json;
+          setItems(data.items);
+        }
+        setOpacity(data.opacity);
+      }
+      requestAnimationFrame(poll);
+    }
+    requestAnimationFrame(poll);
+    return () => { running = false; };
+  }, [dataRef]);
+
+  if (items.length === 0) return null;
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        bottom: 16,
+        right: 16,
+        background: "var(--canvas-legend-bg, rgba(26, 22, 37, 0.85))",
+        border: "1px solid var(--canvas-legend-border, rgba(61, 53, 85, 0.6))",
+        borderRadius: 8,
+        padding: 14,
+        pointerEvents: "auto",
+        opacity,
+        transition: "opacity 0.1s",
+      }}
+    >
+      <div
+        style={{
+          fontSize: 12,
+          fontWeight: 600,
+          fontFamily: '"Helvetica Neue", Arial, system-ui, sans-serif',
+          color: "var(--canvas-tooltip-muted, #8b829e)",
+          marginBottom: 10,
+          letterSpacing: "0.05em",
+        }}
+      >
+        LINES
+      </div>
+      {items.map((item) => (
+        <a
+          key={item.name}
+          href={item.wiki}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "4px 6px",
+            margin: "0 -6px",
+            borderRadius: 4,
+            textDecoration: "none",
+            cursor: "pointer",
+            opacity: item.rendered ? 0.95 : 0.35,
+            transition: "opacity 0.2s, background 0.15s",
+          }}
+          onMouseEnter={(e) => {
+            const el = e.currentTarget as HTMLElement;
+            el.style.opacity = "0.95";
+            el.style.background = "var(--canvas-legend-border, rgba(61, 53, 85, 0.6))";
+          }}
+          onMouseLeave={(e) => {
+            const el = e.currentTarget as HTMLElement;
+            el.style.opacity = item.rendered ? "0.95" : "0.35";
+            el.style.background = "transparent";
+          }}
+        >
+          <span
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: "50%",
+              background: item.color,
+              flexShrink: 0,
+            }}
+          />
+          <span
+            style={{
+              fontFamily: '"Helvetica Neue", Arial, system-ui, sans-serif',
+              fontSize: 14,
+              fontWeight: 600,
+              color: "var(--canvas-tooltip-text, #f0edf5)",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {item.name}
+          </span>
+          <span
+            style={{
+              fontFamily: '"Helvetica Neue", Arial, system-ui, sans-serif',
+              fontSize: 11,
+              color: "var(--canvas-tooltip-muted, #8b829e)",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {item.location}
+          </span>
+        </a>
+      ))}
+    </div>
+  );
+}
+
 interface Props {
   variant?: "full" | "contained";
 }
@@ -1547,6 +1680,15 @@ export default function MetroMap({ variant = "full" }: Props) {
   const tippyInstanceRef = useRef<TippyInstance | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const isFullVariant = variant === "full";
+  const { runSimulation } = useSimulationWorker();
+  const [asciiMode, setAsciiMode] = useState(false);
+  const geometryRef = useRef<PrecomputedGeometry | null>(null);
+  const boundsRef = useRef({ left: 0, right: 0, top: 0, bottom: 0 });
+  const lineColorsRef = useRef<string[]>([]);
+  const legendDataRef = useRef<{
+    items: { name: string; location: string; color: string; wiki: string; rendered: boolean }[];
+    opacity: number;
+  } | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -1659,16 +1801,7 @@ export default function MetroMap({ variant = "full" }: Props) {
     let precomputedGeometry: PrecomputedGeometry | null = null;
     let currentRng: SeededRandom | null = null;
 
-    // Legend interaction
-    interface LegendItem {
-      x: number;
-      y: number;
-      width: number;
-      height: number;
-      wiki: string;
-    }
-    let legendItems: LegendItem[] = [];
-    let hoveredLegendIndex = -1;
+    // Legend hover/click now handled by HTML overlay
 
     // Chaos mode state - continuous "snake" animation
     let chaosMode = false;
@@ -1994,9 +2127,6 @@ export default function MetroMap({ variant = "full" }: Props) {
       corridorSegments = [];
       lineIdCounter = 0;
       segmentGrid = new Map();
-      legendItems = [];
-      hoveredLegendIndex = -1;
-
       // Pre-select transit lines and colors - use chaos mode names/colors if active
       if (chaosMode) {
         // Use chaos line names (shuffle them for variety)
@@ -2757,20 +2887,6 @@ export default function MetroMap({ variant = "full" }: Props) {
         y: e.clientY - rect.top,
       };
 
-      // Check if click is on a legend item first
-      for (const item of legendItems) {
-        if (
-          clickPos.x >= item.x &&
-          clickPos.x <= item.x + item.width &&
-          clickPos.y >= item.y &&
-          clickPos.y <= item.y + item.height
-        ) {
-          // Open Wikipedia article in new tab
-          window.open(item.wiki, "_blank", "noopener,noreferrer");
-          return;
-        }
-      }
-
       // Check if click is on a train (open spec URL)
       const clickedTrain = findTrainAtPoint(clickPos);
       if (clickedTrain) {
@@ -3275,191 +3391,20 @@ export default function MetroMap({ variant = "full" }: Props) {
       }
     };
 
-    // Check if mouse is over a legend item
-    const updateLegendHover = () => {
-      hoveredLegendIndex = -1;
-      if (!mousePosition || isMobile) {
-        document.body.style.cursor = "";
-        return;
-      }
-
-      for (let i = 0; i < legendItems.length; i++) {
-        const item = legendItems[i];
-        if (
-          mousePosition.x >= item.x &&
-          mousePosition.x <= item.x + item.width &&
-          mousePosition.y >= item.y &&
-          mousePosition.y <= item.y + item.height
-        ) {
-          hoveredLegendIndex = i;
-          break;
-        }
-      }
-
-      document.body.style.cursor = hoveredLegendIndex >= 0 ? "pointer" : "";
-    };
-
-    // Draw legend as metro board (bottom right, shows all planned lines)
-    const drawLegend = (opacity: number) => {
+    // Update legend data for HTML overlay (called each frame with current opacity)
+    const updateLegendData = (opacity: number) => {
       if (plannedLines.length === 0 || isMobile) return;
 
-      const padding = 16;
-      const lineHeight = 26;
-      const circleRadius = 5;
-      const textOffset = 18;
-      const boardPadding = 14;
-
-      // Calculate board dimensions
-      ctx.font = `600 14px "Helvetica Neue", "Arial", system-ui, sans-serif`;
-      let maxWidth = 0;
-      for (const planned of plannedLines) {
-        const textWidth = ctx.measureText(planned.name).width;
-        ctx.font = `11px "Helvetica Neue", "Arial", system-ui, sans-serif`;
-        const locWidth = ctx.measureText(planned.location).width;
-        maxWidth = Math.max(maxWidth, textOffset + textWidth + 8 + locWidth);
-        ctx.font = `600 14px "Helvetica Neue", "Arial", system-ui, sans-serif`;
-      }
-
-      const boardWidth = maxWidth + boardPadding * 2 + 10;
-      // Shrink-wrap: header + content + padding
-      const contentOffset = 30; // Header (12px) + gap below header
-      const boardHeight =
-        boardPadding +
-        contentOffset +
-        plannedLines.length * lineHeight -
-        lineHeight / 2 +
-        boardPadding;
-
-      // Position at bottom right
-      const boardX = canvasWidth - padding - boardWidth;
-      const boardY = canvasHeight - padding - boardHeight;
-
-      // Draw board background - parse the rgba color for opacity
-      const legendBgBase = themeColors.legendBg.replace(
-        /[\d.]+\)$/,
-        `${opacity * 0.85})`,
-      );
-      ctx.fillStyle = legendBgBase;
-      ctx.beginPath();
-      ctx.roundRect(boardX, boardY, boardWidth, boardHeight, 8);
-      ctx.fill();
-
-      // Draw board border
-      const legendBorderBase = themeColors.legendBorder.replace(
-        /[\d.]+\)$/,
-        `${opacity * 0.6})`,
-      );
-      ctx.strokeStyle = legendBorderBase;
-      ctx.lineWidth = 1;
-      ctx.stroke();
-
-      // Draw header - use muted color
-      ctx.font = `600 12px "Helvetica Neue", "Arial", system-ui, sans-serif`;
-      const mutedMatch = themeColors.tooltipMuted.match(
-        /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i,
-      );
-      if (mutedMatch) {
-        ctx.fillStyle = `rgba(${parseInt(mutedMatch[1], 16)}, ${parseInt(mutedMatch[2], 16)}, ${parseInt(mutedMatch[3], 16)}, ${opacity * 0.9})`;
-      } else {
-        ctx.fillStyle = `rgba(163, 163, 163, ${opacity * 0.9})`;
-      }
-      ctx.textBaseline = "top";
-      ctx.fillText("LINES", boardX + boardPadding, boardY + boardPadding);
-
-      // Reset legend items for click detection
-      legendItems = [];
-
-      // Draw each planned line
-      for (let i = 0; i < plannedLines.length; i++) {
-        const planned = plannedLines[i];
-        const color = plannedColors[i];
-        const rgb = parseColor(color);
-        const y = boardY + boardPadding + contentOffset + i * lineHeight;
-        const itemX = boardX + boardPadding;
-        const itemWidth = boardWidth - boardPadding * 2;
-
-        // Check if this line has been rendered
-        const renderedLine = lines.find((l) => l.name === planned.name);
-        const isRendered = !!renderedLine;
-        const isHovered = hoveredLegendIndex === i;
-
-        // Calculate opacity - full if rendered, grayed out if not
-        let itemOpacity = opacity * (isRendered ? 0.95 : 0.35);
-        if (isHovered) {
-          itemOpacity = opacity * 0.95; // Full opacity on hover
-        }
-
-        // Store hit area for click detection
-        legendItems.push({
-          x: itemX - 4,
-          y: y - lineHeight / 2 + 4,
-          width: itemWidth + 8,
-          height: lineHeight - 4,
-          wiki: planned.wiki,
-        });
-
-        // Draw hover background
-        if (isHovered) {
-          // Use a light overlay for hover in light mode, dark in dark mode
-          const isDark =
-            document.documentElement.getAttribute("data-theme") !== "light";
-          ctx.fillStyle = isDark
-            ? `rgba(255, 255, 255, ${opacity * 0.08})`
-            : `rgba(0, 0, 0, ${opacity * 0.05})`;
-          ctx.beginPath();
-          ctx.roundRect(
-            itemX - 4,
-            y - lineHeight / 2 + 4,
-            itemWidth + 8,
-            lineHeight - 4,
-            4,
-          );
-          ctx.fill();
-        }
-
-        // Draw colored circle
-        ctx.beginPath();
-        ctx.arc(itemX + circleRadius, y, circleRadius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${itemOpacity})`;
-        ctx.fill();
-
-        // Draw line name - use theme text color
-        ctx.font = `600 14px "Helvetica Neue", "Arial", system-ui, sans-serif`;
-        ctx.textBaseline = "middle";
-        const textMatch = themeColors.tooltipText.match(
-          /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i,
-        );
-        if (textMatch) {
-          ctx.fillStyle = `rgba(${parseInt(textMatch[1], 16)}, ${parseInt(textMatch[2], 16)}, ${parseInt(textMatch[3], 16)}, ${itemOpacity})`;
-        } else {
-          ctx.fillStyle = `rgba(255, 255, 255, ${itemOpacity})`;
-        }
-        ctx.fillText(planned.name, itemX + textOffset, y);
-
-        // Draw location - use theme muted color
-        const nameWidth = ctx.measureText(planned.name).width;
-        ctx.font = `11px "Helvetica Neue", "Arial", system-ui, sans-serif`;
-        const locMutedMatch = themeColors.tooltipMuted.match(
-          /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i,
-        );
-        if (locMutedMatch) {
-          ctx.fillStyle = `rgba(${parseInt(locMutedMatch[1], 16)}, ${parseInt(locMutedMatch[2], 16)}, ${parseInt(locMutedMatch[3], 16)}, ${itemOpacity * 0.8})`;
-        } else {
-          ctx.fillStyle = `rgba(163, 163, 163, ${itemOpacity * 0.8})`;
-        }
-        ctx.fillText(planned.location, itemX + textOffset + nameWidth + 8, y);
-
-        // Draw cursor hint for hovered items
-        if (isHovered) {
-          ctx.font = `10px "Helvetica Neue", "Arial", system-ui, sans-serif`;
-          if (locMutedMatch) {
-            ctx.fillStyle = `rgba(${parseInt(locMutedMatch[1], 16)}, ${parseInt(locMutedMatch[2], 16)}, ${parseInt(locMutedMatch[3], 16)}, ${opacity * 0.6})`;
-          } else {
-            ctx.fillStyle = `rgba(163, 163, 163, ${opacity * 0.6})`;
-          }
-          ctx.fillText("↗", boardX + boardWidth - boardPadding - 12, y);
-        }
-      }
+      legendDataRef.current = {
+        items: plannedLines.map((pl, i) => ({
+          name: pl.name,
+          location: pl.location,
+          color: plannedColors[i] || "#888",
+          wiki: pl.wiki,
+          rendered: !!lines.find((l) => l.name === pl.name),
+        })),
+        opacity,
+      };
     };
 
     // Debug overlay for dev mode - shows grid, quadrants, and coverage stats
@@ -3714,6 +3659,9 @@ export default function MetroMap({ variant = "full" }: Props) {
         );
       }
       initializeMap(precomputedGeometry);
+      geometryRef.current = precomputedGeometry;
+      boundsRef.current = { ...drawBounds };
+      lineColorsRef.current = [...currentLineColors];
 
       // For static view, immediately reveal all lines fully
       for (let i = 0; i < lines.length; i++) {
@@ -3760,7 +3708,7 @@ export default function MetroMap({ variant = "full" }: Props) {
       for (const line of lines) {
         drawLine(line, 0.75);
       }
-      drawLegend(0.75);
+      updateLegendData(0.75);
     };
 
     const handleColorChange = (e: CustomEvent<string>) => {
@@ -3858,6 +3806,8 @@ export default function MetroMap({ variant = "full" }: Props) {
         };
       }
 
+      boundsRef.current = { ...drawBounds };
+
       canvas.width = canvasWidth * dpr;
       canvas.height = canvasHeight * dpr;
       canvas.style.width = `${canvasWidth}px`;
@@ -3880,6 +3830,9 @@ export default function MetroMap({ variant = "full" }: Props) {
           variant,
         );
         initializeMap(precomputedGeometry);
+        geometryRef.current = precomputedGeometry;
+        boundsRef.current = { ...drawBounds };
+        lineColorsRef.current = [...currentLineColors];
         // Restore opacity so we don't fade in again
         globalOpacity = preservedOpacity;
       }
@@ -3921,7 +3874,7 @@ export default function MetroMap({ variant = "full" }: Props) {
       }
 
       // Layer 5: Legend
-      drawLegend(globalOpacity);
+      updateLegendData(globalOpacity);
 
       // Layer 6: Station tooltip (skip in chaos mode)
       if (!chaosMode) {
@@ -4118,6 +4071,9 @@ export default function MetroMap({ variant = "full" }: Props) {
         false,
       );
       initializeMap(precomputedGeometry);
+      geometryRef.current = precomputedGeometry;
+      boundsRef.current = { ...drawBounds };
+      lineColorsRef.current = [...currentLineColors];
     };
 
     const animate = () => {
@@ -4155,7 +4111,6 @@ export default function MetroMap({ variant = "full" }: Props) {
 
       // Update hover effects and click waves
       updateHoverEffects();
-      updateLegendHover();
       updateClickWaves();
 
       // Update trains (skip in chaos mode - lines are constantly changing)
@@ -4178,6 +4133,7 @@ export default function MetroMap({ variant = "full" }: Props) {
       // Update line colors for new theme
       const newLineColors = getThemeLineColors();
       currentLineColors = newLineColors;
+      lineColorsRef.current = [...currentLineColors];
 
       // Update each line's color to the equivalent in the new palette
       // This maintains color positions but swaps to theme-appropriate variants
@@ -4238,20 +4194,47 @@ export default function MetroMap({ variant = "full" }: Props) {
     resize();
 
     // Precompute: run N headless simulations, pick the best one
-    precomputedGeometry = findBestSimulation(50, config, drawBounds, variant);
+    // Try Web Worker first, fall back to inline
+    runSimulation(config, drawBounds, variant, false)
+      .then((geometry) => {
+        precomputedGeometry = geometry;
+        geometryRef.current = precomputedGeometry;
+        boundsRef.current = { ...drawBounds };
+        lineColorsRef.current = [...currentLineColors];
+        initializeMap(geometry);
+        if (prefersReducedMotion) {
+          drawStaticMap();
+        } else {
+          animationId = requestAnimationFrame(animate);
+        }
+      })
+      .catch(() => {
+        // Worker unavailable, fall back to inline
+        precomputedGeometry = findBestSimulation(
+          50,
+          config,
+          drawBounds,
+          variant,
+        );
+        geometryRef.current = precomputedGeometry;
+        boundsRef.current = { ...drawBounds };
+        lineColorsRef.current = [...currentLineColors];
 
-    // DEBUG: Log bounds used for precompute
-    if (import.meta.env.DEV) {
-      console.log(`[DEBUG] Precompute bounds:`, JSON.stringify(drawBounds));
-    }
+        // DEBUG: Log bounds used for precompute
+        if (import.meta.env.DEV) {
+          console.log(
+            `[DEBUG] Precompute bounds:`,
+            JSON.stringify(drawBounds),
+          );
+        }
 
-    initializeMap(precomputedGeometry);
-
-    if (prefersReducedMotion) {
-      drawStaticMap();
-    } else {
-      animationId = requestAnimationFrame(animate);
-    }
+        initializeMap(precomputedGeometry);
+        if (prefersReducedMotion) {
+          drawStaticMap();
+        } else {
+          animationId = requestAnimationFrame(animate);
+        }
+      });
 
     return () => {
       observer.disconnect();
@@ -4278,6 +4261,12 @@ export default function MetroMap({ variant = "full" }: Props) {
     };
   }, [isFullVariant]);
 
+  useEffect(() => {
+    const handler = () => setAsciiMode((prev) => !prev);
+    window.addEventListener("ascii-mode-toggle", handler);
+    return () => window.removeEventListener("ascii-mode-toggle", handler);
+  }, []);
+
   // Invisible fixed-position anchor that Tippy attaches to — repositioned over train each frame
   const tippyAnchor = (
     <div
@@ -4292,7 +4281,16 @@ export default function MetroMap({ variant = "full" }: Props) {
         <canvas
           ref={canvasRef}
           className="fixed top-0 right-0 w-1/2 h-full pointer-events-none -z-10"
+          style={asciiMode ? { opacity: 0 } : undefined}
         />
+        {asciiMode && (
+          <div className="fixed top-0 right-0 w-1/2 h-full pointer-events-none -z-10 flex items-center justify-center overflow-hidden">
+            <AsciiMetroMap canvasRef={canvasRef} />
+          </div>
+        )}
+        <div className="fixed top-0 right-0 w-1/2 h-full pointer-events-none z-10 hidden lg:block">
+          <MetroLegend dataRef={legendDataRef} />
+        </div>
         {tippyAnchor}
       </>
     );
@@ -4303,7 +4301,13 @@ export default function MetroMap({ variant = "full" }: Props) {
       <canvas
         ref={canvasRef}
         className="absolute inset-0 pointer-events-none"
+        style={asciiMode ? { opacity: 0 } : undefined}
       />
+      {asciiMode && (
+        <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
+          <AsciiMetroMap canvasRef={canvasRef} />
+        </div>
+      )}
       {tippyAnchor}
     </div>
   );

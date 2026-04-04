@@ -33,7 +33,7 @@ Flo had the bones of something useful but the experience was rough. A few specif
 
 An example of a noisy chat:
 
-![Screenshot of Flo before — noisy chat with visible tool calls and long responses](/flo-before.png)
+![Screenshot of Flo before — noisy chat with visible tool calls and long responses](../../assets/images/flo-before.png)
 
 ## Scoping
 
@@ -75,7 +75,7 @@ Read-only operations (listing actions, searching docs, looking up properties) ex
 
 To keep things looking nice, the `<plan>` tag is intercepted mid-stream and converted into a component, making the resulting experience quite clean. In the time before the plan is finished and the stream is still ongoing, Flo outputs a "preparing your plan" status to keep the user aware of system status at all times.
 
-![Flo planning interface showing a structured plan before executing changes](/flo-planning.png)
+![Flo planning interface showing a structured plan before executing changes](../../assets/images/flo-planning.png)
 
 ### Questions Protocol
 
@@ -92,7 +92,7 @@ I defined four question types:
 
 The prompt also accounts for existing context: if the organization already has integrations configured, Flo acknowledges those ("It looks like you have Healthie and Twilio set up") rather than asking from scratch. This required injecting the org's configured integrations into the system prompt dynamically.
 
-![Flo questions interface showing a stepped form with multiple question types](/flo-questions.png)
+![Flo questions interface showing a stepped form with multiple question types](../../assets/images/flo-questions.png)
 
 ### Verification Rules
 

@@ -1,0 +1,70 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection, getEntry, render } from 'astro:content';
+import LastFMPlayer from '../components/islands/LastFMPlayer';
+import SFStatus from '../components/islands/SFStatus';
+
+// Recent writing (published posts only)
+const writing = await getCollection('writing', ({ data }) =>
+  data.type === 'post' && data.published
+);
+const recentWriting = writing
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+
+// Working on content from markdown
+const workingOnEntry = await getEntry('now', 'working-on');
+const { Content: WorkingOnContent } = await render(workingOnEntry);
+---
+
+<BaseLayout title="Now - Simon Bukin">
+  <div class="max-w-2xl px-6 py-12">
+    <!-- Header -->
+    <section class="mb-12">
+      <h1 class="text-4xl md:text-5xl font-bold tracking-tight" style="color: var(--text-primary);">
+        Now
+      </h1>
+      <p class="mt-3 text-lg" style="color: var(--text-tertiary);">
+        What I'm up to
+      </p>
+    </section>
+
+    <!-- Working on -->
+    <section class="mb-12">
+      <h2 class="text-lg font-semibold mb-4" style="color: var(--text-primary);">Working on</h2>
+      <div class="prose">
+        <WorkingOnContent />
+      </div>
+    </section>
+
+    <!-- Recent writing -->
+    {recentWriting.length > 0 && (
+      <section class="mb-12">
+        <div class="flex items-baseline gap-4 mb-4">
+          <h2 class="text-lg font-semibold" style="color: var(--text-primary);">Recent writing</h2>
+          <a href="/writing" class="text-sm transition-colors hover:opacity-80" style="color: var(--text-tertiary);">
+            All &rarr;
+          </a>
+        </div>
+        <ul class="space-y-3">
+          {recentWriting.map((item) => (
+            <li>
+              <a href={`/writing/${item.slug}`} class="group block">
+                <span class="font-medium transition-colors" style="color: var(--text-secondary);">{item.data.title}</span>
+                <span class="text-sm ml-2" style="color: var(--text-tertiary);">
+                  {item.data.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <!-- Status widgets -->
+    <section class="space-y-4">
+      <div><LastFMPlayer client:load /></div>
+      <div><SFStatus client:load /></div>
+    </section>
+  </div>
+</BaseLayout>
