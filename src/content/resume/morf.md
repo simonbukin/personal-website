@@ -5,7 +5,7 @@ company: Morf Health
 companyUrl: https://morf.health
 title: Founding Product Engineer
 location: San Francisco, CA
-dates: "2024 - Present"
+dates: "2024 - 2026"
 order: 1
 caseStudy: /portfolio/morf-flo
 ---

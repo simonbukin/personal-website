@@ -2,7 +2,7 @@
 title: Working on
 ---
 
-- Building healthcare automation tools at [Morf](https://morf.health).
+- Building AI-powered workforce tools at [Holly](https://www.hollygov.com).
 - Producing music (mostly just copying [A.G. Cook](https://youtube.com/watch?v=DCFvNFafeVA))
 - Hacking together a half-competant home server
 - Collecting ~~vinyl records~~ CDs

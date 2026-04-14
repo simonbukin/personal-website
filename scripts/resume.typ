@@ -89,7 +89,7 @@
 
 #entry(
   "Morf Health",
-  "2024 - Present",
+  "2024 - 2026",
   "Founding Product Engineer",
   "San Francisco, CA",
   (
