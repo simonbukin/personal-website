@@ -293,6 +293,28 @@ const TRANSIT_LINES: TransitLineInfo[] = [
       specUrl: "https://en.wikipedia.org/wiki/Stadler_KISS",
     },
   },
+  {
+    name: "2 Train",
+    location: "New York",
+    wiki: "https://en.wikipedia.org/wiki/2_(New_York_City_Subway_service)",
+    rollingStock: {
+      model: "R142",
+      manufacturer: "Bombardier",
+      introduced: 1999,
+      specUrl: "https://en.wikipedia.org/wiki/R142_(New_York_City_Subway_car)",
+    },
+  },
+  {
+    name: "3 Train",
+    location: "New York",
+    wiki: "https://en.wikipedia.org/wiki/3_(New_York_City_Subway_service)",
+    rollingStock: {
+      model: "R142",
+      manufacturer: "Bombardier",
+      introduced: 1999,
+      specUrl: "https://en.wikipedia.org/wiki/R142_(New_York_City_Subway_car)",
+    },
+  },
 ];
 
 const LOCATION_NOTES: Record<string, string> = {
@@ -306,6 +328,8 @@ const LOCATION_NOTES: Record<string, string> = {
     "Lived here when I worked at Amazon and took the 1 Line to the airport all the time.",
   "Santa Cruz": "Relied on Santa Cruz Metro during my years at UCSC.",
   "Bay Area": "Commuted on Caltrain between SF and the South Bay for years.",
+  "New York":
+    "The Helvetica signage alone was worth the trip to the East Coast.",
 };
 
 // Select one random line per unique location
